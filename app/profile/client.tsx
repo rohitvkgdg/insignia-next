@@ -17,14 +17,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { updateProfile } from "@/app/actions/profile"
 import { UserProfileData, UpdateProfileInput } from "@/app/actions/profile"
-import { PaymentStatus, RegistrationStatus, Role } from "@prisma/client"
+import { Role, PaymentStatus, RegistrationStatus } from "@/types/enums"
 
 export default function ProfileClient({ profile }: { profile: UserProfileData }) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Display role in a more user-friendly format
-  const roleDisplay = {
+  const roleDisplay: Record<Role, string> = {
     [Role.USER]: "Student",
     [Role.COORDINATOR]: "Event Coordinator",
     [Role.ADMIN]: "Administrator"
@@ -36,12 +36,15 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
     
     try {
       // Extract and format form data
+      const semesterValue = formData.get("semester") as string;
+      const semester = semesterValue === "none" ? null : semesterValue ? Number(semesterValue) : null;
+      
       const data: UpdateProfileInput = {
         name: formData.get("name") as string,
         phone: formData.get("phone") as string,
         address: formData.get("address") as string || null,
         department: formData.get("department") as string,
-        semester: formData.get("semester") ? Number(formData.get("semester")) : null,
+        semester,
         college: formData.get("college") as string,
         usn: formData.get("usn") as string,
       }
@@ -61,7 +64,7 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
   }
 
   // Helper function to get badge variant based on status
-  function getStatusBadgeVariant(status: RegistrationStatus) {
+  function getStatusBadgeVariant(status: string) {
     switch (status) {
       case RegistrationStatus.CONFIRMED:
         return "default" // Using "default" instead of "success"
@@ -73,7 +76,7 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
   }
 
   // Helper function to get badge variant based on payment status
-  function getPaymentBadgeVariant(status: PaymentStatus) {
+  function getPaymentBadgeVariant(status: string) {
     switch (status) {
       case PaymentStatus.PAID:
         return "default" // Using "default" instead of "success"
@@ -103,7 +106,7 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
                 </Avatar>
                 <div className="space-y-1 text-center">
                   <h2 className="text-2xl font-bold">{profile.name || "User"}</h2>
-                  <Badge variant="outline">{roleDisplay[profile.role]}</Badge>
+                  <Badge variant="outline">{roleDisplay[profile.role as Role]}</Badge>
                 </div>
               </div>
             </CardHeader>
@@ -315,15 +318,14 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
                         </div>
                         <div className="grid gap-2">
                           <Label htmlFor="semester">Semester</Label>
-                          <Select name="semester" defaultValue={profile.semester?.toString() || ""}>
+                          <Select name="semester" defaultValue={profile.semester?.toString() || "1"}>
                             <SelectTrigger>
                               <SelectValue placeholder="Select Semester" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">None</SelectItem>
                               {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
                                 <SelectItem key={sem} value={sem.toString()}>
-                                  Semester {sem}
+                                  {sem}
                                 </SelectItem>
                               ))}
                             </SelectContent>

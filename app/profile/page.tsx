@@ -19,9 +19,10 @@ export default async function ProfilePage() {
   }
 
   try {
-    // Fetch user profile data
+    // Fetch user profile data - now returns a plain JavaScript object
     const profileData = await getUserProfile()
     
+    // Now we can directly pass the data to the client component
     return <ProfileClient profile={profileData} />
   } catch (error) {
     console.error("Error loading profile:", error)

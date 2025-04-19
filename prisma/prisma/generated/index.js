@@ -226,7 +226,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/dell/Documents/projects/insignia-next/prisma/generated/client",
+      "value": "/home/dell/Documents/projects/insignia-next/prisma/prisma/generated",
       "fromEnvVar": null
     },
     "config": {
@@ -244,7 +244,8 @@ const config = {
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null
+    "rootEnvPath": "../../../.env",
+    "schemaEnvPath": "../../../.env"
   },
   "relativePath": "../..",
   "clientVersion": "6.6.0",
@@ -253,7 +254,7 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": true,
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -262,8 +263,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../prisma/generated/client\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Account {\n  id                String  @id @default(cuid())\n  userId            String\n  type              String\n  provider          String\n  providerAccountId String\n  refresh_token     String? @db.Text\n  access_token      String? @db.Text\n  expires_at        Int?\n  token_type        String?\n  scope             String?\n  id_token          String? @db.Text\n  session_state     String?\n\n  user User @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@unique([provider, providerAccountId])\n}\n\nmodel Session {\n  id           String   @id @default(cuid())\n  sessionToken String   @unique\n  userId       String\n  expires      DateTime\n  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n}\n\nmodel User {\n  id               String         @id @default(cuid())\n  name             String?\n  email            String?        @unique\n  emailVerified    DateTime?\n  image            String?\n  accounts         Account[]\n  sessions         Session[]\n  role             Role           @default(USER)\n  phone            String?\n  address          String?\n  department       String?\n  semester         Int?\n  college          String?\n  usn              String?        @unique\n  profileCompleted Boolean        @default(false)\n  registrations    Registration[]\n  createdEvents    Event[]        @relation(\"CreatedBy\")\n}\n\nmodel VerificationToken {\n  identifier String\n  token      String   @unique\n  expires    DateTime\n\n  @@unique([identifier, token])\n}\n\nmodel Event {\n  id            String         @id @default(cuid())\n  title         String\n  description   String\n  category      Category\n  date          DateTime\n  time          String\n  location      String\n  capacity      Int\n  image         String?\n  fee           Float\n  createdAt     DateTime       @default(now())\n  updatedAt     DateTime       @updatedAt\n  createdById   String\n  createdBy     User           @relation(\"CreatedBy\", fields: [createdById], references: [id])\n  registrations Registration[]\n}\n\nmodel Registration {\n  id        String             @id @default(cuid())\n  userId    String\n  eventId   String\n  status    RegistrationStatus @default(PENDING)\n  createdAt DateTime           @default(now())\n  updatedAt DateTime           @updatedAt\n  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)\n  event     Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)\n  payment   Payment?\n\n  @@unique([userId, eventId])\n}\n\nmodel Payment {\n  id             String        @id @default(cuid())\n  registrationId String        @unique\n  status         PaymentStatus @default(UNPAID)\n  amount         Float\n  createdAt      DateTime      @default(now())\n  updatedAt      DateTime      @updatedAt\n  registration   Registration  @relation(fields: [registrationId], references: [id], onDelete: Cascade)\n}\n\nenum Role {\n  USER\n  COORDINATOR\n  ADMIN\n}\n\nenum Category {\n  CENTRALIZED\n  DEPARTMENT\n  CULTURAL\n}\n\nenum RegistrationStatus {\n  PENDING\n  CONFIRMED\n  REJECTED\n}\n\nenum PaymentStatus {\n  UNPAID\n  PAID\n  REFUNDED\n}\n",
-  "inlineSchemaHash": "f702aac150eb79f276d04858d006397076287bb585e2190e49eae23be8e5d390",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"./prisma/generated\"\n}\n\ndatasource db {\n  provider  = \"postgresql\"\n  url       = env(\"DATABASE_URL\")\n  directUrl = env(\"DIRECT_URL\")\n}\n\nmodel Account {\n  id                String  @id @default(cuid())\n  userId            String\n  type              String\n  provider          String\n  providerAccountId String\n  refresh_token     String? @db.Text\n  access_token      String? @db.Text\n  expires_at        Int?\n  token_type        String?\n  scope             String?\n  id_token          String? @db.Text\n  session_state     String?\n\n  user User @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@unique([provider, providerAccountId])\n}\n\nmodel Session {\n  id           String   @id @default(cuid())\n  sessionToken String   @unique\n  userId       String\n  expires      DateTime\n  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n}\n\nmodel User {\n  id               String         @id @default(cuid())\n  name             String?\n  email            String?        @unique\n  emailVerified    DateTime?\n  image            String?\n  accounts         Account[]\n  sessions         Session[]\n  role             Role           @default(USER)\n  phone            String?\n  address          String?\n  department       String?\n  semester         Int?\n  college          String?\n  usn              String?        @unique\n  profileCompleted Boolean        @default(false)\n  registrations    Registration[]\n  createdEvents    Event[]        @relation(\"CreatedBy\")\n}\n\nmodel VerificationToken {\n  identifier String\n  token      String   @unique\n  expires    DateTime\n\n  @@unique([identifier, token])\n}\n\nmodel Event {\n  id            String         @id @default(cuid())\n  title         String\n  description   String\n  category      Category\n  date          DateTime\n  time          String\n  location      String\n  capacity      Int\n  image         String?\n  fee           Float\n  createdAt     DateTime       @default(now())\n  updatedAt     DateTime       @updatedAt\n  createdById   String\n  createdBy     User           @relation(\"CreatedBy\", fields: [createdById], references: [id])\n  registrations Registration[]\n}\n\nmodel Registration {\n  id        String             @id @default(cuid())\n  userId    String\n  eventId   String\n  status    RegistrationStatus @default(PENDING)\n  createdAt DateTime           @default(now())\n  updatedAt DateTime           @updatedAt\n  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)\n  event     Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)\n  payment   Payment?\n\n  @@unique([userId, eventId])\n}\n\nmodel Payment {\n  id             String        @id @default(cuid())\n  registrationId String        @unique\n  status         PaymentStatus @default(UNPAID)\n  amount         Float\n  createdAt      DateTime      @default(now())\n  updatedAt      DateTime      @updatedAt\n  registration   Registration  @relation(fields: [registrationId], references: [id], onDelete: Cascade)\n}\n\nenum Role {\n  USER\n  COORDINATOR\n  ADMIN\n}\n\nenum Category {\n  CENTRALIZED\n  DEPARTMENT\n  CULTURAL\n}\n\nenum RegistrationStatus {\n  PENDING\n  CONFIRMED\n  REJECTED\n}\n\nenum PaymentStatus {\n  UNPAID\n  PAID\n  REFUNDED\n}\n",
+  "inlineSchemaHash": "216722e54cd629315f338161f579d24742ae817918920d8810e5c6284a842b7c",
   "copyEngine": true
 }
 
@@ -272,8 +273,8 @@ const fs = require('fs')
 config.dirname = __dirname
 if (!fs.existsSync(path.join(__dirname, 'schema.prisma'))) {
   const alternativePaths = [
-    "prisma/generated/client",
-    "generated/client",
+    "prisma/prisma/generated",
+    "prisma/generated",
   ]
   
   const alternativePath = alternativePaths.find((altPath) => {
@@ -303,7 +304,7 @@ Object.assign(exports, Prisma)
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-debian-openssl-3.0.x.so.node");
-path.join(process.cwd(), "prisma/generated/client/libquery_engine-debian-openssl-3.0.x.so.node")
+path.join(process.cwd(), "prisma/prisma/generated/libquery_engine-debian-openssl-3.0.x.so.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
-path.join(process.cwd(), "prisma/generated/client/schema.prisma")
+path.join(process.cwd(), "prisma/prisma/generated/schema.prisma")

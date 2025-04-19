@@ -1,17 +1,56 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { FcGoogle } from "react-icons/fc"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useSearchParams } from "next/navigation"
+
+// Define error messages for known error types
+const ERROR_MESSAGES: Record<string, string> = {
+  OAuthSignin: "Could not start the sign in process.",
+  OAuthCallback: "Error receiving data from the authentication provider.",
+  OAuthCreateAccount: "Could not create user account in the database.",
+  EmailCreateAccount: "Could not create user account.",
+  Callback: "Error during callback processing.",
+  OAuthAccountNotLinked: "This email is already associated with another provider.",
+  EmailSignin: "Check your email for a sign in link.",
+  CredentialsSignin: "Invalid credentials.",
+  SessionRequired: "Please sign in to access this page.",
+  Default: "Unable to sign in at this time. Please try again later."
+};
 
 export default function SignIn() {
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+  
+  // Extract and process error from URL on page load
+  useEffect(() => {
+    const errorParam = searchParams?.get("error")
+    if (errorParam) {
+      // Handle the undefined error specifically
+      if (errorParam === "undefined") {
+        setError("Connection to authentication service failed. Please try again.")
+      } else {
+        setError(ERROR_MESSAGES[errorParam] || ERROR_MESSAGES.Default)
+      }
+    }
+  }, [searchParams])
 
   const handleSignIn = async () => {
-    setIsLoading(true)
-    await signIn("google", { callbackUrl: "/" })
+    try {
+      setIsLoading(true)
+      setError(null)
+      await signIn("google", { callbackUrl: "/" })
+    } catch (err) {
+      setError("Failed to initiate sign in. Please try again.")
+      console.error("Sign in error:", err)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -31,6 +70,11 @@ export default function SignIn() {
             <CardDescription>Choose your preferred sign in method</CardDescription>
           </CardHeader>
           <CardContent>
+            {error && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
             <Button variant="outline" className="w-full" onClick={handleSignIn} disabled={isLoading}>
               {isLoading ? (
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />

@@ -10,19 +10,47 @@ import { getServerSession } from "next-auth"
 type Category = EventCategory
 
 const eventSchema = z.object({
-  title: z.string().min(3).max(100),
-  description: z.string().min(10),
-  category: z.nativeEnum(EventCategory),
-  date: z.string().datetime(),
-  time: z.string(),
-  location: z.string().min(3),
-  capacity: z.number().int().positive(),
-  fee: z.number().min(0),
-  details: z.string(),
-  image: z.string().optional(),
+  title: z.string()
+    .min(3, "Title must be at least 3 characters")
+    .max(100, "Title must be 100 characters or less"),
+  description: z.string()
+    .min(10, "Description must be at least 10 characters")
+    .max(1000, "Description must be 1000 characters or less"),
+  category: z.nativeEnum(EventCategory, {
+    errorMap: () => ({ message: "Please select a valid event category" })
+  }),
+  date: z.string()
+    .datetime({ message: "Please provide a valid date in ISO format" }),
+  time: z.string()
+    .min(1, "Event time is required")
+    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](\s*(AM|PM|am|pm))?$/, "Please provide a valid time format (e.g. 14:30 or 2:30 PM)"),
+  location: z.string()
+    .min(3, "Location must be at least 3 characters")
+    .max(200, "Location must be 200 characters or less"),
+  capacity: z.number()
+    .int("Capacity must be a whole number")
+    .positive("Capacity must be a positive number")
+    .max(10000, "Capacity must be 10,000 or less"),
+  fee: z.number()
+    .min(0, "Fee cannot be negative")
+    .max(100000, "Fee must be 100,000 or less"),
+  details: z.string()
+    .min(10, "Details must be at least 10 characters")
+    .max(5000, "Details must be 5000 characters or less"),
+  image: z.string()
+    .url("Please provide a valid image URL")
+    .optional(),
 })
 
 export type EventFormData = z.infer<typeof eventSchema>
+
+// Registration schema for validating event registration
+const registrationSchema = z.object({
+  eventId: z.string().uuid("Invalid event ID format"),
+  notes: z.string().max(500, "Notes must be 500 characters or less").optional(),
+})
+
+export type RegistrationInput = z.infer<typeof registrationSchema>
 
 export async function createEvent(data: EventFormData, userId: string) {
   try {
@@ -202,29 +230,99 @@ export async function getEventById(id: string) {
   }
 }
 
-export async function registerForEvent(eventId: string) {
+export async function registerForEvent(eventId: string, notes?: string) {
   try {
+    // Validate input
+    const validatedData = registrationSchema.parse({ eventId, notes });
+    
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       throw new ApiError(401, "Not authenticated")
     }
+    
     const userId = session.user.id
+    
+    // Check if user profile is complete
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { profileCompleted: true, id: true }
+    });
+    
+    if (!user) {
+      throw new ApiError(404, "User not found")
+    }
+    
+    if (!user.profileCompleted) {
+      throw new ApiError(400, "Please complete your profile before registering for events", "INCOMPLETE_PROFILE")
+    }
+    
+    // Check if already registered
     const existingRegistration = await prisma.registration.findUnique({
       where: {
         userId_eventId: {
           userId,
-          eventId,
+          eventId: validatedData.eventId,
         },
       },
     })
+    
     if (existingRegistration) {
-      throw new ApiError(400, "Already registered for this event")
+      throw new ApiError(400, "Already registered for this event", "ALREADY_REGISTERED")
     }
+    
+    // Check if event exists and has capacity
     const event = await prisma.event.findUnique({
-      where: { id: eventId },
-      select: { capacity: true },
+      where: { id: validatedData.eventId },
+      select: { 
+        capacity: true,
+        fee: true,
+        title: true,
+        date: true,
+        _count: {
+          select: { registrations: true }
+        }
+      },
     })
+    
+    if (!event) {
+      throw new ApiError(404, "Event not found")
+    }
+    
+    // Check if event is at capacity
+    if (event._count.registrations >= event.capacity) {
+      throw new ApiError(400, "This event has reached maximum capacity", "EVENT_FULL")
+    }
+    
+    // Create registration
+    const registration = await prisma.registration.create({
+      data: {
+        userId: user.id,
+        eventId: validatedData.eventId,
+        notes: validatedData.notes,
+        status: "PENDING" // Default status
+      },
+    })
+    
+    // If event has a fee, create a payment record
+    if (event.fee > 0) {
+      await prisma.payment.create({
+        data: {
+          registrationId: registration.id,
+          amount: event.fee,
+          status: "UNPAID", // Default status
+        }
+      })
+    }
+    
+    return { 
+      success: true, 
+      data: registration,
+      message: "Successfully registered for the event" 
+    }
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new ApiError(400, "Invalid registration data", "VALIDATION_ERROR")
+    }
     if (error instanceof ApiError) {
       throw error
     }

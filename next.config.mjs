@@ -7,7 +7,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    unoptimized: true,
+    unoptimized: false,
     domains: [
       "lh3.googleusercontent.com", // Google OAuth images
       "res.cloudinary.com", // If using Cloudinary for image hosting
@@ -19,6 +19,8 @@ const nextConfig = {
         process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
       ],
     },
+    // This can help prevent certain hydration errors
+    largePageDataBytes: 128 * 1000, // 128KB 
   },
   poweredByHeader: false,
   compress: true,
@@ -63,6 +65,12 @@ const nextConfig = {
       ],
     },
   ],
+  onDemandEntries: {
+    // Maximum period to keep a page in memory
+    maxInactiveAge: 25 * 1000,
+    // Number of pages to keep in memory
+    pagesBufferLength: 5,
+  },
 }
 
 export default nextConfig
