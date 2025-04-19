@@ -39,22 +39,13 @@ export interface UserProfileData {
 }
 
 const updateProfileSchema = z.object({
-  name: z.string().min(1, "Name is required").max(100, "Name must be 100 characters or less"),
-  phone: z.string()
-    .min(10, "Phone number must be at least 10 characters")
-    .max(15, "Phone number must be 15 characters or less")
-    .regex(/^[+\d\s()-]+$/, "Phone number contains invalid characters"),
-  address: z.string().max(500, "Address must be 500 characters or less").optional().nullable(),
-  department: z.string().min(1, "Department is required").max(100, "Department must be 100 characters or less"),
-  semester: z.preprocess(
-    (v) => v === "" || v === "none" ? null : Number(v), 
-    z.number().int().min(1, "Semester must be at least 1").max(8, "Semester must be at most 8").nullable().optional()
-  ),
-  college: z.string().min(1, "College name is required").max(150, "College name must be 150 characters or less"),
-  usn: z.string()
-    .min(1, "USN is required")
-    .max(15, "USN must be 15 characters or less")
-    .regex(/^[a-zA-Z0-9]+$/, "USN can only contain letters and numbers")
+  name: z.string().min(1, "Name is required"),
+  phone: z.string().min(10, "Phone number must be at least 10 characters"),
+  address: z.string().optional().nullable(),
+  department: z.string().min(1, "Department is required"),
+  semester: z.preprocess((v) => v === "" ? null : Number(v), z.number().int().min(1).max(8).nullable().optional()),
+  college: z.string().min(1, "College name is required"),
+  usn: z.string().min(1, "USN is required")
 })
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>
