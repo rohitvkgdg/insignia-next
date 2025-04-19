@@ -226,7 +226,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/dell/Documents/projects/insignia/prisma/generated/client",
+      "value": "/home/dell/Documents/projects/insignia-next/prisma/generated/client",
       "fromEnvVar": null
     },
     "config": {
@@ -240,12 +240,11 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/dell/Documents/projects/insignia/prisma/schema.prisma",
+    "sourceFilePath": "/home/dell/Documents/projects/insignia-next/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null,
-    "schemaEnvPath": "../../../.env"
+    "rootEnvPath": null
   },
   "relativePath": "../..",
   "clientVersion": "6.6.0",
@@ -254,7 +253,7 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
+  "postinstall": true,
   "inlineDatasources": {
     "db": {
       "url": {

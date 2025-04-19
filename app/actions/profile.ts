@@ -2,9 +2,10 @@
 
 import { getServerSession } from "next-auth"
 import { prisma } from "@/lib/prisma"
-import { Role, PaymentStatus, RegistrationStatus, Prisma } from "@prisma/client"
+import { Role, PaymentStatus, RegistrationStatus } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
+import { NextResponse } from "next/server"
 
 export interface RegistrationSummary {
   id: string
@@ -61,80 +62,96 @@ function isProfileComplete(profile: {
   )
 }
 
-export async function getUserProfile(): Promise<UserProfileData> {
-  const session = await getServerSession()
-  if (!session?.user?.email) throw new Error("Not authenticated")
-
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
-    include: {
-      registrations: {
-        include: {
-          event: true,
-          payment: true
-        },
-        orderBy: { createdAt: "desc" }
-      }
+export async function getUserProfile() {
+  try {
+    const session = await getServerSession()
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
     }
-  })
-  if (!user) throw new Error("User not found")
 
-  const registrationsWithPayments: RegistrationSummary[] = user.registrations.map((reg) => ({
-    id: reg.id,
-    eventId: reg.eventId,
-    eventName: reg.event.title,
-    date: reg.event.date,
-    time: reg.event.time,
-    location: reg.event.location,
-    fee: reg.event.fee,
-    status: reg.status,
-    paymentStatus: reg.payment?.status ?? PaymentStatus.UNPAID,
-    createdAt: reg.createdAt
-  }))
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: {
+        registrations: { include: { event: true, payment: true }, orderBy: { createdAt: "desc" } }
+      }
+    })
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 })
+    }
 
-  return {
-    id: user.id,
-    name: user.name ?? null,
-    email: user.email ?? null,
-    image: user.image ?? null,
-    role: user.role,
-    phone: user.phone ?? null,
-    address: user.address ?? null,
-    department: user.department ?? null,
-    semester: user.semester ?? null,
-    college: user.college ?? null,
-    usn: user.usn ?? null,
-    profileCompleted: user.profileCompleted,
-    registrations: registrationsWithPayments
+    const registrations: RegistrationSummary[] = user.registrations.map(reg => ({
+      id: reg.id,
+      eventId: reg.eventId,
+      eventName: reg.event.title,
+      date: reg.event.date.toISOString(),
+      time: reg.event.time,
+      location: reg.event.location,
+      fee: reg.event.fee,
+      status: reg.status,
+      paymentStatus: reg.payment?.status ?? PaymentStatus.UNPAID,
+      createdAt: reg.createdAt.toISOString()
+    }))
+
+    const payload: UserProfileData = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      image: user.image,
+      role: user.role,
+      phone: user.phone,
+      address: user.address,
+      department: user.department,
+      semester: user.semester,
+      college: user.college,
+      usn: user.usn,
+      profileCompleted: user.profileCompleted,
+      registrations
+    }
+    return NextResponse.json(payload, { status: 200 })
+  } catch (err) {
+    console.error("[getUserProfile] ", err)
+    return NextResponse.json(
+      { error: "Failed to fetch profile" },
+      { status: 500 }
+    )
   }
 }
 
-export async function updateProfile(data: UpdateProfileInput): Promise<void> {
-  const validatedData = updateProfileSchema.parse(data)
-  const session = await getServerSession()
-  if (!session?.user?.email) throw new Error("Not authenticated")
-
-  const profileCompleted = isProfileComplete({
-    department: validatedData.department,
-    college: validatedData.college,
-    phone: validatedData.phone,
-    usn: validatedData.usn
-  })
-
-  const updateData = {
-    name: validatedData.name,
-    phone: validatedData.phone,
-    address: validatedData.address,
-    department: validatedData.department,
-    semester: validatedData.semester ?? null,
-    college: validatedData.college,
-    usn: validatedData.usn,
-    profileCompleted
+export async function updateProfile(data: UpdateProfileInput): Promise<void | NextResponse> {
+  const parsed = updateProfileSchema.safeParse(data)
+  if (!parsed.success) {
+    return NextResponse.json(
+      { errors: parsed.error.flatten().fieldErrors },
+      { status: 422 }
+    )
   }
 
-  await prisma.user.update({
-    where: { email: session.user.email },
-    data: updateData
-  })
+  try {
+    const session = await getServerSession()
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
+    }
+
+    const { department, college, phone, usn } = parsed.data
+    const profileCompleted = Boolean(
+      department.trim() && college.trim() && phone.trim() && usn.trim()
+    )
+
+    await prisma.user.update({
+      where: { email: session.user.email },
+      data: {
+        ...parsed.data,
+        semester: parsed.data.semester ?? null,
+        profileCompleted
+      }
+    })
   revalidatePath('/profile')
+  return NextResponse.json({ status: "ok" }, { status: 200 })
+  } catch (err) {
+    console.error("[updateProfile] ", err)
+    return NextResponse.json(
+      { error: "Failed to update profile" },
+      { status: 500 }
+    )
+  }
 }
