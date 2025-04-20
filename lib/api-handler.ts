@@ -2,7 +2,6 @@ import { NextResponse } from "next/server"
 import * as z from "zod"
 import { applyRateLimit, getIpAddress } from "./rate-limit"
 import { logger } from "./logger"
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
 
 export type ApiResponse<T> = {
   data?: T
@@ -203,65 +202,18 @@ export function withApiHandler(handler: ApiHandler, options: ApiOptions = {}): A
         )
       }
 
-      if (error instanceof PrismaClientKnownRequestError) {
-        // Handle unique constraint violations
-        if (error.code === 'P2002') {
-          const target = (error.meta?.target as string[]) || []
-          return NextResponse.json(
-            {
-              error: `A record with this ${target.join(', ')} already exists`,
-              code: "CONFLICT",
-            },
-            { status: 409, headers }
-          )
-        }
-        
-        // Handle record not found
-        if (error.code === 'P2025') {
-          return NextResponse.json(
-            {
-              error: "Resource not found",
-              code: "NOT_FOUND",
-            },
-            { status: 404, headers }
-          )
-        }
-
-        // Other database errors - don't expose details in production
+        // Default error response for unhandled errors
         return NextResponse.json(
           {
-            error: "Database operation failed",
-            code: "DATABASE_ERROR",
-            // Only include details in development
-            ...(process.env.NODE_ENV !== 'production' && { details: error.message }),
+            error: "Internal server error",
+            code: "INTERNAL_ERROR",
           },
           { status: 500, headers }
         )
-      }
-
-      if (error instanceof Error && error.message.includes('timeout')) {
-        return NextResponse.json(
-          {
-            error: "Request timed out",
-            code: "TIMEOUT",
-          },
-          { status: 408, headers }
-        )
-      }
-
-      // Generic error handler
-      return NextResponse.json(
-        {
-          error: process.env.NODE_ENV === 'production' 
-            ? "Internal server error" 
-            : error instanceof Error ? error.message : "Unknown error",
-          code: "INTERNAL_SERVER_ERROR",
-        },
-        { status: 500, headers }
-      )
     }
   }
 }
+
 
 // For backward compatibility
 export const withErrorHandler = withApiHandler;
