@@ -1,13 +1,14 @@
 "use server"
 
 import { getServerSession } from "next-auth"
-import { prisma } from "@/lib/prisma"
-import { Event, Payment } from "@prisma/client"
+import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { NextResponse } from "next/server"
 import { logger } from "@/lib/logger"
 import { authOptions } from "../api/auth/[...nextauth]/route"
+import { eq, and, not } from 'drizzle-orm'
+import { user, registration, event } from '@/schema'
 
 export interface RegistrationSummary {
   id: string
@@ -17,7 +18,6 @@ export interface RegistrationSummary {
   time: string
   location: string
   fee: number
-  status: string
   paymentStatus: string
   createdAt: string
 }
@@ -58,47 +58,48 @@ export async function getUserProfile() {
       throw new Error("Not authenticated")
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      include: {
-        registrations: { include: { event: true, payment: true }, orderBy: { createdAt: "desc" } }
+    const userData = await db.query.user.findFirst({
+      where: eq(user.email, session.user.email),
+      with: {
+        registrations: {
+          with: {
+            event: true,
+          },
+          orderBy: (registration, { desc }) => [desc(registration.createdAt)]
+        }
       }
-    })
-    if (!user) {
+    });
+
+    if (!userData) {
       logger.error("User not found in database despite valid session", { email: session.user.email })
       throw new Error("User not found")
     }
 
-    const registrations: RegistrationSummary[] = user.registrations.map((reg: any & {
-      event: Event;
-      payment: Payment | null;
-    }) => ({
-      id: reg.id,
+    const registrations: RegistrationSummary[] = userData.registrations.map((reg) => ({
+      id: String(reg.id),
       eventId: reg.eventId,
       eventName: reg.event.title,
-      date: reg.event.date.toISOString(),
+      date: new Date(reg.event.date).toISOString(),
       time: reg.event.time,
       location: reg.event.location,
-      fee: reg.event.fee,
-      status: reg.status,
-      paymentStatus: reg.payment?.status ?? "UNPAID",
-      createdAt: reg.createdAt.toISOString(),
+      fee: Number(reg.event.fee),
+      paymentStatus: reg.paymentStatus,
+      createdAt: new Date(reg.createdAt).toISOString(),
     }))
 
-    // Return a plain JavaScript object instead of a NextResponse
     return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      image: user.image,
-      role: user.role,
-      phone: user.phone,
-      address: user.address,
-      department: user.department,
-      semester: user.semester,
-      college: user.college,
-      usn: user.usn,
-      profileCompleted: user.profileCompleted,
+      id: userData.id,
+      name: userData.name,
+      email: userData.email,
+      image: userData.image,
+      role: userData.role,
+      phone: userData.phone,
+      address: userData.address,
+      department: userData.department,
+      semester: userData.semester,
+      college: userData.college,
+      usn: userData.usn,
+      profileCompleted: userData.profileCompleted,
       registrations
     } as UserProfileData
   } catch (err) {
@@ -124,14 +125,13 @@ export async function updateProfile(data: UpdateProfileInput): Promise<void | Ne
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
     }
 
-    // Validate if user already exists with the same USN but different email
     if (parsed.data.usn) {
-      const existingUser = await prisma.user.findFirst({
-        where: { 
-          usn: parsed.data.usn,
-          email: { not: session.user.email }
-        }
-      })
+      const existingUser = await db.query.user.findFirst({
+        where: and(
+          eq(user.usn, parsed.data.usn),
+          not(eq(user.email, session.user.email))
+        )
+      });
       
       if (existingUser) {
         logger.warn("USN conflict during profile update", { 
@@ -149,14 +149,14 @@ export async function updateProfile(data: UpdateProfileInput): Promise<void | Ne
       department?.trim() && college?.trim() && phone?.trim() && usn?.trim()
     )
 
-    await prisma.user.update({
-      where: { email: session.user.email },
-      data: {
+    await db.update(user)
+      .set({
         ...parsed.data,
         semester: parsed.data.semester ?? null,
         profileCompleted
-      }
-    })
+      })
+      .where(eq(user.email, session.user.email))
+      .execute();
 
     logger.info("Profile updated successfully", { email: session.user.email })
     revalidatePath('/profile')

@@ -1,13 +1,16 @@
 "use server"
 
 import { z } from "zod"
-import { prisma } from "@/lib/prisma"
-import { Prisma, EventCategory } from "@prisma/client"
-import { ApiError } from "@/lib/utils"
+import { db } from "@/lib/db"
+import { ApiError, generateRegistrationId } from "@/lib/server-utils"
 import { authOptions } from "../api/auth/[...nextauth]/route"
 import { getServerSession } from "next-auth"
+import { eventCategoryEnum } from '@/schema'
+import { eq, desc, and, ilike, or, sql, count } from 'drizzle-orm'
+import { event, registration, user } from '@/schema'
+import { randomUUID } from "crypto"
 
-type Category = EventCategory
+type Category = typeof eventCategoryEnum.enumValues[number]
 
 const eventSchema = z.object({
   title: z.string()
@@ -16,7 +19,7 @@ const eventSchema = z.object({
   description: z.string()
     .min(10, "Description must be at least 10 characters")
     .max(1000, "Description must be 1000 characters or less"),
-  category: z.nativeEnum(EventCategory, {
+  category: z.enum(eventCategoryEnum.enumValues, {
     errorMap: () => ({ message: "Please select a valid event category" })
   }),
   date: z.string()
@@ -55,15 +58,19 @@ export type RegistrationInput = z.infer<typeof registrationSchema>
 export async function createEvent(data: EventFormData, userId: string) {
   try {
     const validatedData = eventSchema.parse(data)
+    const id = randomUUID()
 
-    const event = await prisma.event.create({
-      data: {
+    const [createdEvent] = await db.insert(event)
+      .values({
+        id,
         ...validatedData,
-        createdById: userId,
-      },
-    })
+        date: new Date(validatedData.date),
+        fee: validatedData.fee,
+        registrationOpen: true,
+      })
+      .returning();
 
-    return { success: true, data: event }
+    return { success: true, data: createdEvent }
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new ApiError(400, "Invalid event data", "VALIDATION_ERROR")
@@ -75,25 +82,23 @@ export async function createEvent(data: EventFormData, userId: string) {
 
 export async function updateEvent(id: string, data: Partial<EventFormData>, userId: string) {
   try {
-    const event = await prisma.event.findUnique({
-      where: { id },
-      select: { createdById: true },
-    })
+    const existingEvent = await db.query.event.findFirst({
+      where: eq(event.id, id)
+    });
 
-    if (!event) {
+    if (!existingEvent) {
       throw new ApiError(404, "Event not found")
-    }
-
-    if (event.createdById !== userId) {
-      throw new ApiError(403, "Not authorized to update this event")
     }
 
     const validatedData = eventSchema.partial().parse(data)
 
-    const updatedEvent = await prisma.event.update({
-      where: { id },
-      data: validatedData,
-    })
+    const [updatedEvent] = await db.update(event)
+      .set({
+        ...validatedData,
+        date: validatedData.date ? new Date(validatedData.date) : undefined,
+      })
+      .where(eq(event.id, id))
+      .returning();
 
     return { success: true, data: updatedEvent }
   } catch (error) {
@@ -110,22 +115,16 @@ export async function updateEvent(id: string, data: Partial<EventFormData>, user
 
 export async function deleteEvent(id: string, userId: string) {
   try {
-    const event = await prisma.event.findUnique({
-      where: { id },
-      select: { createdById: true },
-    })
+    const existingEvent = await db.query.event.findFirst({
+      where: eq(event.id, id)
+    });
 
-    if (!event) {
+    if (!existingEvent) {
       throw new ApiError(404, "Event not found")
     }
 
-    if (event.createdById !== userId) {
-      throw new ApiError(403, "Not authorized to delete this event")
-    }
-
-    await prisma.event.delete({
-      where: { id },
-    })
+    await db.delete(event)
+      .where(eq(event.id, id));
 
     return { success: true }
   } catch (error) {
@@ -144,38 +143,42 @@ export async function getEvents(
   searchQuery?: string
 ) {
   try {
-    const where = {
-      ...(category && { category }),
-      ...(searchQuery && {
-        OR: [
-          { title: { contains: searchQuery, mode: Prisma.QueryMode.insensitive } },
-          { description: { contains: searchQuery, mode: Prisma.QueryMode.insensitive } },
-        ],
-      }),
+    let whereConditions = [];
+    
+    if (category) {
+      whereConditions.push(eq(event.category, category));
     }
+    
+    if (searchQuery) {
+      whereConditions.push(
+        or(
+          ilike(event.title, `%${searchQuery}%`),
+          ilike(event.description, `%${searchQuery}%`)
+        )
+      );
+    }
+    
+    const whereClause = whereConditions.length > 0 
+      ? and(...whereConditions) 
+      : undefined;
 
-    const [events, total] = await Promise.all([
-      prisma.event.findMany({
-        where,
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy: { date: "asc" },
-        include: {
-          createdBy: {
-            select: {
-              name: true,
-              image: true,
-            },
-          },
-          registrations: {
-            select: {
-              id: true,
-            },
-          },
-        },
-      }),
-      prisma.event.count({ where }),
-    ])
+    // Get events with pagination
+    const events = await db.query.event.findMany({
+      where: whereClause,
+      limit: limit,
+      offset: (page - 1) * limit,
+      orderBy: [desc(event.date)],
+      with: {
+        registrations: true,
+      },
+    });
+
+    // Count total events matching criteria
+    const totalResult = await db.select({ count: count() })
+      .from(event)
+      .where(whereClause || sql`TRUE`);
+    
+    const total = totalResult[0].count;
 
     return {
       data: events,
@@ -194,33 +197,27 @@ export async function getEvents(
 
 export async function getEventById(id: string) {
   try {
-    const event = await prisma.event.findUnique({
-      where: { id },
-      include: {
-        createdBy: {
-          select: {
-            name: true,
-            image: true,
-          },
-        },
+    const eventData = await db.query.event.findFirst({
+      where: eq(event.id, id),
+      with: {
         registrations: {
-          include: {
+          with: {
             user: {
-              select: {
+              columns: {
                 name: true,
                 image: true,
-              },
-            },
-          },
-        },
-      },
-    })
+              }
+            }
+          }
+        }
+      }
+    });
 
-    if (!event) {
+    if (!eventData) {
       throw new ApiError(404, "Event not found")
     }
 
-    return { data: event }
+    return { data: eventData }
   } catch (error) {
     if (error instanceof ApiError) {
       throw error
@@ -232,7 +229,6 @@ export async function getEventById(id: string) {
 
 export async function registerForEvent(eventId: string, notes?: string) {
   try {
-    // Validate input
     const validatedData = registrationSchema.parse({ eventId, notes });
     
     const session = await getServerSession(authOptions)
@@ -243,80 +239,82 @@ export async function registerForEvent(eventId: string, notes?: string) {
     const userId = session.user.id
     
     // Check if user profile is complete
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { profileCompleted: true, id: true }
+    const userData = await db.query.user.findFirst({
+      where: eq(user.id, userId),
+      columns: {
+        profileCompleted: true,
+        id: true
+      }
     });
     
-    if (!user) {
+    if (!userData) {
       throw new ApiError(404, "User not found")
     }
     
-    if (!user.profileCompleted) {
+    if (!userData.profileCompleted) {
       throw new ApiError(400, "Please complete your profile before registering for events", "INCOMPLETE_PROFILE")
     }
     
     // Check if already registered
-    const existingRegistration = await prisma.registration.findUnique({
-      where: {
-        userId_eventId: {
-          userId,
-          eventId: validatedData.eventId,
-        },
-      },
-    })
+    const existingRegistration = await db.query.registration.findFirst({
+      where: and(
+        eq(registration.userId, userId),
+        eq(registration.eventId, validatedData.eventId)
+      )
+    });
     
     if (existingRegistration) {
       throw new ApiError(400, "Already registered for this event", "ALREADY_REGISTERED")
     }
     
     // Check if event exists and has capacity
-    const event = await prisma.event.findUnique({
-      where: { id: validatedData.eventId },
-      select: { 
+    const eventData = await db.query.event.findFirst({
+      where: eq(event.id, validatedData.eventId),
+      columns: {
         capacity: true,
         fee: true,
         title: true,
         date: true,
-        _count: {
-          select: { registrations: true }
-        }
       },
-    })
+      with: {
+        registrations: {
+          columns: {
+            id: true,
+          }
+        }
+      }
+    });
     
-    if (!event) {
+    if (!eventData) {
       throw new ApiError(404, "Event not found")
     }
     
     // Check if event is at capacity
-    if (event._count.registrations >= event.capacity) {
+    if (eventData.registrations.length >= eventData.capacity) {
       throw new ApiError(400, "This event has reached maximum capacity", "EVENT_FULL")
     }
     
-    // Create registration
-    const registration = await prisma.registration.create({
-      data: {
-        userId: user.id,
-        eventId: validatedData.eventId,
-        notes: validatedData.notes,
-        status: "PENDING" // Default status
-      },
-    })
+    // Generate registration ID
+    const registrationId = await generateRegistrationId(eventId)
     
-    // If event has a fee, create a payment record
-    if (event.fee > 0) {
-      await prisma.payment.create({
-        data: {
-          registrationId: registration.id,
-          amount: event.fee,
-          status: "UNPAID", // Default status
-        }
+    // Create registration
+    const id = randomUUID()
+    const [newRegistration] = await db.insert(registration)
+      .values({
+        id,
+        registrationId,
+        userId: userData.id,
+        eventId: validatedData.eventId,
+        paymentStatus: "UNPAID",
+        notes: validatedData.notes,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       })
-    }
+      .returning();
     
     return { 
       success: true, 
-      data: registration,
+      data: newRegistration,
       message: "Successfully registered for the event" 
     }
   } catch (error) {

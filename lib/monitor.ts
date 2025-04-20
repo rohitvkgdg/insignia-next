@@ -1,4 +1,3 @@
-import { env } from "@/env.mjs"
 import { logger } from "./logger"
 
 interface PerformanceMetrics {
@@ -27,7 +26,7 @@ const PERFORMANCE_THRESHOLDS = {
 }
 
 class Monitor {
-  private isDevelopment = env.NODE_ENV === "development"
+  private isDevelopment = process.env.NODE_ENV === "development"
   private metricsCollected = false
   private cumulativeLayoutShift = 0
   private lastLCP = 0
@@ -248,7 +247,7 @@ class Monitor {
     logger.info("Page Performance Metrics", metrics)
     
     // Send metrics to analytics or monitoring service in production
-    if (env.NODE_ENV === "production") {
+    if (process.env.NODE_ENV === "production") {
       // Example implementation:
       // fetch('/api/metrics', {
       //   method: 'POST',

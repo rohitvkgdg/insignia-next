@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import * as z from "zod"
-import { rateLimit, applyRateLimit, getIpAddress } from "./rate-limit"
+import { applyRateLimit, getIpAddress } from "./rate-limit"
 import { logger } from "./logger"
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
 
@@ -203,7 +203,6 @@ export function withApiHandler(handler: ApiHandler, options: ApiOptions = {}): A
         )
       }
 
-      // Handle Prisma-specific errors
       if (error instanceof PrismaClientKnownRequestError) {
         // Handle unique constraint violations
         if (error.code === 'P2002') {

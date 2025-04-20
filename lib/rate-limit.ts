@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import { logger } from "./logger"
-import { env } from "@/env.mjs"
 
 // Rate limiter interface
 interface RateLimiter {
@@ -104,7 +103,7 @@ export async function applyRateLimit(
   type: 'default' | 'auth' = 'default'
 ): Promise<NextResponse | undefined> {
   // Skip rate limiting in development unless explicitly enabled
-  if (env.NODE_ENV === 'development' && !process.env.ENABLE_DEV_RATE_LIMIT) {
+  if (process.env.NODE_ENV === 'development' && !process.env.ENABLE_DEV_RATE_LIMIT) {
     return undefined
   }
 
@@ -137,17 +136,12 @@ export async function applyRateLimit(
   return undefined
 }
 
-/**
- * Simplified rate limit function for server actions
- * @param identifier A unique identifier for the request (e.g., user ID or IP)
- * @param type The type of rate limit to apply
- */
 export async function rateLimit(
   identifier: string, 
   type: 'default' | 'auth' = 'default'
 ): Promise<{ limit: number; remaining: number; reset: number }> {
   // Skip rate limiting in development unless explicitly enabled
-  if (env.NODE_ENV === 'development' && !process.env.ENABLE_DEV_RATE_LIMIT) {
+  if (process.env.NODE_ENV === 'development' && !process.env.ENABLE_DEV_RATE_LIMIT) {
     return { limit: 1000, remaining: 999, reset: Date.now() + 3600000 }
   }
 

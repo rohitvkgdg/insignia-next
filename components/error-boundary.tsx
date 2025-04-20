@@ -4,7 +4,6 @@ import React from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertTriangle } from "lucide-react"
-import { env } from "@/env.mjs"
 
 interface Props {
   error: Error & { digest?: string }
@@ -29,14 +28,14 @@ export default function ErrorBoundary({ error, reset }: Props) {
     }
 
     // For production, don't show actual error messages to users
-    return env.NODE_ENV === "production"
+    return process.env.NODE_ENV === "production"
       ? "Something unexpected happened. Our team has been notified."
       : error.message || "An unexpected error occurred"
   }, [error.message])
 
   React.useEffect(() => {
     // Log the error in development environment
-    if (env.NODE_ENV !== "production") {
+    if (process.env.NODE_ENV !== "production") {
       console.error("Error:", error)
       return
     }
@@ -78,7 +77,7 @@ export default function ErrorBoundary({ error, reset }: Props) {
           <p className="text-center text-sm text-muted-foreground mb-4">
             {errorMessage}
           </p>
-          {error.digest && env.NODE_ENV === "production" && (
+          {error.digest && process.env.NODE_ENV === "production" && (
             <div className="rounded-md bg-muted p-4">
               <p className="text-xs font-mono">Error ID: {error.digest}</p>
             </div>

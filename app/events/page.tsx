@@ -5,84 +5,81 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Calendar, Clock, MapPin, Users } from "lucide-react"
+import { formatDate } from "@/lib/utils"
+import { db } from "@/lib/db"
+import { event, registration } from "@/schema"
+import { eventCategoryEnum } from "@/schema"
+import { sql } from "drizzle-orm"
+import { asc, eq, inArray } from "drizzle-orm"
 
-// This would normally come from a database
-const events = [
-  {
-    id: "1",
-    title: "Tech Symposium 2023",
-    description: "A technical symposium featuring workshops, competitions, and talks.",
-    category: "centralized",
-    date: "2023-10-15",
-    time: "09:00 AM - 05:00 PM",
-    location: "Main Auditorium",
-    capacity: 500,
-    registeredCount: 320,
-    image: "/placeholder.svg?height=200&width=400",
-  },
-  {
-    id: "2",
-    title: "Cultural Night",
-    description: "An evening of music, dance, and theatrical performances.",
-    category: "cultural",
-    date: "2023-10-20",
-    time: "06:00 PM - 10:00 PM",
-    location: "Open Air Theatre",
-    capacity: 1000,
-    registeredCount: 750,
-    image: "/placeholder.svg?height=200&width=400",
-  },
-  {
-    id: "3",
-    title: "Robotics Workshop",
-    description: "Hands-on workshop on building and programming robots.",
-    category: "department",
-    date: "2023-10-25",
-    time: "10:00 AM - 04:00 PM",
-    location: "Engineering Block",
-    capacity: 100,
-    registeredCount: 85,
-    image: "/placeholder.svg?height=200&width=400",
-  },
-  {
-    id: "4",
-    title: "Hackathon 2023",
-    description: "24-hour coding competition to solve real-world problems.",
-    category: "centralized",
-    date: "2023-11-05",
-    time: "09:00 AM - 09:00 AM (Next day)",
-    location: "Computer Science Department",
-    capacity: 200,
-    registeredCount: 180,
-    image: "/placeholder.svg?height=200&width=400",
-  },
-  {
-    id: "5",
-    title: "Dance Competition",
-    description: "Annual inter-college dance competition.",
-    category: "cultural",
-    date: "2023-11-10",
-    time: "05:00 PM - 09:00 PM",
-    location: "Cultural Center",
-    capacity: 300,
-    registeredCount: 150,
-    image: "/placeholder.svg?height=200&width=400",
-  },
-  {
-    id: "6",
-    title: "AI & ML Seminar",
-    description: "Seminar on the latest trends in Artificial Intelligence and Machine Learning.",
-    category: "department",
-    date: "2023-11-15",
-    time: "11:00 AM - 01:00 PM",
-    location: "Seminar Hall",
-    capacity: 150,
-    registeredCount: 120,
-    image: "/placeholder.svg?height=200&width=400",
-  },
-]
+// Add interfaces at the top of the file
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: Date;
+  time: string;
+  location: string;
+  capacity: number;
+  image: string | null;
+  _count: {
+    registrations: number;
+  };
+}
 
-function EventCard({ event }: { event: (typeof events)[0] }) {
+async function getEvents(category?: string) {
+  if (category && category !== "all") {
+    const events = await db
+      .select({
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        date: event.date,
+        time: event.time,
+        location: event.location,
+        capacity: event.capacity,
+        image: event.image,
+        _count: sql`COUNT(${registration.id})`.as("registrations_count"),
+      })
+      .from(event)
+      .leftJoin(registration, eq(registration.eventId, event.id))
+      .where(eq(event.category, category.toUpperCase() as typeof eventCategoryEnum.enumValues[number]))
+      .groupBy(event.id)
+      .orderBy(asc(event.date));
+
+    return events.map((e) => ({
+      ...e,
+      _count: { registrations: Number(e._count) },
+    }));
+  }
+
+  const events = await db
+    .select({
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      date: event.date,
+      time: event.time,
+      location: event.location,
+      capacity: event.capacity,
+      image: event.image,
+      _count: sql`(
+        SELECT COUNT(*)
+        FROM ${registration}
+        WHERE ${registration.eventId} = ${event.id}
+      )`.as("registrations_count"),
+    })
+    .from(event)
+    .where(inArray(event.category, ["CENTRALIZED", "DEPARTMENT", "CULTURAL"]))
+    .orderBy(asc(event.date));
+
+  return events.map((e) => ({
+    ...e,
+    _count: { registrations: Number(e._count) },
+  }));
+}
+
+function EventCard({ event }: { event: Event }) {
   return (
     <Card className="overflow-hidden">
       <div className="aspect-video w-full overflow-hidden">
@@ -100,7 +97,7 @@ function EventCard({ event }: { event: (typeof events)[0] }) {
         <div className="grid gap-2">
           <div className="flex items-center gap-2 text-sm">
             <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span>{event.date}</span>
+            <span>{formatDate(event.date)}</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <Clock className="h-4 w-4 text-muted-foreground" />
@@ -113,7 +110,7 @@ function EventCard({ event }: { event: (typeof events)[0] }) {
           <div className="flex items-center gap-2 text-sm">
             <Users className="h-4 w-4 text-muted-foreground" />
             <span>
-              {event.registeredCount} / {event.capacity} registered
+              {event._count.registrations} / {event.capacity} registered
             </span>
           </div>
         </div>
@@ -151,12 +148,11 @@ function EventSkeleton() {
     </Card>
   )
 }
-// @ts-ignore
-function EventGrid({ events }: { events: typeof events }) {
+
+function EventGrid({ events }: { events: Event[] }) {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {// @ts-ignore 
-      events.map((event) => (
+      {events.map((event: Event) => (
         <EventCard key={event.id} event={event} />
       ))}
     </div>
@@ -178,9 +174,8 @@ export default async function EventsPage({
 }: {
   searchParams: { category?: string }
 }) {
-  const category = searchParams.category || "all"
-
-  const filteredEvents = category === "all" ? events : events.filter((event) => event.category === category)
+  const category = searchParams?.category || "all"
+  const events = await getEvents(category);
 
   return (
     <div className="container py-10">
@@ -208,7 +203,7 @@ export default async function EventsPage({
           </TabsList>
           <TabsContent value={category} className="mt-0">
             <Suspense fallback={<EventSkeletonGrid />}>
-              <EventGrid events={filteredEvents} />
+              <EventGrid events={events} />
             </Suspense>
           </TabsContent>
         </Tabs>

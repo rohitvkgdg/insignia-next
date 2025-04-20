@@ -1,5 +1,6 @@
 import { z } from "zod"
-import { Event, RegistrationStatus, PaymentStatus, Role } from "@prisma/client"
+import { RegistrationStatus, PaymentStatus, Role } from "@prisma/client"
+import { EventCategory } from "@/lib/generated/client"
 
 // Common validation schemas that can be reused throughout the application
 
@@ -31,7 +32,7 @@ export const userSchema = z.object({
 export const eventSearchSchema = z.object({
   page: z.coerce.number().int().positive().optional().default(1),
   limit: z.coerce.number().int().positive().max(100).optional().default(10),
-  category: z.nativeEnum(Event).optional(),
+  category: z.nativeEnum(EventCategory).optional(),
   searchQuery: z.string().max(100).optional(),
   upcoming: z.coerce.boolean().optional(),
 })

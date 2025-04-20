@@ -212,12 +212,6 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
 
                               <div className="grid grid-cols-2 gap-2 mt-2">
                                 <div className="flex flex-col gap-1">
-                                  <span className="text-xs font-medium">Registration Status</span>
-                                  <Badge variant={getStatusBadgeVariant(registration.status)}>
-                                    {registration.status}
-                                  </Badge>
-                                </div>
-                                <div className="flex flex-col gap-1">
                                   <span className="text-xs font-medium">Payment Status</span>
                                   <Badge variant={getPaymentBadgeVariant(registration.paymentStatus)}>
                                     {registration.paymentStatus}

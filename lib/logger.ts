@@ -1,4 +1,3 @@
-import { env } from "@/env.mjs"
 
 type LogLevel = "info" | "warn" | "error" | "debug"
 
@@ -10,7 +9,7 @@ interface LogMessage {
 }
 
 class Logger {
-  private isDevelopment = env.NODE_ENV === "development"
+  private isDevelopment = process.env.NODE_ENV === "development"
   private shouldMaskSensitiveData = !this.isDevelopment
 
   private maskSensitiveData(data: any): any {
@@ -41,7 +40,7 @@ class Logger {
       message,
       level,
       timestamp: new Date().toISOString(),
-      environment: env.NODE_ENV,
+      environment: process.env.NODE_ENV,
       ...safeMetadata,
     }
   }
