@@ -6,6 +6,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  output: 'standalone', // Enable standalone output
   images: {
     unoptimized: false,
     domains: [
