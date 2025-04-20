@@ -6,7 +6,7 @@ import { logger } from "@/lib/logger"
 import { DrizzleAdapter } from "@/lib/auth/drizzle-adapter"
 import { db } from "@/lib/db"
 import { eq } from "drizzle-orm"
-import { user as userTable, account as accountTable, session as sessionTable } from "@/schema"
+import { user as userTable, account as accountTable } from "@/schema"
 
 // Verify required environment variables
 const requiredEnvVars = [
@@ -28,6 +28,7 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      allowDangerousEmailAccountLinking: true,
       authorization: {
         params: {
           prompt: "consent",
@@ -38,9 +39,9 @@ export const authOptions: NextAuthOptions = {
       profile(profile) {
         return {
           id: profile.sub,
-          name: profile.name || null,
-          email: profile.email || null,
-          image: profile.picture || null,
+          name: profile.name || "",
+          email: profile.email || "",
+          image: profile.picture || "",
           role: Role.USER,
           profileCompleted: false,
         }
@@ -60,32 +61,8 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token.sub && session.user) {
         session.user.id = token.sub
-        
-        try {
-          session.user.role = (token.role as Role) || Role.USER
-          session.user.profileCompleted = (token.profileCompleted as boolean) || false
-          
-          // Only fetch from DB if needed
-          if (typeof token.role === 'undefined' || typeof token.profileCompleted === 'undefined') {
-            const userData = await db.query.user.findFirst({
-              where: eq(userTable.id, token.sub),
-              columns: {
-                role: true,
-                profileCompleted: true
-              }
-            });
-            
-            if (userData) {
-              session.user.role = userData.role
-              session.user.profileCompleted = userData.profileCompleted
-            }
-          }
-        } catch (error) {
-          logger.error("Error fetching user data for session:", { userId: token.sub, error })
-          // Continue with default values on error
-          session.user.role = Role.USER
-          session.user.profileCompleted = false
-        }
+        session.user.role = (token.role as Role) || Role.USER
+        session.user.profileCompleted = (token.profileCompleted as boolean) || false
       }
       return session
     },
@@ -96,50 +73,48 @@ export const authOptions: NextAuthOptions = {
       }
       return token
     },
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       try {
         if (!user.email) {
           logger.error("Sign-in attempt without email", { userId: user.id })
           return false
         }
 
-        try {
-          // Check if user exists
-          const existingUser = await db.query.user.findFirst({
-            where: eq(userTable.email, user.email!)
-          });
+        // Check if this user exists already
+        const existingUser = await db.query.user.findFirst({
+          where: eq(userTable.email, user.email),
+        })
 
-          if (!existingUser) {
-            // Create new user
-            logger.info("Creating new user account", { email: user.email })
-            await db.insert(userTable).values({
-              id: user.id!,
-              email: user.email!,
-              name: user.name!,
-              image: user.image!,
-              role: Role.USER,
-              profileCompleted: false,
-            });
-          }
-          
+        // If user doesn't exist, we'll create it normally (through adapter)
+        if (!existingUser) {
+          logger.info("New user signing in", { email: user.email })
           return true
-        } catch (dbError) {
-          logger.error("Database error during sign-in:", { email: user.email, error: dbError })
-          throw new Error("Database connection error. Please try again later.")
         }
+
+        // For existing users, ensure we link the account properly
+        // This fixes the "already associated with another provider" error
+        const existingAccount = await db.query.account.findFirst({
+          where: eq(accountTable.userId, existingUser.id),
+        })
+
+        // If this is a different provider but same email, we'll update the account
+        if (existingAccount && existingAccount.provider !== account?.provider) {
+          logger.info("Linking new provider to existing account", { 
+            email: user.email,
+            provider: account?.provider 
+          })
+          
+          // We'll allow the sign in and the adapter will handle updating correctly
+          return true
+        }
+
+        return true
       } catch (error) {
-        logger.error("Error during sign-in process:", { email: user.email, error })
+        logger.error("Error during sign-in:", { email: user.email, error })
         return false
       }
     },
-    async redirect({ url, baseUrl }) {
-      // Default NextAuth behavior
-      if (url.startsWith(baseUrl)) return url
-      if (url.startsWith("/")) return `${baseUrl}${url}`
-      return baseUrl
-    }
   },
-  debug: process.env.NODE_ENV === "development",
 }
 
 const handler = NextAuth(authOptions)
