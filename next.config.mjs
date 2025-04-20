@@ -6,7 +6,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  output: 'standalone', // Enable standalone output
   images: {
     unoptimized: false,
     domains: [
@@ -17,7 +16,7 @@ const nextConfig = {
   experimental: {
     serverActions: {
       allowedOrigins: [
-        process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+        process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:5174",
       ],
     },
     // This can help prevent certain hydration errors
