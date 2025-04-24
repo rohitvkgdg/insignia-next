@@ -70,7 +70,7 @@ async function getEvents(category?: string) {
       )`.as("registrations_count"),
     })
     .from(event)
-    .where(inArray(event.category, ["CENTRALIZED", "DEPARTMENT", "CULTURAL"]))
+    .where(inArray(event.category, ["CENTRALIZED", "TECHNICAL", "CULTURAL","FINEARTS","LITERARY"]))
     .orderBy(asc(event.date));
 
   return events.map((e) => ({
@@ -193,11 +193,17 @@ export default async function EventsPage({
             <TabsTrigger value="centralized" asChild>
               <Link href="/events?category=centralized">Centralized</Link>
             </TabsTrigger>
-            <TabsTrigger value="department" asChild>
-              <Link href="/events?category=department">Department</Link>
+            <TabsTrigger value="technical" asChild>
+              <Link href="/events?category=technical">Technical</Link>
             </TabsTrigger>
             <TabsTrigger value="cultural" asChild>
               <Link href="/events?category=cultural">Cultural</Link>
+            </TabsTrigger>
+            <TabsTrigger value="finearts" asChild>
+              <Link href="/events?category=finearts">Finearts</Link>
+            </TabsTrigger>
+            <TabsTrigger value="literary" asChild>
+              <Link href="/events?category=literary">Literary</Link>
             </TabsTrigger>
           </TabsList>
           <TabsContent value={searchParams?.category || "all"} className="mt-0">

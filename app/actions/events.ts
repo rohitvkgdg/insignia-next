@@ -9,6 +9,7 @@ import { eventCategoryEnum } from '@/schema'
 import { eq, desc, and, ilike, or, sql, count } from 'drizzle-orm'
 import { event, registration, user } from '@/schema'
 import { randomUUID } from "crypto"
+import { revalidatePath } from "next/cache"
 
 type Category = typeof eventCategoryEnum.enumValues[number]
 
@@ -49,7 +50,7 @@ export type EventFormData = z.infer<typeof eventSchema>
 
 // Registration schema for validating event registration
 const registrationSchema = z.object({
-  eventId: z.string().uuid("Invalid event ID format"),
+  eventId: z.string().min(1, "Event ID is required"),
   notes: z.string().max(500, "Notes must be 500 characters or less").optional(),
 })
 
@@ -57,27 +58,86 @@ export type RegistrationInput = z.infer<typeof registrationSchema>
 
 export async function createEvent(data: EventFormData, userId: string) {
   try {
-    const validatedData = eventSchema.parse(data)
-    const id = randomUUID()
+    // Validate the input data with better error handling
+    let validatedData;
+    try {
+      validatedData = eventSchema.parse({
+        ...data,
+        // Ensure numeric fields are properly typed
+        capacity: Number(data.capacity),
+        fee: Number(data.fee),
+        // Handle optional image
+        image: data.image || undefined
+      });
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
+        const errorMessages = validationError.errors.map(err => 
+          `${err.path.join('.')}: ${err.message}`
+        ).join(', ');
+        throw new ApiError(400, `Invalid event data: ${errorMessages}`, "VALIDATION_ERROR");
+      }
+      throw validationError;
+    }
 
-    const [createdEvent] = await db.insert(event)
+    // Get the current highest ID
+    const highestEvent = await db.query.event.findFirst({
+      orderBy: [desc(event.id)],
+    });
+    
+    const nextId = highestEvent ? (parseInt(highestEvent.id) + 1).toString() : "1";
+
+    // Create the event with validated data
+    // id: text('id').primaryKey(),
+      // title: text('title').notNull(),
+      // description: text('description'),
+      // date: timestamp('date', { mode: 'date' }).notNull(),
+      // time: text('time').notNull(),
+      // location: text('location').notNull(),
+      // category: eventCategoryEnum('category').notNull(),
+      // capacity: integer('capacity'),
+      // fee: integer('fee').default(0).notNull(),
+      // details: text('details').notNull(),
+      // registrationOpen: boolean('registrationOpen').default(true).notNull(),
+      // image: text('image'),
+      // createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
+      // updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
+    const [newEvent] = await db.insert(event)
       .values({
-        id,
-        ...validatedData,
+        id: nextId,
+        title: validatedData.title,
+        description: validatedData.description,
+        category: validatedData.category,
         date: new Date(validatedData.date),
+        time: validatedData.time,
+        location: validatedData.location,
+        capacity: validatedData.capacity,
         fee: validatedData.fee,
+        details: validatedData.details,
+        image: validatedData.image,
         createdAt: new Date(),
         updatedAt: new Date(),
       })
       .returning();
 
-    return { success: true, data: createdEvent }
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      throw new ApiError(400, "Invalid event data", "VALIDATION_ERROR")
+    if (!newEvent) {
+      throw new ApiError(500, "Failed to create event - No event returned");
     }
-    console.error("Create event error:", error)
-    throw new ApiError(500, "Failed to create event")
+
+    // Revalidate the events pages
+    revalidatePath('/events');
+    revalidatePath('/admin');
+
+    return { success: true, data: newEvent };
+  } catch (error) {
+    // Log the full error in production for debugging
+    console.error("Create event error:", error);
+
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
+    // Handle any other unexpected errors
+    throw new ApiError(500, "Failed to create event: " + (error instanceof Error ? error.message : "Unknown error"));
   }
 }
 

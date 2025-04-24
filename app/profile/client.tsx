@@ -247,11 +247,11 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
                 </CardHeader>
                 <form ref={formRef} action={handleProfileUpdate} aria-describedby={formError ? "profile-form-error" : undefined}>
                   <CardContent>
-                    {formError && (
+                    {/* {formError && (
                       <div id="profile-form-error" className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-200">
                         {formError}
                       </div>
-                    )}
+                    )} */}
                     <div className="space-y-4">
                       {/* Name Field */}
                       <div className="grid gap-2">

@@ -8,6 +8,34 @@
       "when": 1745248247119,
       "tag": "0000_mysterious_living_lightning",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1745484527161,
+      "tag": "0001_keen_black_knight",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1745484743616,
+      "tag": "0002_friendly_pride",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1745484812819,
+      "tag": "0003_concerned_loners",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1745489139711,
+      "tag": "0004_rich_blue_shield",
+      "breakpoints": true
     }
   ]
 }

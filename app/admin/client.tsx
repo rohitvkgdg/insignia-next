@@ -371,7 +371,7 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
                         {isTogglingStatus === event.id 
                           ? "Updating..." 
                           : event.status === "OPEN" 
-                            ? "Close Registration" 
+                            ? "Delete Event" 
                             : "Open Registration"}
                       </Button>
                       <Button

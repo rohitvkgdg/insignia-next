@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://sdmcetinsignia.com/sitemap.xml
+Sitemap: https://app.sdmcetinsignia.com/sitemap.xml
 
 # Prevent crawling of private pages
 Disallow: /api/

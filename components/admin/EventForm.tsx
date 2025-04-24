@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { eventCategoryEnum } from "@/schema"
+import { eventCategoryEnum, departmentEnum } from "@/schema"
 import { useState } from "react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
@@ -35,6 +35,7 @@ const formSchema = z.object({
     .min(3, "Location must be at least 3 characters")
     .max(200, "Location must be 200 characters or less"),
   category: z.enum(eventCategoryEnum.enumValues),
+  department: z.enum(departmentEnum.enumValues).optional(),
   capacity: z.coerce
     .number()
     .int("Capacity must be a whole number")
@@ -86,6 +87,8 @@ export function EventForm({ defaultValues, action, isSubmitting: externalIsSubmi
     }
   })
 
+  const showDepartmentField = form.watch("category") === "TECHNICAL";
+
   async function onSubmit(data: EventFormValues) {
     try {
       setIsSubmitting(true)
@@ -100,8 +103,7 @@ export function EventForm({ defaultValues, action, isSubmitting: externalIsSubmi
         } catch (error) {
           console.error("Image upload error:", error)
           toast.error("Failed to upload image, but you can still save the event")
-          // Continue with form submission even if image upload fails
-          imageUrl = "" // Reset image URL if upload failed
+          imageUrl = ""
         } finally {
           setIsUploading(false)
         }
@@ -110,16 +112,35 @@ export function EventForm({ defaultValues, action, isSubmitting: externalIsSubmi
       // Format the data for submission
       const formattedData = {
         ...data,
-        image: imageUrl || "", // Ensure empty string if no image
+        image: imageUrl || "",
         imageFile: undefined
       }
 
-      await action(formattedData)
-      toast.success("Event saved successfully")
-      router.refresh()
+      try {
+        await action(formattedData)
+        toast.success("Event saved successfully")
+        router.refresh()
+        router.push('/admin') // Add explicit navigation
+      } catch (actionError: any) {
+        // Handle specific error types
+        if (actionError.message?.includes("Unauthorized")) {
+          toast.error("You are not authorized to perform this action")
+          router.push('/auth/signin')
+          return
+        }
+        
+        if (actionError.message?.includes("VALIDATION_ERROR")) {
+          toast.error("Please check your input and try again")
+          return
+        }
+
+        // Log the error for debugging in production
+        console.error("Server action error:", actionError)
+        toast.error("Failed to save event. Please try again later")
+      }
     } catch (error) {
       console.error("Form submission error:", error)
-      toast.error(error instanceof Error ? error.message : "Failed to save event")
+      toast.error("An unexpected error occurred. Please try again")
     } finally {
       setIsSubmitting(false)
     }
@@ -224,6 +245,36 @@ export function EventForm({ defaultValues, action, isSubmitting: externalIsSubmi
             </FormItem>
           )}
         />
+
+        {showDepartmentField && (
+          <FormField
+            control={form.control}
+            name="department"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Department</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a department" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {departmentEnum.enumValues.map((dept) => (
+                      <SelectItem key={dept} value={dept}>
+                        {dept}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Select the department for this technical event
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <div className="grid grid-cols-2 gap-4">
           <FormField

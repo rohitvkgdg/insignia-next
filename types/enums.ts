@@ -10,8 +10,10 @@ export enum Role {
 
 export enum EventCategory {
   CENTRALIZED = 'CENTRALIZED',
-  DEPARTMENT = 'DEPARTMENT',
+  TECHNICAL = 'TECHNICAL',
   CULTURAL = 'CULTURAL',
+  FINEARTS = 'FINEARTS',
+  LITERARY = 'LITERARY',
 }
 
 export enum PaymentStatus {

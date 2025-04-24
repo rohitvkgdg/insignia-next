@@ -33,13 +33,23 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/events?category=department" className="text-muted-foreground hover:text-primary">
-                  Department Events
+                <Link href="/events?category=technical" className="text-muted-foreground hover:text-primary">
+                  Technical Events
                 </Link>
               </li>
               <li>
                 <Link href="/events?category=cultural" className="text-muted-foreground hover:text-primary">
                   Cultural Events
+                </Link>
+              </li>
+              <li>
+                <Link href="/events?category=finearts" className="text-muted-foreground hover:text-primary">
+                  Finearts Events
+                </Link>
+              </li>
+              <li>
+                <Link href="/events?category=literary" className="text-muted-foreground hover:text-primary">
+                  Literary Events
                 </Link>
               </li>
             </ul>

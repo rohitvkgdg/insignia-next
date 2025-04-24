@@ -88,7 +88,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold">Event Categories</h3>
               <p className="text-center text-muted-foreground">
-                Explore events across different categories - centralized, department, and cultural.
+                Explore events across different categories - Centralized, Technical, Cultural, Finearts, and Literary.
               </p>
             </div>
           </div>

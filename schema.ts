@@ -3,8 +3,9 @@ import { relations } from 'drizzle-orm';
 
 // Define enums
 export const roleEnum = pgEnum('Role', ['USER', 'ADMIN']);
-export const eventCategoryEnum = pgEnum('EventCategory', ['CENTRALIZED', 'DEPARTMENT', 'CULTURAL']);
+export const eventCategoryEnum = pgEnum('EventCategory', ['CENTRALIZED', 'TECHNICAL', 'CULTURAL','FINEARTS', 'LITERARY']);
 export const paymentStatusEnum = pgEnum('PaymentStatus', ['PAID', 'UNPAID', 'REFUNDED']);
+export const departmentEnum = pgEnum('Department', ['CSE', 'ISE', 'AIML', 'ECE', 'EEE', 'MECHANICAL', 'CIVIL']);
 
 // User table
 export const user = pgTable('user', {
@@ -15,10 +16,10 @@ export const user = pgTable('user', {
   image: text('image'),
   role: roleEnum('role').default('USER').notNull(),
   phone: text('phone'),
-  address: text('address'),
   department: text('department'),
   semester: integer('semester'),
   college: text('college'),
+  accomodation: boolean('accommodation').default(false).notNull(),
   usn: text('usn').unique(),
   profileCompleted: boolean('profileCompleted').default(false).notNull(),
 });
@@ -60,13 +61,12 @@ export const event = pgTable('event', {
   description: text('description'),
   date: timestamp('date', { mode: 'date' }).notNull(),
   time: text('time').notNull(),
-  duration: integer('duration'),
   location: text('location').notNull(),
   category: eventCategoryEnum('category').notNull(),
+  department: departmentEnum('department'),
   capacity: integer('capacity'),
   fee: integer('fee').default(0).notNull(),
   details: text('details').notNull(),
-  registrationOpen: boolean('registrationOpen').default(true).notNull(),
   image: text('image'),
   createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
