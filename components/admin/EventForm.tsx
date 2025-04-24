@@ -52,7 +52,7 @@ const formSchema = z.object({
   image: z.union([
     z.string().url("Please provide a valid image URL").optional(),
     z.instanceof(File, { message: "Please upload a valid image file" }).optional()
-  ]).optional(),
+  ]).optional().or(z.literal("")),  // Allow empty string
   imageFile: z.instanceof(File).optional(),
 })
 
@@ -89,27 +89,29 @@ export function EventForm({ defaultValues, action, isSubmitting: externalIsSubmi
   async function onSubmit(data: EventFormValues) {
     try {
       setIsSubmitting(true)
-      setIsUploading(true)
-
       let imageUrl = data.image
 
-      // If there's a file to upload
+      // Only attempt upload if there's a file
       if (data.imageFile) {
+        setIsUploading(true)
         try {
-          // Generate a temporary ID for new events
           const tempEventId = crypto.randomUUID()
           imageUrl = await uploadEventImage(data.imageFile, data.id || tempEventId)
         } catch (error) {
-          toast.error("Failed to upload image. Please try again.")
-          return
+          console.error("Image upload error:", error)
+          toast.error("Failed to upload image, but you can still save the event")
+          // Continue with form submission even if image upload fails
+          imageUrl = "" // Reset image URL if upload failed
+        } finally {
+          setIsUploading(false)
         }
       }
 
       // Format the data for submission
       const formattedData = {
         ...data,
-        image: imageUrl,
-        imageFile: undefined // Remove the file from the submission
+        image: imageUrl || "", // Ensure empty string if no image
+        imageFile: undefined
       }
 
       await action(formattedData)
@@ -120,7 +122,6 @@ export function EventForm({ defaultValues, action, isSubmitting: externalIsSubmi
       toast.error(error instanceof Error ? error.message : "Failed to save event")
     } finally {
       setIsSubmitting(false)
-      setIsUploading(false)
     }
   }
 
@@ -273,7 +274,7 @@ export function EventForm({ defaultValues, action, isSubmitting: externalIsSubmi
           name="imageFile"
           render={({ field: { onChange, value, ...field } }) => (
             <FormItem>
-              <FormLabel>Event Image</FormLabel>
+              <FormLabel>Event Image (Optional)</FormLabel>
               <FormControl>
                 <div className="space-y-4">
                   <Input
@@ -289,13 +290,13 @@ export function EventForm({ defaultValues, action, isSubmitting: externalIsSubmi
                   />
                   {typeof form.watch("image") === "string" && form.watch("image") && (
                     <div className="mt-2">
-                      <p className="text-sm text-muted-foreground">Current image: {form.watch("image")}</p>
+                      <p className="text-sm text-muted-foreground">Current image: {String(form.watch("image"))}</p>
                     </div>
                   )}
                 </div>
               </FormControl>
               <FormDescription>
-                Upload an image for the event. Supported formats: JPG, PNG, GIF
+                Optional: Upload an image for the event. Supported formats: JPG, PNG, GIF
               </FormDescription>
               <FormMessage />
             </FormItem>
