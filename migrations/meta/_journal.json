@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1745127015863,
-      "tag": "0000_messy_zuras",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1745127742449,
-      "tag": "0001_last_radioactive_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1745130554640,
-      "tag": "0002_youthful_korg",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1745136358171,
-      "tag": "0003_sleepy_kabuki",
+      "when": 1745248247119,
+      "tag": "0000_mysterious_living_lightning",
       "breakpoints": true
     }
   ]

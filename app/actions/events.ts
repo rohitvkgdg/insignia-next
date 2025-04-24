@@ -66,7 +66,8 @@ export async function createEvent(data: EventFormData, userId: string) {
         ...validatedData,
         date: new Date(validatedData.date),
         fee: validatedData.fee,
-        registrationOpen: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       })
       .returning();
 
@@ -96,14 +97,19 @@ export async function updateEvent(id: string, data: Partial<EventFormData>, user
       .set({
         ...validatedData,
         date: validatedData.date ? new Date(validatedData.date) : undefined,
+        updatedAt: new Date(),
       })
       .where(eq(event.id, id))
       .returning();
 
+    if (!updatedEvent) {
+      throw new ApiError(500, "Failed to update event")
+    }
+
     return { success: true, data: updatedEvent }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new ApiError(400, "Invalid event data", "VALIDATION_ERROR")
+      throw new ApiError(400, "Invalid event data: " + error.errors.map(e => e.message).join(", "))
     }
     if (error instanceof ApiError) {
       throw error
@@ -204,6 +210,7 @@ export async function getEventById(id: string) {
           with: {
             user: {
               columns: {
+                id: true,
                 name: true,
                 image: true,
               }
@@ -271,7 +278,6 @@ export async function registerForEvent(eventId: string, notes?: string) {
     const eventData = await db.query.event.findFirst({
       where: eq(event.id, validatedData.eventId),
       columns: {
-        capacity: true,
         fee: true,
         title: true,
         date: true,
@@ -287,11 +293,6 @@ export async function registerForEvent(eventId: string, notes?: string) {
     
     if (!eventData) {
       throw new ApiError(404, "Event not found")
-    }
-    
-    // Check if event is at capacity
-    if (eventData.registrations.length >= eventData.capacity) {
-      throw new ApiError(400, "This event has reached maximum capacity", "EVENT_FULL")
     }
     
     // Generate registration ID

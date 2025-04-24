@@ -4,25 +4,18 @@
  */
 
 export enum Role {
-  USER = "USER",
-  COORDINATOR = "COORDINATOR",
-  ADMIN = "ADMIN"
+  USER = 'USER',
+  ADMIN = 'ADMIN',
 }
 
-export enum Category {
-  CENTRALIZED = "CENTRALIZED",
-  DEPARTMENT = "DEPARTMENT",
-  CULTURAL = "CULTURAL"
-}
-
-export enum RegistrationStatus {
-  PENDING = "PENDING",
-  CONFIRMED = "CONFIRMED",
-  REJECTED = "REJECTED"
+export enum EventCategory {
+  CENTRALIZED = 'CENTRALIZED',
+  DEPARTMENT = 'DEPARTMENT',
+  CULTURAL = 'CULTURAL',
 }
 
 export enum PaymentStatus {
-  UNPAID = "UNPAID",
-  PAID = "PAID",
-  REFUNDED = "REFUNDED"
+  PAID = 'PAID',
+  UNPAID = 'UNPAID',
+  REFUNDED = 'REFUNDED',
 }

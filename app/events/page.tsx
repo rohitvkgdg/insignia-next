@@ -16,11 +16,11 @@ import { asc, eq, inArray } from "drizzle-orm"
 interface Event {
   id: string;
   title: string;
-  description: string;
+  description: string | null;
   date: Date;
   time: string;
   location: string;
-  capacity: number;
+  capacity: number | null;
   image: string | null;
   _count: {
     registrations: number;
@@ -174,8 +174,7 @@ export default async function EventsPage({
 }: {
   searchParams: { category?: string }
 }) {
-  const category = searchParams?.category || "all"
-  const events = await getEvents(category);
+  const events = await getEvents(searchParams?.category || "all");
 
   return (
     <div className="container py-10">
@@ -186,7 +185,7 @@ export default async function EventsPage({
         </div>
       </div>
       <div className="mt-8">
-        <Tabs defaultValue={category} className="w-full">
+        <Tabs defaultValue={searchParams?.category || "all"} className="w-full">
           <TabsList className="mb-8">
             <TabsTrigger value="all" asChild>
               <Link href="/events">All Events</Link>
@@ -201,7 +200,7 @@ export default async function EventsPage({
               <Link href="/events?category=cultural">Cultural</Link>
             </TabsTrigger>
           </TabsList>
-          <TabsContent value={category} className="mt-0">
+          <TabsContent value={searchParams?.category || "all"} className="mt-0">
             <Suspense fallback={<EventSkeletonGrid />}>
               <EventGrid events={events} />
             </Suspense>

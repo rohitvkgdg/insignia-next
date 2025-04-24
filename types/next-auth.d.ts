@@ -1,5 +1,5 @@
 import NextAuth, { DefaultSession } from "next-auth"
-import { Role } from "@prisma/client"
+import { Role } from "@/types/enums"
 
 declare module "next-auth" {
   /**
@@ -10,7 +10,7 @@ declare module "next-auth" {
       id: string
       role: Role
       profileCompleted: boolean
-    } & DefaultSession["user"]
+    } & DefaultSession["USER"]
   }
 
   /**

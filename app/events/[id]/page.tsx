@@ -1,76 +1,49 @@
 import { notFound } from "next/navigation"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, Clock, MapPin, Users, AlertCircle } from "lucide-react"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { getEventById } from "@/app/actions/events"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import RegisterButton from "./register-button"
+import { formatDate } from "@/lib/utils"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
-// This would normally come from a database
-const events = [
-  {
-    id: "1",
-    title: "Tech Symposium 2023",
-    description: "A technical symposium featuring workshops, competitions, and talks.",
-    category: "centralized",
-    date: "2023-10-15",
-    time: "09:00 AM - 05:00 PM",
-    location: "Main Auditorium",
-    capacity: 500,
-    registeredCount: 320,
-    image: "/placeholder.svg?height=400&width=800",
-    details: `
-      <p>Join us for the annual Tech Symposium, a day-long event featuring workshops, competitions, and talks from industry experts.</p>
-      
-      <h3>Schedule:</h3>
-      <ul>
-        <li>09:00 AM - 10:00 AM: Registration</li>
-        <li>10:00 AM - 12:00 PM: Keynote Speeches</li>
-        <li>12:00 PM - 01:00 PM: Lunch Break</li>
-        <li>01:00 PM - 03:00 PM: Workshops</li>
-        <li>03:00 PM - 05:00 PM: Competitions</li>
-      </ul>
-      
-      <h3>Requirements:</h3>
-      <p>Participants should bring their laptops and student ID cards.</p>
-      
-      <h3>Registration Fee:</h3>
-      <p>₹500 per participant</p>
-    `,
-  },
-  {
-    id: "2",
-    title: "Cultural Night",
-    description: "An evening of music, dance, and theatrical performances.",
-    category: "cultural",
-    date: "2023-10-20",
-    time: "06:00 PM - 10:00 PM",
-    location: "Open Air Theatre",
-    capacity: 1000,
-    registeredCount: 750,
-    image: "/placeholder.svg?height=400&width=800",
-    details: `
-      <p>Experience a night of cultural extravaganza featuring music, dance, and theatrical performances by talented students.</p>
-      
-      <h3>Schedule:</h3>
-      <ul>
-        <li>06:00 PM - 06:30 PM: Opening Ceremony</li>
-        <li>06:30 PM - 08:00 PM: Music Performances</li>
-        <li>08:00 PM - 09:00 PM: Dance Performances</li>
-        <li>09:00 PM - 10:00 PM: Theatrical Performances</li>
-      </ul>
-      
-      <h3>Registration Fee:</h3>
-      <p>₹200 per participant</p>
-    `,
-  },
-  // Add more events as needed
-]
+interface EventRegistration {
+  id: string;
+  user?: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  } | null;
+}
 
-export default function EventPage({ params }: { params: { id: string } }) {
-  const event = events.find((e) => e.id === params.id)
+interface EventData {
+  id: string;
+  title: string;
+  description: string | null;
+  details: string | null;
+  date: Date;
+  time: string;
+  location: string;
+  capacity: number | null;
+  image: string | null;
+  registrations: EventRegistration[];
+}
 
-  if (!event) {
-    notFound()
+export default async function EventPage({ params }: { params: { id: string } }) {
+  const [result, session] = await Promise.all([
+    getEventById(params.id),
+    getServerSession(authOptions)
+  ]);
+
+  if (!result?.data) {
+    notFound();
   }
+
+  const event = result.data as EventData;
+  const isFull = event.registrations.length >= (event.capacity || 0);
+  const isRegistered = session?.user ? 
+    event.registrations.some(r => r.user?.id === session.user.id) : 
+    false;
 
   return (
     <div className="container py-10">
@@ -85,7 +58,9 @@ export default function EventPage({ params }: { params: { id: string } }) {
           </div>
           <div className="mt-6 space-y-4">
             <h2 className="text-2xl font-bold">Event Details</h2>
-            <div dangerouslySetInnerHTML={{ __html: event.details }} />
+            {event.details && (
+              <div dangerouslySetInnerHTML={{ __html: event.details }} />
+            )}
           </div>
         </div>
         <div>
@@ -98,7 +73,7 @@ export default function EventPage({ params }: { params: { id: string } }) {
               <div className="grid gap-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-5 w-5 text-muted-foreground" />
-                  <span>{event.date}</span>
+                  <span>{formatDate(event.date)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-muted-foreground" />
@@ -111,20 +86,21 @@ export default function EventPage({ params }: { params: { id: string } }) {
                 <div className="flex items-center gap-2">
                   <Users className="h-5 w-5 text-muted-foreground" />
                   <span>
-                    {event.registeredCount} / {event.capacity} registered
+                    {event.registrations.length} / {event.capacity} registered
+                    {isFull && (
+                      <span className="ml-2 text-red-500 flex items-center gap-1">
+                        <AlertCircle className="h-4 w-4" /> Full
+                      </span>
+                    )}
                   </span>
                 </div>
-                {event.registeredCount >= event.capacity && (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Registration Closed</AlertTitle>
-                    <AlertDescription>This event has reached its maximum capacity.</AlertDescription>
-                  </Alert>
-                )}
               </div>
             </CardContent>
             <CardFooter>
-              <RegisterButton eventId={event.id} isFull={event.registeredCount >= event.capacity} />
+                <RegisterButton 
+                  eventId={event.id} 
+                  isRegistered={isRegistered}
+                />
             </CardFooter>
           </Card>
         </div>

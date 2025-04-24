@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { format } from "date-fns"
@@ -17,22 +17,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { updateProfile } from "@/app/actions/profile"
 import { UserProfileData, UpdateProfileInput } from "@/app/actions/profile"
-import { Role, PaymentStatus, RegistrationStatus } from "@/types/enums"
+import { Role, PaymentStatus } from "@/types/enums"
 
 export default function ProfileClient({ profile }: { profile: UserProfileData }) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
+  const formRef = useRef<HTMLFormElement>(null)
 
   // Display role in a more user-friendly format
   const roleDisplay: Record<Role, string> = {
     [Role.USER]: "Student",
-    [Role.COORDINATOR]: "Event Coordinator",
     [Role.ADMIN]: "Administrator"
   }
 
   // Handle form submission
   async function handleProfileUpdate(formData: FormData) {
     setIsSubmitting(true)
+    setFormError(null)
     
     try {
       // Extract and format form data
@@ -56,22 +58,12 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
       toast.success("Profile updated successfully")
       router.refresh()
     } catch (error) {
-      console.error("Error updating profile:", error)
-      toast.error(error instanceof Error ? error.message : "Failed to update profile")
+      let message = "Failed to update profile"
+      if (error instanceof Error) message = error.message
+      setFormError(message)
+      toast.error(message)
     } finally {
       setIsSubmitting(false)
-    }
-  }
-
-  // Helper function to get badge variant based on status
-  function getStatusBadgeVariant(status: string) {
-    switch (status) {
-      case RegistrationStatus.CONFIRMED:
-        return "default" // Using "default" instead of "success"
-      case RegistrationStatus.REJECTED:
-        return "destructive"
-      default:
-        return "secondary"
     }
   }
 
@@ -79,7 +71,7 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
   function getPaymentBadgeVariant(status: string) {
     switch (status) {
       case PaymentStatus.PAID:
-        return "default" // Using "default" instead of "success"
+        return "default"
       case PaymentStatus.REFUNDED:
         return "outline"
       default:
@@ -101,7 +93,7 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
             <CardHeader>
               <div className="flex flex-col items-center space-y-2">
                 <Avatar className="h-24 w-24">
-                  <AvatarImage src={profile.image || "/placeholder-user.jpg"} alt={profile.name || "User"} />
+                  <AvatarImage src={profile.image || "/placeholder-user.jpg"} alt={profile.name || "U"} />
                   <AvatarFallback><User className="h-12 w-12" /></AvatarFallback>
                 </Avatar>
                 <div className="space-y-1 text-center">
@@ -253,8 +245,13 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
                     Complete your profile information to register for events
                   </CardDescription>
                 </CardHeader>
-                <form action={handleProfileUpdate}>
+                <form ref={formRef} action={handleProfileUpdate} aria-describedby={formError ? "profile-form-error" : undefined}>
                   <CardContent>
+                    {formError && (
+                      <div id="profile-form-error" className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-200">
+                        {formError}
+                      </div>
+                    )}
                     <div className="space-y-4">
                       {/* Name Field */}
                       <div className="grid gap-2">
@@ -371,6 +368,7 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
                       type="submit" 
                       className="w-full" 
                       disabled={isSubmitting}
+                      aria-busy={isSubmitting}
                     >
                       {isSubmitting ? "Updating..." : "Update Profile"}
                     </Button>

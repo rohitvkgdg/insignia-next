@@ -1,3 +1,22 @@
+export const metadata = {
+  title: "Insignia | A National Level Techno-cultural Fest",
+  description: "Register for SDMCET's premier events through Insignia. Your one-stop platform for academic, technical, and cultural events at SDM College of Engineering & Technology, Dharwad.",
+  openGraph: {
+    title: "Insignia | A National Level Techno-cultural Fest",
+    description: "Join Insignia | A National Level Techno-cultural Fest in SDMCET. Register for events, and stay connected with the college community.",
+    url: "https://sdmcetinsignia.com",
+    type: "website",
+    images: [
+      {
+        url: "/placeholder-logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Insignia SDMCET",
+      },
+    ],
+  },
+}
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { CalendarDays, Users, Award, ArrowRight } from "lucide-react"

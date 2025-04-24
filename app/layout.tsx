@@ -15,8 +15,52 @@ import { monitor } from "@/lib/monitor"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Insignia",
-  description: "Event Management Platform",
+  title: {
+    default: "Insignia | SDMCET Event Management Platform",
+    template: "%s | Insignia"
+  },
+  description: "Insignia is the premier event management platform for SDM College of Engineering & Technology, offering seamless registration for academic, cultural, and technical events.",
+  keywords: ["SDMCET", "events", "college events", "technical events", "cultural events", "engineering college", "Dharwad", "Karnataka"],
+  authors: [{ name: "SDMCET" }],
+  creator: "SDMCET",
+  publisher: "SDMCET",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL("https://sdmcetinsignia.com"),
+  openGraph: {
+    title: "Insignia | SDMCET Event Management Platform",
+    description: "Join Insignia - Your gateway to SDMCET's premier events. Register for academic, cultural, and technical events seamlessly.",
+    url: "https://sdmcetinsignia.com",
+    siteName: "Insignia",
+    locale: "en_US",
+    type: "website",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Insignia | SDMCET Event Management Platform",
+    description: "Join Insignia - Your gateway to SDMCET's premier events. Register for academic, cultural, and technical events seamlessly.",
+    creator: "@sdmcet",
+  },
+  verification: {
+    google: "your-google-site-verification-code", // You'll need to add your actual verification code here
+  },
+  alternates: {
+    canonical: "https://sdmcetinsignia.com",
+  },
 }
 
 function Loading() {

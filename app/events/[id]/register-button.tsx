@@ -6,16 +6,18 @@ import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { registerForEvent } from "@/app/actions/events"
+import { Check } from "lucide-react"
 
 export default function RegisterButton({
   eventId,
-  isFull,
+  isRegistered = false,
 }: {
   eventId: string
-  isFull: boolean
+  isRegistered?: boolean
 }) {
   const { data: session, status } = useSession()
   const [isLoading, setIsLoading] = useState(false)
+  const [registered, setRegistered] = useState(isRegistered)
   const router = useRouter()
   const { toast } = useToast()
 
@@ -28,6 +30,7 @@ export default function RegisterButton({
     setIsLoading(true)
     try {
       await registerForEvent(eventId)
+      setRegistered(true)
       toast({
         title: "Registration Successful",
         description: "You have successfully registered for this event.",
@@ -44,18 +47,18 @@ export default function RegisterButton({
     }
   }
 
+  if (registered) {
+    return (
+      <Button className="w-full" variant="secondary" disabled>
+        <Check className="mr-2 h-4 w-4" />
+        Registered
+      </Button>
+    )
+  }
+
   return (
-    <Button className="w-full" onClick={handleRegister} disabled={isLoading || isFull}>
-      {isLoading ? (
-        <>
-          <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-          Registering...
-        </>
-      ) : isFull ? (
-        "Registration Closed"
-      ) : (
-        "Register Now"
-      )}
+    <Button className="w-full" onClick={handleRegister} disabled={isLoading}>
+      {isLoading ? "Registering..." : "Register Now"}
     </Button>
   )
 }

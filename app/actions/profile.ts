@@ -8,7 +8,8 @@ import { NextResponse } from "next/server"
 import { logger } from "@/lib/logger"
 import { authOptions } from "../api/auth/[...nextauth]/route"
 import { eq, and, not } from 'drizzle-orm'
-import { user, registration, event } from '@/schema'
+import { user } from '@/schema'
+import { updateProfileSchema } from "@/lib/validation"
 
 export interface RegistrationSummary {
   id: string
@@ -38,21 +39,45 @@ export interface UserProfileData {
   registrations: RegistrationSummary[]
 }
 
-const updateProfileSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  phone: z.string().min(10, "Phone number must be at least 10 characters"),
-  address: z.string().optional().nullable(),
-  department: z.string().min(1, "Department is required"),
-  semester: z.preprocess((v) => v === "" ? null : Number(v), z.number().int().min(1).max(8).nullable().optional()),
-  college: z.string().min(1, "College name is required"),
-  usn: z.string().min(1, "USN is required")
-})
+// const updateProfileSchema = z.object({
+//   name: z.string()
+//     .min(1, "Name is required")
+//     .max(100, "Name must be 100 characters or less")
+//     .trim(),
+//   phone: z.string()
+//     .min(10, "Phone number must be at least 10 characters")
+//     .max(15, "Phone number must be 15 characters or less")
+//     .regex(/^[+\d\s()-]+$/, "Phone number can only contain numbers, spaces and symbols +()-")
+//     .trim(),
+//   address: z.string()
+//     .max(200, "Address must be 200 characters or less")
+//     .optional()
+//     .nullable()
+//     .transform(val => val === "" ? null : val?.trim()),
+//   department: z.string()
+//     .min(1, "Department is required")
+//     .max(100, "Department must be 100 characters or less")
+//     .trim(),
+//   semester: z.preprocess(
+//     (v) => v === "" ? null : Number(v), 
+//     z.number().int().min(1, "Semester must be at least 1").max(8, "Semester cannot be more than 8").nullable().optional()
+//   ),
+//   college: z.string()
+//     .min(1, "College name is required")
+//     .max(100, "College name must be 100 characters or less")
+//     .trim(),
+//   usn: z.string()
+//     .min(1, "USN is required")
+//     .max(20, "USN must be 20 characters or less")
+//     .regex(/^[a-zA-Z0-9-]+$/, "USN can only contain letters, numbers and hyphens")
+//     .trim()
+// })
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>
 
 export async function getUserProfile() {
   try {
-    const session = await getServerSession()
+    const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
       logger.warn("Unauthenticated profile access attempt")
       throw new Error("Not authenticated")
@@ -87,7 +112,7 @@ export async function getUserProfile() {
       createdAt: new Date(reg.createdAt).toISOString(),
     }))
 
-    return {
+    return JSON.parse(JSON.stringify({
       id: userData.id,
       name: userData.name,
       email: userData.email,
@@ -101,7 +126,7 @@ export async function getUserProfile() {
       usn: userData.usn,
       profileCompleted: userData.profileCompleted,
       registrations
-    } as UserProfileData
+    }))
   } catch (err) {
     logger.error("Failed to fetch profile", err instanceof Error ? err : new Error(String(err)))
     throw new Error(err instanceof Error ? err.message : "Failed to fetch profile")
@@ -160,7 +185,7 @@ export async function updateProfile(data: UpdateProfileInput): Promise<void | Ne
 
     logger.info("Profile updated successfully", { email: session.user.email })
     revalidatePath('/profile')
-    return NextResponse.json({ status: "ok" }, { status: 200 })
+    return NextResponse.json({success: true}, { status: 200 })
   } catch (err) {
     logger.error("Failed to update profile", err instanceof Error ? err : new Error(String(err)))
     return NextResponse.json(

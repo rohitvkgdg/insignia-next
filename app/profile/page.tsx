@@ -4,6 +4,7 @@ import { getUserProfile } from "@/app/actions/profile"
 import ProfileClient from "./client"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card } from "@/components/ui/card"
+import { authOptions } from "../api/auth/[...nextauth]/route"
 
 export const metadata = {
   title: "Profile | Insignia",
@@ -11,8 +12,7 @@ export const metadata = {
 }
 
 export default async function ProfilePage() {
-  // Check if user is authenticated
-  const session = await getServerSession()
+  const session = await getServerSession(authOptions)
   
   if (!session?.user) {
     redirect("/auth/signin?callbackUrl=/profile")

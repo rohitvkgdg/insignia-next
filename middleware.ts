@@ -38,18 +38,9 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    // Role-based access control
-    if (pathname.startsWith("/admin") && token.role !== "ADMIN") {
+    if (pathname.startsWith("/admin") && 
+        token.role !== "ADMIN") {
       logger.warn("Unauthorized admin access attempt", { 
-        userId: token.sub,
-        path: pathname
-      })
-      return NextResponse.redirect(new URL("/", request.url))
-    }
-
-    if (pathname.startsWith("/coordinator") && 
-        token.role !== "ADMIN" && token.role !== "COORDINATOR") {
-      logger.warn("Unauthorized coordinator access attempt", { 
         userId: token.sub,
         path: pathname
       })

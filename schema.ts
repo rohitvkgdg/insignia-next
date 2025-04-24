@@ -1,31 +1,34 @@
-import { pgTable, text, timestamp, integer, unique, boolean, real, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, boolean, unique, integer, pgEnum } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
-// Enums
-export const roleEnum = pgEnum('Role', ['USER', 'COORDINATOR', 'ADMIN']);
+// Define enums
+export const roleEnum = pgEnum('Role', ['USER', 'ADMIN']);
 export const eventCategoryEnum = pgEnum('EventCategory', ['CENTRALIZED', 'DEPARTMENT', 'CULTURAL']);
-export const paymentStatusEnum = pgEnum('PaymentStatus', ['PAID', 'UNPAID']);
+export const paymentStatusEnum = pgEnum('PaymentStatus', ['PAID', 'UNPAID', 'REFUNDED']);
 
-// Tables
-export const user = pgTable('User', {
-  id: text('id').primaryKey().notNull(),
+// User table
+export const user = pgTable('user', {
+  id: text('id').primaryKey(),
   name: text('name'),
-  email: text('email').unique(),
+  email: text('email').unique().notNull(),
   emailVerified: timestamp('emailVerified', { mode: 'date' }),
   image: text('image'),
-  address: text('address'),
+  role: roleEnum('role').default('USER').notNull(),
   phone: text('phone'),
+  address: text('address'),
+  department: text('department'),
+  semester: integer('semester'),
   college: text('college'),
   usn: text('usn').unique(),
-  semester: integer('semester'),
-  role: roleEnum('role').default('USER').notNull(),
-  department: text('department'),
   profileCompleted: boolean('profileCompleted').default(false).notNull(),
 });
 
-export const account = pgTable('Account', {
-  id: text('id').primaryKey().notNull(),
-  userId: text('userId').notNull().references(() => user.id, { onDelete: 'cascade' }),
+// Account table (for OAuth)
+export const account = pgTable('account', {
+  id: text('id').primaryKey(),
+  userId: text('userId')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
   type: text('type').notNull(),
   provider: text('provider').notNull(),
   providerAccountId: text('providerAccountId').notNull(),
@@ -37,48 +40,54 @@ export const account = pgTable('Account', {
   id_token: text('id_token'),
   session_state: text('session_state'),
 }, (table) => ({
-  providerProviderAccountIdIdx: unique().on(table.provider, table.providerAccountId),
+  providerProviderAccountIdKey: unique().on(table.provider, table.providerAccountId),
 }));
 
-export const session = pgTable('Session', {
-  id: text('id').primaryKey().notNull(),
-  sessionToken: text('sessionToken').notNull().unique(),
-  userId: text('userId').notNull().references(() => user.id, { onDelete: 'cascade' }),
+// Session table
+export const session = pgTable('session', {
+  id: text('id').primaryKey(),
+  sessionToken: text('sessionToken').unique().notNull(),
+  userId: text('userId')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
   expires: timestamp('expires', { mode: 'date' }).notNull(),
 });
 
-export const event = pgTable('Event', {
-  id: text('id').primaryKey().notNull(),
+// Event table
+export const event = pgTable('event', {
+  id: text('id').primaryKey(),
   title: text('title').notNull(),
-  description: text('description').notNull(),
-  category: eventCategoryEnum('category').notNull(),
+  description: text('description'),
   date: timestamp('date', { mode: 'date' }).notNull(),
   time: text('time').notNull(),
+  duration: integer('duration'),
   location: text('location').notNull(),
-  capacity: integer('capacity').notNull(),
-  image: text('image'),
-  fee: real('fee').default(0).notNull(),
-  details: text('details'),
+  category: eventCategoryEnum('category').notNull(),
+  capacity: integer('capacity'),
+  fee: integer('fee').default(0).notNull(),
+  details: text('details').notNull(),
   registrationOpen: boolean('registrationOpen').default(true).notNull(),
-  departmentCode: text('departmentCode'),
+  image: text('image'),
+  createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
 });
 
-export const registration = pgTable('Registration', {
-  id: text('id').primaryKey().notNull(),
-  registrationId: text('registrationId').notNull().unique(),
-  userId: text('userId').notNull().references(() => user.id, { onDelete: 'cascade' }),
-  eventId: text('eventId').notNull().references(() => event.id, { onDelete: 'cascade' }),
+// Registration table
+export const registration = pgTable('registration', {
+  id: text('id').primaryKey(),
+  registrationId: text('registrationId').unique().notNull(),
+  userId: text('userId')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  eventId: text('eventId')
+    .notNull()
+    .references(() => event.id, { onDelete: 'cascade' }),
   paymentStatus: paymentStatusEnum('paymentStatus').default('UNPAID').notNull(),
-  paymentMethod: text('paymentMethod'),
-  paymentDate: timestamp('paymentDate', { mode: 'date' }),
-  paymentReceiptNo: text('paymentReceiptNo'),
-  attendedEvent: boolean('attendedEvent').default(false).notNull(),
-  emailSent: boolean('emailSent').default(false).notNull(),
   notes: text('notes'),
   createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull(),
+  updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
 }, (table) => ({
-  userEventIdx: unique().on(table.userId, table.eventId),
+  userEventUnique: unique().on(table.userId, table.eventId),
 }));
 
 // Relations
@@ -116,17 +125,3 @@ export const registrationRelations = relations(registration, ({ one }) => ({
     references: [event.id],
   }),
 }));
-
-// Verification token is required for NextAuth.js
-export const verificationToken = pgTable("VerificationToken", {
-  identifier: text("identifier").notNull(),
-  token: text("token").notNull(),
-  expires: timestamp("expires").notNull(),
-}, (table) => {
-  return {
-    compoundKey: unique().on(table.identifier, table.token),
-  };
-});
-
-// Add verificationToken to relations export
-export const verificationTokenRelations = relations(verificationToken, ({ }) => ({}));

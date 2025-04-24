@@ -52,20 +52,12 @@ export default function Navbar() {
                 Profile
               </Link>
             )}
-            {session?.user?.role === "admin" && (
+            {session?.user?.role === "ADMIN" && (
               <Link
                 href="/admin"
                 className={`text-sm font-medium transition-colors hover:text-primary ${isActive("/admin") ? "text-primary" : "text-foreground/60"}`}
               >
                 Admin
-              </Link>
-            )}
-            {session?.user?.role === "coordinator" && (
-              <Link
-                href="/coordinator"
-                className={`text-sm font-medium transition-colors hover:text-primary ${isActive("/coordinator") ? "text-primary" : "text-foreground/60"}`}
-              >
-                Coordinator
               </Link>
             )}
           </nav>

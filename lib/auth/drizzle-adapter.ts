@@ -1,5 +1,5 @@
 import type { Adapter, AdapterAccount, AdapterSession, AdapterUser } from "next-auth/adapters"
-import { account, session, user, verificationToken } from "@/schema"
+import { account, session, user } from "@/schema"
 import { db } from "@/lib/db"
 import { and, eq } from "drizzle-orm"
 import { randomUUID } from "crypto"
@@ -162,33 +162,6 @@ export function DrizzleAdapter(): Adapter {
 
     async deleteSession(sessionToken) {
       await db.delete(session).where(eq(session.sessionToken, sessionToken));
-    },
-
-    async createVerificationToken(data) {
-      const [newToken] = await db.insert(verificationToken)
-        .values({
-          identifier: data.identifier,
-          expires: data.expires,
-          token: data.token,
-        })
-        .returning();
-      return newToken;
-    },
-
-    async useVerificationToken({ identifier, token }) {
-      try {
-        const [deletedToken] = await db.delete(verificationToken)
-          .where(
-            and(
-              eq(verificationToken.identifier, identifier),
-              eq(verificationToken.token, token)
-            )
-          )
-          .returning();
-        return deletedToken;
-      } catch {
-        return null;
-      }
     },
   };
 }
