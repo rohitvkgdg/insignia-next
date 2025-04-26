@@ -90,6 +90,7 @@ export const updateProfileSchema = z.object({
   semester: z.number().int().min(1).max(8).optional().nullable(),
   college: z.string().min(1).max(100),
   usn: z.string().min(1).max(20).regex(/^[a-zA-Z0-9-]+$/, "Invalid USN").optional().nullable(),
+  accommodation: z.boolean().optional().default(false),
 });
 
 // Helper function to validate and sanitize pagination parameters

@@ -20,11 +20,7 @@ interface Event {
   date: Date;
   time: string;
   location: string;
-  capacity: number | null;
   image: string | null;
-  _count: {
-    registrations: number;
-  };
 }
 
 async function getEvents(category?: string) {
@@ -37,9 +33,7 @@ async function getEvents(category?: string) {
         date: event.date,
         time: event.time,
         location: event.location,
-        capacity: event.capacity,
         image: event.image,
-        _count: sql`COUNT(${registration.id})`.as("registrations_count"),
       })
       .from(event)
       .leftJoin(registration, eq(registration.eventId, event.id))
@@ -49,7 +43,6 @@ async function getEvents(category?: string) {
 
     return events.map((e) => ({
       ...e,
-      _count: { registrations: Number(e._count) },
     }));
   }
 
@@ -61,13 +54,7 @@ async function getEvents(category?: string) {
       date: event.date,
       time: event.time,
       location: event.location,
-      capacity: event.capacity,
       image: event.image,
-      _count: sql`(
-        SELECT COUNT(*)
-        FROM ${registration}
-        WHERE ${registration.eventId} = ${event.id}
-      )`.as("registrations_count"),
     })
     .from(event)
     .where(inArray(event.category, ["CENTRALIZED", "TECHNICAL", "CULTURAL","FINEARTS","LITERARY"]))
@@ -75,7 +62,6 @@ async function getEvents(category?: string) {
 
   return events.map((e) => ({
     ...e,
-    _count: { registrations: Number(e._count) },
   }));
 }
 
@@ -106,12 +92,6 @@ function EventCard({ event }: { event: Event }) {
           <div className="flex items-center gap-2 text-sm">
             <MapPin className="h-4 w-4 text-muted-foreground" />
             <span>{event.location}</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            <span>
-              {event._count.registrations} / {event.capacity} registered
-            </span>
           </div>
         </div>
       </CardContent>
@@ -174,7 +154,7 @@ export default async function EventsPage({
 }: {
   searchParams: { category?: string }
 }) {
-  const events = await getEvents(searchParams?.category || "all");
+  const events = await getEvents(await searchParams?.category || "all");
 
   return (
     <div className="container py-10">
@@ -185,7 +165,7 @@ export default async function EventsPage({
         </div>
       </div>
       <div className="mt-8">
-        <Tabs defaultValue={searchParams?.category || "all"} className="w-full">
+        <Tabs defaultValue={await searchParams?.category || "all"} className="w-full">
           <TabsList className="mb-8">
             <TabsTrigger value="all" asChild>
               <Link href="/events">All Events</Link>
@@ -206,7 +186,7 @@ export default async function EventsPage({
               <Link href="/events?category=literary">Literary</Link>
             </TabsTrigger>
           </TabsList>
-          <TabsContent value={searchParams?.category || "all"} className="mt-0">
+          <TabsContent value={await searchParams?.category || "all"} className="mt-0">
             <Suspense fallback={<EventSkeletonGrid />}>
               <EventGrid events={events} />
             </Suspense>

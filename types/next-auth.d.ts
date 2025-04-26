@@ -8,6 +8,7 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string
+      numericId: number
       role: Role
       profileCompleted: boolean
     } & DefaultSession["USER"]
@@ -18,6 +19,7 @@ declare module "next-auth" {
    */
   interface JWT {
     id?: string
+    numericId?: number
     role?: Role
   }
 
@@ -25,6 +27,7 @@ declare module "next-auth" {
    * Extend the built-in User types
    */
   interface User {
+    numericId: number
     role?: Role
     profileCompleted?: boolean
   }

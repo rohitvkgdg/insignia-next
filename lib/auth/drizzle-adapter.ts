@@ -3,22 +3,25 @@ import { account, session, user } from "@/schema"
 import { db } from "@/lib/db"
 import { and, eq } from "drizzle-orm"
 import { randomUUID } from "crypto"
+import { generateUserId } from "@/lib/server-utils"
 
 export function DrizzleAdapter(): Adapter {
   return {
     async createUser(data: Omit<AdapterUser, "id">) {
       const id = randomUUID()
+      const numericId = parseInt(await generateUserId())
+
       const [newUser] = await db.insert(user)
         .values({
           id,
+          numericId,
           name: data.name,
           email: data.email!,
-          emailVerified: data.emailVerified,
-          image: data.image,
           role: 'USER',
           profileCompleted: false,
         })
         .returning();
+      
       return {
         ...newUser,
         email: newUser.email || '', // Ensure email is never null for AdapterUser
@@ -71,8 +74,6 @@ export function DrizzleAdapter(): Adapter {
         .set({
           name: data.name,
           email: data.email,
-          emailVerified: data.emailVerified,
-          image: data.image,
         })
         .where(eq(user.id, data.id))
         .returning();

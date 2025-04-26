@@ -17,7 +17,5 @@ export type AdminEventData = {
   time: string
   location: string
   category: string
-  capacity: number
   registrationCount: number
-  status: string
 }

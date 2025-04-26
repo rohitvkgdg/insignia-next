@@ -7,7 +7,7 @@ import { authOptions } from "../api/auth/[...nextauth]/route"
 import { getServerSession } from "next-auth"
 import { eventCategoryEnum } from '@/schema'
 import { eq, desc, and, ilike, or, sql, count } from 'drizzle-orm'
-import { event, registration, user } from '@/schema'
+import { event, registration, user, teamMember } from '@/schema'
 import { randomUUID } from "crypto"
 import { revalidatePath } from "next/cache"
 
@@ -31,16 +31,19 @@ const eventSchema = z.object({
   location: z.string()
     .min(3, "Location must be at least 3 characters")
     .max(200, "Location must be 200 characters or less"),
-  capacity: z.number()
-    .int("Capacity must be a whole number")
-    .positive("Capacity must be a positive number")
-    .max(10000, "Capacity must be 10,000 or less"),
   fee: z.number()
     .min(0, "Fee cannot be negative")
     .max(100000, "Fee must be 100,000 or less"),
   details: z.string()
     .min(10, "Details must be at least 10 characters")
     .max(5000, "Details must be 5000 characters or less"),
+  isTeamEvent: z.boolean().default(false),
+  minTeamSize: z.number().nullable()
+    .refine(val => !val || val >= 2, "Minimum team size must be at least 2")
+    .optional(),
+  maxTeamSize: z.number().nullable()
+    .refine(val => !val || val >= 2, "Maximum team size must be at least 2")
+    .optional(),
   image: z.string()
     .url("Please provide a valid image URL")
     .optional(),
@@ -49,9 +52,16 @@ const eventSchema = z.object({
 export type EventFormData = z.infer<typeof eventSchema>
 
 // Registration schema for validating event registration
+const teamMemberSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  usn: z.string().min(3, "USN must be at least 3 characters"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+})
+
 const registrationSchema = z.object({
   eventId: z.string().min(1, "Event ID is required"),
   notes: z.string().max(500, "Notes must be 500 characters or less").optional(),
+  teamMembers: z.array(teamMemberSchema).optional(),
 })
 
 export type RegistrationInput = z.infer<typeof registrationSchema>
@@ -64,8 +74,9 @@ export async function createEvent(data: EventFormData, userId: string) {
       validatedData = eventSchema.parse({
         ...data,
         // Ensure numeric fields are properly typed
-        capacity: Number(data.capacity),
         fee: Number(data.fee),
+        minTeamSize: data.isTeamEvent ? Number(data.minTeamSize) : null,
+        maxTeamSize: data.isTeamEvent ? Number(data.maxTeamSize) : null,
         // Handle optional image
         image: data.image || undefined
       });
@@ -84,23 +95,11 @@ export async function createEvent(data: EventFormData, userId: string) {
       orderBy: [desc(event.id)],
     });
     
-    const nextId = highestEvent ? (parseInt(highestEvent.id) + 1).toString() : "1";
+    const nextId = highestEvent 
+      ? (parseInt(highestEvent.id) + 1).toString().padStart(2, '0')
+      : "01";
 
     // Create the event with validated data
-    // id: text('id').primaryKey(),
-      // title: text('title').notNull(),
-      // description: text('description'),
-      // date: timestamp('date', { mode: 'date' }).notNull(),
-      // time: text('time').notNull(),
-      // location: text('location').notNull(),
-      // category: eventCategoryEnum('category').notNull(),
-      // capacity: integer('capacity'),
-      // fee: integer('fee').default(0).notNull(),
-      // details: text('details').notNull(),
-      // registrationOpen: boolean('registrationOpen').default(true).notNull(),
-      // image: text('image'),
-      // createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
-      // updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
     const [newEvent] = await db.insert(event)
       .values({
         id: nextId,
@@ -110,10 +109,12 @@ export async function createEvent(data: EventFormData, userId: string) {
         date: new Date(validatedData.date),
         time: validatedData.time,
         location: validatedData.location,
-        capacity: validatedData.capacity,
         fee: validatedData.fee,
         details: validatedData.details,
         image: validatedData.image,
+        isTeamEvent: validatedData.isTeamEvent,
+        minTeamSize: validatedData.isTeamEvent ? validatedData.minTeamSize : null,
+        maxTeamSize: validatedData.isTeamEvent ? validatedData.maxTeamSize : null,
         createdAt: new Date(),
         updatedAt: new Date(),
       })
@@ -272,7 +273,6 @@ export async function getEventById(id: string) {
               columns: {
                 id: true,
                 name: true,
-                image: true,
               }
             }
           }
@@ -294,33 +294,38 @@ export async function getEventById(id: string) {
   }
 }
 
-export async function registerForEvent(eventId: string, notes?: string) {
+export async function registerForEvent(eventId: string, notes?: string, teamMembers?: { name: string; usn: string; phone: string; }[]) {
   try {
-    const validatedData = registrationSchema.parse({ eventId, notes });
-    
     const session = await getServerSession(authOptions)
     if (!session?.user) {
-      throw new ApiError(401, "Not authenticated")
+      return { success: false, error: "Not authenticated", code: "UNAUTHENTICATED" }
     }
     
     const userId = session.user.id
     
-    // Check if user profile is complete
+    // Check if user profile is complete and get numericId
     const userData = await db.query.user.findFirst({
       where: eq(user.id, userId),
       columns: {
         profileCompleted: true,
-        id: true
+        id: true,
+        numericId: true
       }
     });
     
     if (!userData) {
-      throw new ApiError(404, "User not found")
+      return { success: false, error: "User not found", code: "USER_NOT_FOUND" }
     }
     
     if (!userData.profileCompleted) {
-      throw new ApiError(400, "Please complete your profile before registering for events", "INCOMPLETE_PROFILE")
+      return { 
+        success: false, 
+        error: "Please complete your profile before registering for events", 
+        code: "INCOMPLETE_PROFILE" 
+      }
     }
+
+    const validatedData = registrationSchema.parse({ eventId, notes, teamMembers });
     
     // Check if already registered
     const existingRegistration = await db.query.registration.findFirst({
@@ -331,7 +336,7 @@ export async function registerForEvent(eventId: string, notes?: string) {
     });
     
     if (existingRegistration) {
-      throw new ApiError(400, "Already registered for this event", "ALREADY_REGISTERED")
+      return { success: false, error: "Already registered for this event", code: "ALREADY_REGISTERED" }
     }
     
     // Check if event exists and has capacity
@@ -341,51 +346,72 @@ export async function registerForEvent(eventId: string, notes?: string) {
         fee: true,
         title: true,
         date: true,
-      },
-      with: {
-        registrations: {
-          columns: {
-            id: true,
-          }
-        }
+        isTeamEvent: true,
+        minTeamSize: true,
+        maxTeamSize: true,
       }
     });
     
     if (!eventData) {
-      throw new ApiError(404, "Event not found")
+      return { success: false, error: "Event not found", code: "EVENT_NOT_FOUND" }
+    }
+
+    // Validate team members if it's a team event
+    if (eventData.isTeamEvent && !teamMembers) {
+      return { success: false, error: "Team members are required for this event", code: "TEAM_REQUIRED" }
+    }
+
+    if (eventData.isTeamEvent && teamMembers) {
+      if (teamMembers.length < (eventData.minTeamSize || 2)) {
+        return { success: false, error: `Minimum team size is ${eventData.minTeamSize}`, code: "INVALID_TEAM_SIZE" }
+      }
+      if (teamMembers.length > (eventData.maxTeamSize || 5)) {
+        return { success: false, error: `Maximum team size is ${eventData.maxTeamSize}`, code: "INVALID_TEAM_SIZE" }
+      }
     }
     
-    // Generate registration ID
-    const registrationId = await generateRegistrationId(eventId)
+    // Generate registration ID using numericId
+    const registrationId = await generateRegistrationId(eventId, userId)
     
-    // Create registration
-    const id = randomUUID()
-    const [newRegistration] = await db.insert(registration)
-      .values({
-        id,
-        registrationId,
-        userId: userData.id,
-        eventId: validatedData.eventId,
-        paymentStatus: "UNPAID",
-        notes: validatedData.notes,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .returning();
-    
-    return { 
-      success: true, 
-      data: newRegistration,
-      message: "Successfully registered for the event" 
-    }
+    // Start a transaction to create registration and team members
+    await db.transaction(async (tx) => {
+      // Create registration
+      const [newRegistration] = await tx.insert(registration)
+        .values({
+          id: randomUUID(),
+          registrationId,
+          userId: userData.id,
+          eventId: validatedData.eventId,
+          paymentStatus: "UNPAID",
+          notes: validatedData.notes,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning();
+
+      // If it's a team event, create team members
+      if (eventData.isTeamEvent && teamMembers) {
+        await tx.insert(teamMember)
+          .values(
+            teamMembers.map(member => ({
+              id: randomUUID(),
+              registrationId: registrationId,
+              name: member.name,
+              usn: member.usn,
+              phone: member.phone,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            }))
+          );
+      }
+    });
+
+    return { success: true }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new ApiError(400, "Invalid registration data", "VALIDATION_ERROR")
+      return { success: false, error: error.errors[0].message, code: "VALIDATION_ERROR" }
     }
-    if (error instanceof ApiError) {
-      throw error
-    }
-    console.error("Register for event error:", error)
-    throw new ApiError(500, "Failed to register for event")
+    console.error("Registration error:", error)
+    return { success: false, error: error instanceof Error ? error.message : "Failed to register", code: "REGISTRATION_FAILED" }
   }
 }

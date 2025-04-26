@@ -9,11 +9,16 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
 interface EventRegistration {
   id: string;
-  user?: {
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  eventId: string;
+  paymentStatus: "PAID" | "UNPAID" | "REFUNDED";
+  notes: string | null;
+  user: {
     id: string;
     name: string | null;
-    image: string | null;
-  } | null;
+  };
 }
 
 interface EventData {
@@ -24,8 +29,10 @@ interface EventData {
   date: Date;
   time: string;
   location: string;
-  capacity: number | null;
   image: string | null;
+  isTeamEvent: boolean;
+  minTeamSize: number | null;
+  maxTeamSize: number | null;
   registrations: EventRegistration[];
 }
 
@@ -40,7 +47,6 @@ export default async function EventPage({ params }: { params: { id: string } }) 
   }
 
   const event = result.data as EventData;
-  const isFull = event.registrations.length >= (event.capacity || 0);
   const isRegistered = session?.user ? 
     event.registrations.some(r => r.user?.id === session.user.id) : 
     false;
@@ -67,7 +73,11 @@ export default async function EventPage({ params }: { params: { id: string } }) 
           <Card>
             <CardHeader>
               <CardTitle>Registration</CardTitle>
-              <CardDescription>Register for this event</CardDescription>
+              <CardDescription>
+                {event.isTeamEvent 
+                  ? `Team event (${event.minTeamSize}-${event.maxTeamSize} members)`
+                  : "Individual registration"}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4">
@@ -86,21 +96,29 @@ export default async function EventPage({ params }: { params: { id: string } }) 
                 <div className="flex items-center gap-2">
                   <Users className="h-5 w-5 text-muted-foreground" />
                   <span>
-                    {event.registrations.length} / {event.capacity} registered
-                    {isFull && (
-                      <span className="ml-2 text-red-500 flex items-center gap-1">
-                        <AlertCircle className="h-4 w-4" /> Full
-                      </span>
-                    )}
+                    {event.registrations.length} registered
                   </span>
                 </div>
+                {event.isTeamEvent && (
+                  <div className="rounded-md bg-muted p-3">
+                    <h4 className="mb-2 font-medium">Team Requirements</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      <li>• Minimum team size: {event.minTeamSize} members</li>
+                      <li>• Maximum team size: {event.maxTeamSize} members</li>
+                      <li>• Each member must provide their details</li>
+                    </ul>
+                  </div>
+                )}
               </div>
             </CardContent>
             <CardFooter>
-                <RegisterButton 
-                  eventId={event.id} 
-                  isRegistered={isRegistered}
-                />
+              <RegisterButton 
+                eventId={event.id} 
+                isRegistered={isRegistered}
+                isTeamEvent={event.isTeamEvent}
+                minTeamSize={event.minTeamSize || 2}
+                maxTeamSize={event.maxTeamSize || 5}
+              />
             </CardFooter>
           </Card>
         </div>

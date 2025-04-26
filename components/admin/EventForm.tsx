@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
 import { eventCategoryEnum, departmentEnum } from "@/schema"
 import { useState } from "react"
 import { toast } from "sonner"
@@ -36,12 +37,6 @@ const formSchema = z.object({
     .max(200, "Location must be 200 characters or less"),
   category: z.enum(eventCategoryEnum.enumValues),
   department: z.enum(departmentEnum.enumValues).optional(),
-  capacity: z.coerce
-    .number()
-    .int("Capacity must be a whole number")
-    .positive("Capacity must be a positive number")
-    .max(10000, "Capacity must be 10,000 or less")
-    .transform((val) => Number(val)),
   fee: z.coerce
     .number()
     .min(0, "Fee cannot be negative")
@@ -50,6 +45,15 @@ const formSchema = z.object({
   details: z.string()
     .min(10, "Details must be at least 10 characters")
     .max(5000, "Details must be 5000 characters or less"),
+  isTeamEvent: z.boolean().default(false),
+  minTeamSize: z.number().nullable().refine((val) => {
+    if (val === null) return true;
+    return val >= 2;
+  }, "Minimum team size must be at least 2"),
+  maxTeamSize: z.number().nullable().refine((val) => {
+    if (val === null) return true;
+    return val >= 2;
+  }, "Maximum team size must be at least 2"),
   image: z.union([
     z.string().url("Please provide a valid image URL").optional(),
     z.instanceof(File, { message: "Please upload a valid image file" }).optional()
@@ -57,7 +61,7 @@ const formSchema = z.object({
   imageFile: z.instanceof(File).optional(),
 })
 
-type EventFormValues = z.infer<typeof formSchema>
+export type EventFormValues = z.infer<typeof formSchema>
 
 interface EventFormProps {
   defaultValues?: Partial<EventFormValues>
@@ -79,7 +83,6 @@ export function EventForm({ defaultValues, action, isSubmitting: externalIsSubmi
       time: "",
       location: "",
       category: "CENTRALIZED",
-      capacity: 100,
       fee: 0,
       details: "",
       image: "",
@@ -277,19 +280,6 @@ export function EventForm({ defaultValues, action, isSubmitting: externalIsSubmi
         )}
 
         <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="capacity"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Capacity</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
           <FormField
             control={form.control}
@@ -319,6 +309,69 @@ export function EventForm({ defaultValues, action, isSubmitting: externalIsSubmi
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="isTeamEvent"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Team Event</FormLabel>
+                <FormDescription>
+                  Enable this if participants need to register as a team
+                </FormDescription>
+              </div>
+            </FormItem>
+          )}
+        />
+
+        {form.watch("isTeamEvent") && (
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="minTeamSize"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Minimum Team Size</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      min={2}
+                      {...field}
+                      onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="maxTeamSize"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Maximum Team Size</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      min={2}
+                      {...field}
+                      onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
 
         <FormField
           control={form.control}

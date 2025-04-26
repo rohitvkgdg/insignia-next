@@ -69,7 +69,6 @@ export default function Navbar() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={session.user?.image || ""} alt={session.user?.name || ""} />
                     <AvatarFallback>{session.user?.name?.charAt(0) || "U"}</AvatarFallback>
                   </Avatar>
                 </Button>
@@ -92,12 +91,6 @@ export default function Navbar() {
                   <Link href="/profile/registrations" className="cursor-pointer flex w-full">
                     <CalendarDays className="mr-2 h-4 w-4" />
                     <span>My Registrations</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/profile/settings" className="cursor-pointer flex w-full">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

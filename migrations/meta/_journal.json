@@ -36,6 +36,48 @@
       "when": 1745489139711,
       "tag": "0004_rich_blue_shield",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1745658110490,
+      "tag": "0005_illegal_gorilla_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1745659387779,
+      "tag": "0006_skinny_silver_surfer",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1745659449751,
+      "tag": "0007_late_elektra",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1745665169934,
+      "tag": "0008_ancient_marten_broadcloak",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1745667383346,
+      "tag": "0009_great_the_hand",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1745670113113,
+      "tag": "0010_pink_orphan",
+      "breakpoints": true
     }
   ]
 }

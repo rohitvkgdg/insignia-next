@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { EventForm } from "@/components/admin/EventForm"
+import type { EventFormValues } from "@/components/admin/EventForm"
 import { updateEvent, getEventById } from "@/app/actions/events"
 import { EventFormData } from "@/app/actions/events"
 import { revalidatePath } from "next/cache"
@@ -36,20 +37,27 @@ export default async function EditEventPage({ params }: EditEventPageProps) {
     time: event.time,
     location: event.location,
     category: event.category,
-    capacity: event.capacity || 100,
     fee: event.fee,
     details: event.details,
     image: event.image || undefined,
   }
 
-  async function handleUpdateEventAction(data: EventFormData) {
+  async function handleUpdateEventAction(data: EventFormValues) {
     "use server"
     
     if (!session?.user) {
       throw new Error("Unauthorized")
     }
     
-    const result = await updateEvent(params.id, data, session.user.id)
+    const { imageFile, ...updateData } = data
+    
+    // Handle image data - only pass string values, not File objects
+    const cleanedData = {
+      ...updateData,
+      image: typeof updateData.image === 'string' ? updateData.image : undefined
+    }
+    
+    const result = await updateEvent(params.id, cleanedData, session.user.id)
     
     if (!result.success) {
       throw new Error("Failed to update event")

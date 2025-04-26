@@ -1,6 +1,6 @@
 import { db } from "@/lib/db"
-import { event, registration } from "@/schema"
-import { eq, count } from "drizzle-orm"
+import { event, user } from "@/schema"
+import { eq } from "drizzle-orm"
 
 export class ApiError extends Error {
   constructor(
@@ -40,32 +40,93 @@ export async function handleError(error: unknown) {
   )
 }
 
-export async function generateRegistrationId(eventId: string): Promise<string> {
-  // Get the event
-  const eventData = await db.query.event.findFirst({
-    where: eq(event.id, eventId),
-    columns: {
-      title: true
-    }
+// Add this enum for department codes
+export enum DepartmentCode {
+  CENTRALIZED = "CN",
+  COMPUTER_SCIENCE = "CSE",
+  ELECTRONICS = "ECE",
+  MECHANICAL = "ME",
+  CIVIL = "CV",
+  ELECTRICAL = "EEE",
+  INFORMATION_SCIENCE = "ISE",
+  AIML = "AIML",
+  CHEMICAL = "CHE",
+  FINEARTS = "FA",
+  LITERARY = "LIT",
+  CULTURAL = "CUL"
+}
+
+export async function generateUserId(): Promise<string> {
+  // Get the current highest user ID
+  const highestUser = await db.query.user.findFirst({
+    orderBy: (user, { desc }) => [desc(user.numericId)],
   });
+
+  // If no users exist, start from 10001 (5 digits)
+  // If users exist, increment the highest ID
+  const nextNumericId = highestUser ? highestUser.numericId + 1 : 10001;
+  
+  // Ensure the ID stays within 5 digits (10001-99999)
+  if (nextNumericId > 99999) {
+    throw new Error("User ID limit reached");
+  }
+
+  return nextNumericId.toString();
+}
+
+export async function generateRegistrationId(eventId: string, userId: string): Promise<string> {
+  // Get the event details and user details
+  const [eventData, userData] = await Promise.all([
+    db.query.event.findFirst({
+      where: eq(event.id, eventId),
+      columns: {
+        id: true,
+        department: true,
+        category: true
+      }
+    }),
+    db.query.user.findFirst({
+      where: eq(user.id, userId),
+      columns: {
+        numericId: true
+      }
+    })
+  ]);
   
   if (!eventData) {
     throw new Error("Event not found");
   }
   
-  // Create event code (first 4 chars of event title)
-  // Uppercase and handle short names with padding
-  let eventCode = eventData.title.slice(0, 4).toUpperCase();
-  eventCode = eventCode.padEnd(4, 'X');
+  if (!userData) {
+    throw new Error("User not found");
+  }
   
-  // Count existing registrations for this event
-  const countResult = await db.select({ value: count() })
-    .from(registration)
-    .where(eq(registration.eventId, eventId));
+  // Determine department code based on event category/department
+  let deptCode: string;
+  if (eventData.department) {
+    // If event has a specific department
+    deptCode = DepartmentCode.COMPUTER_SCIENCE; // Default to CSE, modify as needed
+  } else {
+    // Determine based on category
+    switch (eventData.category) {
+      case "CULTURAL":
+        deptCode = DepartmentCode.CULTURAL;
+        break;
+      case "LITERARY":
+        deptCode = DepartmentCode.LITERARY;
+        break;
+      case "FINEARTS":
+        deptCode = DepartmentCode.FINEARTS;
+        break;
+      default:
+        deptCode = DepartmentCode.CENTRALIZED;
+    }
+  }
   
-  // Pad sequential number with zeros (3 digits)
-  const sequentialId = (countResult[0].value + 1).toString().padStart(3, '0');
+  // Format event ID to 2 digits and user ID to 5 digits
+  const formattedEventId = eventData.id.padStart(2, '0');
+  const formattedUserId = userData.numericId.toString().padStart(5, '0');
   
-  // Combine to create registration ID: INS-HACK-042
-  return `INS-${eventCode}-${sequentialId}`;
+  // Format: INS-{deptCode}-{eventId}-{userId}
+  return `INS-${deptCode}-${formattedEventId}-${formattedUserId}`;
 }

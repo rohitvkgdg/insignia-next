@@ -7,6 +7,7 @@ import { DrizzleAdapter } from "@/lib/auth/drizzle-adapter"
 import { db } from "@/lib/db"
 import { eq } from "drizzle-orm"
 import { user as userTable, account as accountTable } from "@/schema"
+import { generateUserId } from "@/lib/server-utils"
 
 // Verify required environment variables
 const requiredEnvVars = [
@@ -19,6 +20,24 @@ const requiredEnvVars = [
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
     throw new Error(`${envVar} environment variable is not set in .env.local`);
+  }
+}
+
+async function createUser(profile: any) {
+  try {
+    const numericId = parseInt(await generateUserId());
+    
+    return {
+      id: profile.sub, // Keep original OAuth ID as primary key
+      numericId, // Add the sequential numeric ID
+      name: profile.name || "",
+      email: profile.email || "",
+      role: Role.USER,
+      profileCompleted: false,
+    };
+  } catch (error) {
+    logger.error("Error generating user ID", { error });
+    throw error;
   }
 }
 
@@ -36,12 +55,13 @@ export const authOptions: NextAuthOptions = {
           response_type: "code",
         },
       },
-      profile(profile) {
+      async profile(profile) {
+        const user = await createUser(profile);
         return {
           id: profile.sub,
+          numericId: user.numericId,
           name: profile.name || "",
           email: profile.email || "",
-          image: profile.picture || "",
           role: Role.USER,
           profileCompleted: false,
         }
@@ -73,11 +93,26 @@ export const authOptions: NextAuthOptions = {
       }
       return token
     },
-    async signIn({ user, account }) {
+    async signIn({ user, account, profile }) {
       try {
         if (!user.email) {
           logger.error("Sign-in attempt without email", { userId: user.id })
           return false
+        }
+
+        if (account?.provider === "google") {
+          // Check if user exists
+          if (!profile?.email) return false;
+          
+          const existingUser = await db.query.user.findFirst({
+            where: eq(userTable.email, profile.email)
+          });
+          
+          if (!existingUser) {
+            // Create new user with sequential numeric ID
+            const newUser = await createUser(profile);
+            await db.insert(userTable).values(newUser);
+          }
         }
 
         // Check if this user exists already
@@ -85,27 +120,19 @@ export const authOptions: NextAuthOptions = {
           where: eq(userTable.email, user.email),
         })
 
-        // If user doesn't exist, we'll create it normally (through adapter)
-        if (!existingUser) {
-          logger.info("New user signing in", { email: user.email })
-          return true
-        }
-
         // For existing users, ensure we link the account properly
-        // This fixes the "already associated with another provider" error
-        const existingAccount = await db.query.account.findFirst({
-          where: eq(accountTable.userId, existingUser.id),
-        })
-
-        // If this is a different provider but same email, we'll update the account
-        if (existingAccount && existingAccount.provider !== account?.provider) {
-          logger.info("Linking new provider to existing account", { 
-            email: user.email,
-            provider: account?.provider 
+        if (existingUser) {
+          const existingAccount = await db.query.account.findFirst({
+            where: eq(accountTable.userId, existingUser.id),
           })
-          
-          // We'll allow the sign in and the adapter will handle updating correctly
-          return true
+
+          // If this is a different provider but same email, we'll update the account
+          if (existingAccount && existingAccount.provider !== account?.provider) {
+            logger.info("Linking new provider to existing account", { 
+              email: user.email,
+              provider: account?.provider 
+            })
+          }
         }
 
         return true
@@ -113,7 +140,7 @@ export const authOptions: NextAuthOptions = {
         logger.error("Error during sign-in:", { email: user.email, error })
         return false
       }
-    },
+    }
   },
 }
 

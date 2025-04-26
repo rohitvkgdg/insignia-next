@@ -20,6 +20,7 @@ export const metadata = {
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { CalendarDays, Users, Award, ArrowRight } from "lucide-react"
+import SignInButton from "@/components/signin-button"
 
 export default function Home() {
   return (
@@ -41,9 +42,7 @@ export default function Home() {
               <Link href="/events">
                 <Button className="px-8">Explore Events</Button>
               </Link>
-              <Link href="/auth/signin">
-                <Button variant="outline">Sign In</Button>
-              </Link>
+              <SignInButton />
             </div>
           </div>
         </div>

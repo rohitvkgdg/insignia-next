@@ -27,15 +27,12 @@ export interface UserProfileData {
   id: string
   name: string | null
   email: string | null
-  image: string | null
   role: string
   phone: string | null
-  address: string | null
-  department: string | null
-  semester: number | null
   college: string | null
   usn: string | null
   profileCompleted: boolean
+  accommodation: boolean
   registrations: RegistrationSummary[]
 }
 
@@ -116,14 +113,12 @@ export async function getUserProfile() {
       id: userData.id,
       name: userData.name,
       email: userData.email,
-      image: userData.image,
       role: userData.role,
       phone: userData.phone,
-      department: userData.department,
-      semester: userData.semester,
       college: userData.college,
       usn: userData.usn,
       profileCompleted: userData.profileCompleted,
+      accommodation: userData.accommodation,
       registrations
     }))
   } catch (err) {
@@ -173,15 +168,17 @@ export async function updateProfile(data: UpdateProfileInput): Promise<{ success
     }
 
     const { department, college, phone, usn } = parsed.data
-    const profileCompleted = Boolean(
-      department?.trim() && college?.trim() && phone?.trim() && usn?.trim()
-    )
 
     await db.update(user)
       .set({
-        ...parsed.data,
-        semester: parsed.data.semester ?? null,
-        profileCompleted
+        name: parsed.data.name,
+        phone: parsed.data.phone,
+        college: parsed.data.college,
+        usn: parsed.data.usn,
+        accommodation: parsed.data.accommodation,
+        profileCompleted: Boolean(
+          department?.trim() && college?.trim() && phone?.trim() && usn?.trim()
+        )
       })
       .where(eq(user.email, session.user.email))
       .execute();

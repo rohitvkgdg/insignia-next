@@ -10,16 +10,13 @@ export const departmentEnum = pgEnum('Department', ['CSE', 'ISE', 'AIML', 'ECE',
 // User table
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
+  numericId: integer('numeric_id').unique().notNull(),
   name: text('name'),
   email: text('email').unique().notNull(),
-  emailVerified: timestamp('emailVerified', { mode: 'date' }),
-  image: text('image'),
   role: roleEnum('role').default('USER').notNull(),
   phone: text('phone'),
-  department: text('department'),
-  semester: integer('semester'),
   college: text('college'),
-  accomodation: boolean('accommodation').default(false).notNull(),
+  accommodation: boolean('accommodation').default(false).notNull(),
   usn: text('usn').unique(),
   profileCompleted: boolean('profileCompleted').default(false).notNull(),
 });
@@ -64,10 +61,12 @@ export const event = pgTable('event', {
   location: text('location').notNull(),
   category: eventCategoryEnum('category').notNull(),
   department: departmentEnum('department'),
-  capacity: integer('capacity'),
   fee: integer('fee').default(0).notNull(),
   details: text('details').notNull(),
   image: text('image'),
+  isTeamEvent: boolean('isTeamEvent').default(false).notNull(),
+  minTeamSize: integer('minTeamSize'),
+  maxTeamSize: integer('maxTeamSize'),
   createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
 });
@@ -89,6 +88,19 @@ export const registration = pgTable('registration', {
 }, (table) => ({
   userEventUnique: unique().on(table.userId, table.eventId),
 }));
+
+// Add team members table
+export const teamMember = pgTable('teamMember', {
+  id: text('id').primaryKey(),
+  registrationId: text('registrationId')
+    .notNull()
+    .references(() => registration.registrationId, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  usn: text('usn').notNull(),
+  phone: text('phone').notNull(),
+  createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
+});
 
 // Relations
 export const userRelations = relations(user, ({ many }) => ({
@@ -115,7 +127,14 @@ export const eventRelations = relations(event, ({ many }) => ({
   registrations: many(registration),
 }));
 
-export const registrationRelations = relations(registration, ({ one }) => ({
+export const teamMemberRelations = relations(teamMember, ({ one }) => ({
+  registration: one(registration, {
+    fields: [teamMember.registrationId],
+    references: [registration.registrationId],
+  }),
+}));
+
+export const registrationRelations = relations(registration, ({ one, many }) => ({
   user: one(user, {
     fields: [registration.userId],
     references: [user.id],
@@ -124,4 +143,5 @@ export const registrationRelations = relations(registration, ({ one }) => ({
     fields: [registration.eventId],
     references: [event.id],
   }),
+  teamMembers: many(teamMember)
 }));

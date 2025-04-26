@@ -26,14 +26,12 @@ export type AdminEventData = {
   time: string
   location: string
   category: string
-  capacity: number
   registrationCount: number
-  status: string
 }
 
 // Validation schemas
 const updatePaymentSchema = z.object({
-  registrationId: z.string().uuid("Invalid registration ID"),
+  id: z.string().uuid("Invalid registration ID"), // Change from registrationId to id
   paymentStatus: z.nativeEnum(PaymentStatus),
 });
 
@@ -42,7 +40,7 @@ const deleteRegistrationSchema = z.object({
 });
 
 export async function updatePaymentStatus(data: {
-  registrationId: string;
+  id: string;  // Change from registrationId to id
   paymentStatus: PaymentStatus;
 }) {
   try {
@@ -53,12 +51,13 @@ export async function updatePaymentStatus(data: {
 
     const validated = updatePaymentSchema.parse(data)
 
-    const [updated] = await db.update(registration)
-      .set({
+    const [updated] = await db
+      .update(registration)
+      .set({ 
         paymentStatus: validated.paymentStatus,
-        updatedAt: new Date(),
+        updatedAt: new Date()
       })
-      .where(eq(registration.id, validated.registrationId))
+      .where(eq(registration.id, validated.id))
       .returning()
 
     if (!updated) {
@@ -66,7 +65,7 @@ export async function updatePaymentStatus(data: {
     }
 
     logger.info("Payment status updated", {
-      registrationId: validated.registrationId,
+      registrationId: validated.id,
       status: validated.paymentStatus,
       updatedBy: session.user.email
     })
@@ -174,9 +173,7 @@ export async function getAdminEvents(): Promise<AdminEventData[]> {
       time: event.time,
       location: event.location,
       category: event.category,
-      capacity: event.capacity || 0,
       registrationCount: event.registrations.length,
-      status: event.registrations.length >= (event.capacity || 0) ? "CLOSED" : "OPEN"
     }))
   } catch (error) {
     logger.error("Failed to fetch admin events", { error })

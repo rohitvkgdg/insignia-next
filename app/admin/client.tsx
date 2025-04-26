@@ -70,7 +70,6 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
   const stats = {
     totalRegistrations: filteredRegistrations.length || 0,
     pendingPayments: filteredRegistrations.filter(r => r.paymentStatus === PaymentStatus.UNPAID).length || 0,
-    activeEvents: filteredEvents.filter(e => e.status === "OPEN").length || 0,
   }
 
   useEffect(() => {
@@ -103,12 +102,15 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          registrationId, 
+          id: registrationId,
           paymentStatus: PaymentStatus.PAID 
         }),
       })
 
-      if (!response.ok) throw new Error('Failed to update payment')
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to update payment')
+      }
       
       toast.success("Payment status updated successfully")
       setRegistrations(prev => 
@@ -119,7 +121,7 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
         )
       )
     } catch (error) {
-      toast.error("Failed to update payment status")
+      toast.error(error instanceof Error ? error.message : "Failed to update payment status")
       console.error(error)
     } finally {
       setIsUpdating(null)
@@ -158,7 +160,7 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
       setEvents(prev => 
         prev.map(event => 
           event.id === eventId 
-            ? { ...event, status: event.status === "OPEN" ? "CLOSED" : "OPEN" } 
+            ? { ...event } 
             : event
         )
       )
@@ -326,15 +328,6 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
                             {event.description}
                           </CardDescription>
                         </div>
-                        <span
-                          className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                            event.status === "OPEN"
-                              ? "bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20"
-                              : "bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20"
-                          }`}
-                        >
-                          {event.status}
-                        </span>
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -351,18 +344,13 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
                         </div>
                         <div>
                           <span className="font-medium">Registrations:</span>{" "}
-                          {event.registrationCount} / {event.capacity}
-                          {event.registrationCount >= event.capacity && (
-                            <span className="ml-2 text-red-500 flex items-center gap-1">
-                              <AlertCircle className="h-4 w-4" /> Full
-                            </span>
-                          )}
+                          {event.registrationCount}
                         </div>
                       </div>
                     </CardContent>
                     <div className="p-6 pt-0 flex gap-3">
                       <Button
-                        variant={event.status === "OPEN" ? "destructive" : "default"}
+                        variant={"destructive"}
                         size="sm"
                         className="flex-1"
                         onClick={() => handleToggleEventStatus(event.id)}
@@ -370,9 +358,7 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
                       >
                         {isTogglingStatus === event.id 
                           ? "Updating..." 
-                          : event.status === "OPEN" 
-                            ? "Delete Event" 
-                            : "Open Registration"}
+                          : "Delete Event" }
                       </Button>
                       <Button
                         variant="outline"
