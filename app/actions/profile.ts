@@ -119,7 +119,6 @@ export async function getUserProfile() {
       image: userData.image,
       role: userData.role,
       phone: userData.phone,
-      address: userData.address,
       department: userData.department,
       semester: userData.semester,
       college: userData.college,
@@ -133,21 +132,24 @@ export async function getUserProfile() {
   }
 }
 
-export async function updateProfile(data: UpdateProfileInput): Promise<void | NextResponse> {
-  const parsed = updateProfileSchema.safeParse(data)
-  if (!parsed.success) {
-    logger.info("Invalid profile update data", { errors: parsed.error.flatten().fieldErrors })
-    return NextResponse.json(
-      { errors: parsed.error.flatten().fieldErrors },
-      { status: 422 }
-    )
-  }
-
+export async function updateProfile(data: UpdateProfileInput): Promise<{ success: boolean; error?: string }> {
   try {
+    const parsed = updateProfileSchema.safeParse(data)
+    if (!parsed.success) {
+      logger.info("Invalid profile update data", { errors: parsed.error.flatten().fieldErrors })
+      return { 
+        success: false, 
+        error: "Invalid profile update data"
+      }
+    }
+
     const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
       logger.warn("Unauthenticated profile update attempt")
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
+      return { 
+        success: false, 
+        error: "Not authenticated" 
+      }
     }
 
     if (parsed.data.usn) {
@@ -163,9 +165,10 @@ export async function updateProfile(data: UpdateProfileInput): Promise<void | Ne
           usn: parsed.data.usn, 
           requestingEmail: session.user.email 
         })
-        return NextResponse.json({ 
+        return { 
+          success: false, 
           error: "This USN/College ID is already registered with a different account" 
-        }, { status: 409 })
+        }
       }
     }
 
@@ -185,12 +188,11 @@ export async function updateProfile(data: UpdateProfileInput): Promise<void | Ne
 
     logger.info("Profile updated successfully", { email: session.user.email })
     revalidatePath('/profile')
-    return NextResponse.json({success: true}, { status: 200 })
-  } catch (err) {
-    logger.error("Failed to update profile", err instanceof Error ? err : new Error(String(err)))
-    return NextResponse.json(
-      { error: "Failed to update profile" },
-      { status: 500 }
-    )
+    return { success: true }
+  } catch (error) {
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : "Failed to update profile" 
+    }
   }
 }

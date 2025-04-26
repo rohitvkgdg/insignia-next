@@ -21,6 +21,8 @@ import { Role, PaymentStatus } from "@/types/enums"
 
 export default function ProfileClient({ profile }: { profile: UserProfileData }) {
   const router = useRouter()
+  const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
+  const callbackUrl = params.get('callbackUrl')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
@@ -41,22 +43,34 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
       const semesterValue = formData.get("semester") as string;
       const semester = semesterValue === "none" ? null : semesterValue ? Number(semesterValue) : null;
       
-      const data: UpdateProfileInput = {
-        name: formData.get("name") as string,
-        phone: formData.get("phone") as string,
-        address: formData.get("address") as string || null,
-        department: formData.get("department") as string,
+      // Create a plain object with explicit type casting
+      const data = {
+        name: String(formData.get("name")),
+        phone: String(formData.get("phone")),
+        address: formData.get("address") ? String(formData.get("address")) : null,
+        department: String(formData.get("department")),
         semester,
-        college: formData.get("college") as string,
-        usn: formData.get("usn") as string,
-      }
+        college: String(formData.get("college")),
+        usn: String(formData.get("usn")),
+      } satisfies UpdateProfileInput;
 
       // Call the server action to update profile
-      await updateProfile(data)
+      const result = await updateProfile(data)
       
-      // Show success message and refresh the page
+      if (!result || 'error' in result) {
+        throw new Error(typeof result?.error === 'string' ? result.error : "Failed to update profile")
+      }
+      
       toast.success("Profile updated successfully")
-      router.refresh()
+      
+      // Handle redirect after successful update
+      if (callbackUrl) {
+        const decodedUrl = decodeURIComponent(callbackUrl)
+        console.log('Redirecting to:', decodedUrl) // Debug log
+        router.push(decodedUrl)
+      } else {
+        router.refresh()
+      }
     } catch (error) {
       let message = "Failed to update profile"
       if (error instanceof Error) message = error.message

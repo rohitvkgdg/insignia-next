@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useSession } from "next-auth/react"
+import { useSession, signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { registerForEvent } from "@/app/actions/events"
@@ -25,7 +25,17 @@ export default function RegisterButton({ eventId, isRegistered = false }: Regist
 
       // Check if user is authenticated
       if (status !== "authenticated") {
-        router.push(`/auth/signin?callbackUrl=/events/${eventId}`)
+        await signIn("google", { 
+          callbackUrl: `/events/${eventId}`,
+          redirect: true
+        })
+        return
+      }
+
+      // Check if profile is completed
+      if (!session?.user?.profileCompleted) {
+        const callbackUrl = encodeURIComponent(`/events/${eventId}`)
+        router.push(`/profile?callbackUrl=${callbackUrl}`)
         return
       }
 
@@ -38,10 +48,9 @@ export default function RegisterButton({ eventId, isRegistered = false }: Regist
         router.refresh()
       }
     } catch (error: any) {
-      // Handle specific error cases
       if (error.code === "INCOMPLETE_PROFILE") {
-        toast.error("Please complete your profile first")
-        router.push("/profile")
+        const returnUrl = encodeURIComponent(`/events/${eventId}`)
+        router.push(`/profile?return=${returnUrl}`)
         return
       }
 
