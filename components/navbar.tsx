@@ -88,7 +88,7 @@ export default function Navbar() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/profile/registrations" className="cursor-pointer flex w-full">
+                  <Link href="/registrations" className="cursor-pointer flex w-full">
                     <CalendarDays className="mr-2 h-4 w-4" />
                     <span>My Registrations</span>
                   </Link>
