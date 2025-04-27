@@ -67,35 +67,39 @@ async function getEvents(category?: string) {
 
 function EventCard({ event }: { event: Event }) {
   return (
-    <Card className="overflow-hidden">
-      <div className="aspect-video w-full overflow-hidden">
+    <Card className="flex flex-col h-full overflow-hidden hover:shadow-lg transition-transform hover:scale-105">
+      <div className="relative aspect-auto mx-auto overflow-hidden p-2">
         <img
           src={event.image || "/placeholder.svg"}
           alt={event.title}
-          className="h-full w-full object-cover transition-transform hover:scale-105"
+          className="h-full w-full object-cover rounded-md "
+          style={{
+            objectFit: 'cover',
+            aspectRatio: 1 / 1.414
+          }}
         />
       </div>
-      <CardHeader>
-        <CardTitle>{event.title}</CardTitle>
-        <CardDescription>{event.description}</CardDescription>
+      <CardHeader className="flex-1">
+        <CardTitle className="line-clamp-2 text-xl">{event.title}</CardTitle>
+        <CardDescription className="line-clamp-2">{event.description}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid gap-2">
           <div className="flex items-center gap-2 text-sm">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span>{formatDate(event.date)}</span>
+            <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <span className="truncate">{formatDate(event.date)}</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
-            <Clock className="h-4 w-4 text-muted-foreground" />
-            <span>{event.time}</span>
+            <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <span className="truncate">{event.time}</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-            <span>{event.location}</span>
+            <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <span className="truncate">{event.location}</span>
           </div>
         </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="mt-auto">
         <Link href={`/events/${event.id}`} className="w-full">
           <Button className="w-full">View Details</Button>
         </Link>
@@ -106,23 +110,31 @@ function EventCard({ event }: { event: Event }) {
 
 function EventSkeleton() {
   return (
-    <Card className="overflow-hidden">
-      <div className="aspect-video w-full">
-        <Skeleton className="h-full w-full" />
+    <Card className="flex flex-col h-full overflow-hidden">
+      <div className="h-[212px] w-[150px] mx-auto mt-4">
+        <Skeleton className="h-full w-full rounded-md" />
       </div>
-      <CardHeader>
+      <CardHeader className="flex-1">
         <Skeleton className="h-6 w-3/4" />
-        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-full mt-2" />
       </CardHeader>
       <CardContent>
         <div className="grid gap-2">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-3/4" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-4 flex-shrink-0" />
+            <Skeleton className="h-4 flex-1" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-4 flex-shrink-0" />
+            <Skeleton className="h-4 flex-1" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-4 flex-shrink-0" />
+            <Skeleton className="h-4 flex-1" />
+          </div>
         </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="mt-auto">
         <Skeleton className="h-10 w-full" />
       </CardFooter>
     </Card>
@@ -131,7 +143,7 @@ function EventSkeleton() {
 
 function EventGrid({ events }: { events: Event[] }) {
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
       {events.map((event: Event) => (
         <EventCard key={event.id} event={event} />
       ))}
@@ -141,8 +153,8 @@ function EventGrid({ events }: { events: Event[] }) {
 
 function EventSkeletonGrid() {
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, i) => (
+    <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      {Array.from({ length: 10 }).map((_, i) => (
         <EventSkeleton key={i} />
       ))}
     </div>

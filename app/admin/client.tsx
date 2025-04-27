@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -12,6 +12,8 @@ import { PaymentStatus } from "@/types/enums"
 import { RegistrationData } from "@/types/admin"
 import { AdminEventData } from "@/types/admin"
 import { EventAnalytics } from "@/components/admin/EventAnalytics"
+import { Pagination } from "@/components/ui/pagination"
+import { useDebounce } from "@/hooks/useDebounce"
 
 interface Props {
   initialRegistrations: RegistrationData[]
@@ -39,6 +41,13 @@ interface AnalyticsData {
   }[]
 }
 
+interface RegistrationMetadata {
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+}
+
 export default function AdminDashboard({ initialRegistrations, initialEvents }: Props) {
   const [registrations, setRegistrations] = useState<RegistrationData[]>(initialRegistrations || [])
   const [events, setEvents] = useState<AdminEventData[]>(initialEvents || [])
@@ -49,28 +58,38 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
   const [isTogglingStatus, setIsTogglingStatus] = useState<string | null>(null)
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null)
   const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false)
-
-  const filteredRegistrations = registrations.filter(registration => {
-    const matchesSearch = searchQuery === "" || 
-      registration.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      registration.userName!.toLowerCase().includes(searchQuery.toLowerCase())
-    
-    const matchesEvent = eventFilter === "" || 
-      registration.eventName.toLowerCase().includes(eventFilter.toLowerCase())
-    
-    return matchesSearch && matchesEvent
+  const [isLoadingRegistrations, setIsLoadingRegistrations] = useState(false)
+  const [registrationMetadata, setRegistrationMetadata] = useState<RegistrationMetadata>({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 1
   })
 
-  const filteredEvents = events.filter(event => {
-    return eventFilter === "" || 
-      event.title.toLowerCase().includes(eventFilter.toLowerCase()) ||
-      event.category.toLowerCase().includes(eventFilter.toLowerCase())
-  })
+  const debouncedSearch = useDebounce(searchQuery, 300)
 
-  const stats = {
-    totalRegistrations: filteredRegistrations.length || 0,
-    pendingPayments: filteredRegistrations.filter(r => r.paymentStatus === PaymentStatus.UNPAID).length || 0,
-  }
+  const fetchRegistrations = useCallback(async (page: number = 1, search?: string) => {
+    try {
+      setIsLoadingRegistrations(true)
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        limit: registrationMetadata.limit.toString(),
+        ...(search && { search })
+      })
+      
+      const response = await fetch(`/api/admin/registrations?${queryParams}`)
+      if (!response.ok) throw new Error('Failed to fetch registrations')
+      
+      const data = await response.json()
+      setRegistrations(data.data)
+      setRegistrationMetadata(data.metadata)
+    } catch (error) {
+      toast.error("Failed to load registrations")
+      console.error(error)
+    } finally {
+      setIsLoadingRegistrations(false)
+    }
+  }, [registrationMetadata.limit])
 
   useEffect(() => {
     async function fetchAnalytics() {
@@ -92,6 +111,10 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
 
     fetchAnalytics()
   }, [])
+
+  useEffect(() => {
+    fetchRegistrations(1, debouncedSearch)
+  }, [debouncedSearch, fetchRegistrations])
 
   const handleUpdatePayment = async (registrationId: string) => {
     try {
@@ -172,6 +195,12 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
     }
   }
 
+  const filteredEvents = events.filter(event => {
+    return eventFilter === "" || 
+      event.title.toLowerCase().includes(eventFilter.toLowerCase()) ||
+      event.category.toLowerCase().includes(eventFilter.toLowerCase())
+  })
+
   return (
     <div className="container py-10">
       <div className="flex flex-col space-y-6">
@@ -216,15 +245,6 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
-                <div className="relative w-[200px]">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Filter by event..."
-                    className="pl-8"
-                    value={eventFilter}
-                    onChange={(e) => setEventFilter(e.target.value)}
-                  />
-                </div>
               </div>
 
               <div className="rounded-md border">
@@ -240,54 +260,62 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredRegistrations.map((registration) => (
-                        <tr key={registration.id} className="border-b transition-colors hover:bg-muted/50">
-                          <td className="p-4 align-middle">{registration.userName}</td>
-                          <td className="p-4 align-middle">{registration.eventName}</td>
-                          <td className="p-4 align-middle">
-                            {new Date(registration.date).toLocaleDateString()}
-                          </td>
-                          <td className="p-4 align-middle">
-                            <span
-                              className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                                registration.paymentStatus === PaymentStatus.PAID
-                                  ? "bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20"
-                                  : "bg-yellow-50 text-yellow-800 ring-1 ring-inset ring-yellow-600/20"
-                              }`}
-                            >
-                              {registration.status}
-                            </span>
-                          </td>
-                          <td className="p-4 align-middle">
-                            <div className="flex gap-2">
-                              {registration.paymentStatus !== PaymentStatus.PAID && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleUpdatePayment(registration.id)}
-                                  disabled={isUpdating === registration.id}
-                                >
-                                  {isUpdating === registration.id ? "Updating..." : "Mark as Paid"}
-                                </Button>
-                              )}
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => handleDeleteRegistration(registration.id)}
-                                disabled={isDeleting === registration.id}
-                              >
-                                {isDeleting === registration.id ? "Deleting..." : "Delete"}
-                              </Button>
+                      {isLoadingRegistrations ? (
+                        <tr>
+                          <td colSpan={5} className="p-4 text-center">
+                            <div className="flex items-center justify-center space-x-2">
+                              <Calendar className="h-4 w-4 animate-spin" />
+                              <span>Loading registrations...</span>
                             </div>
                           </td>
                         </tr>
-                      ))}
-                      {filteredRegistrations.length === 0 && (
+                      ) : registrations.length > 0 ? (
+                        registrations.map((registration) => (
+                          <tr key={registration.id} className="border-b transition-colors hover:bg-muted/50">
+                            <td className="p-4 align-middle">{registration.userName}</td>
+                            <td className="p-4 align-middle">{registration.eventName}</td>
+                            <td className="p-4 align-middle">
+                              {new Date(registration.date).toLocaleDateString()}
+                            </td>
+                            <td className="p-4 align-middle">
+                              <span
+                                className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                                  registration.paymentStatus === PaymentStatus.PAID
+                                    ? "bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20"
+                                    : "bg-yellow-50 text-yellow-800 ring-1 ring-inset ring-yellow-600/20"
+                                }`}
+                              >
+                                {registration.status}
+                              </span>
+                            </td>
+                            <td className="p-4 align-middle">
+                              <div className="flex gap-2">
+                                {registration.paymentStatus !== PaymentStatus.PAID && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleUpdatePayment(registration.id)}
+                                    disabled={isUpdating === registration.id}
+                                  >
+                                    {isUpdating === registration.id ? "Updating..." : "Mark as Paid"}
+                                  </Button>
+                                )}
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => handleDeleteRegistration(registration.id)}
+                                  disabled={isDeleting === registration.id}
+                                >
+                                  {isDeleting === registration.id ? "Deleting..." : "Delete"}
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
                         <tr>
                           <td colSpan={5} className="p-4 text-center text-muted-foreground">
-                            {searchQuery || eventFilter 
-                              ? "No matching registrations found" 
-                              : "No registrations found"}
+                            {searchQuery ? "No matching registrations found" : "No registrations found"}
                           </td>
                         </tr>
                       )}
@@ -295,6 +323,14 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
                   </table>
                 </div>
               </div>
+
+              {registrationMetadata.totalPages > 1 && (
+                <Pagination
+                  currentPage={registrationMetadata.page}
+                  totalPages={registrationMetadata.totalPages}
+                  onPageChange={page => fetchRegistrations(page, searchQuery)}
+                />
+              )}
             </div>
           </TabsContent>
 

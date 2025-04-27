@@ -14,11 +14,25 @@ export default async function NewEventPage() {
     redirect("/auth/signin?callbackUrl=/admin/events/new")
   }
 
-  async function handleCreateEventAction(data: EventFormData) {
+  async function handleCreateEventAction(formData: {
+    details: string
+    time: string
+    title: string
+    description: string
+    date: string
+    location: string
+    category: "CENTRALIZED" | "TECHNICAL" | "CULTURAL" | "FINEARTS" | "LITERARY"
+    fee: number
+    isTeamEvent: boolean
+    imageFile?: File
+    minTeamSize?: number | null
+    maxTeamSize?: number | null
+  }) {
     "use server"
     if (!session?.user) {
       throw new Error("Unauthorized")
     }
+    const data: EventFormData = { ...formData, image: formData.imageFile ? '' : undefined }
     await createEvent(data, session.user.id)
     redirect("/admin")
   }

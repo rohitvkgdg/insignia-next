@@ -2,7 +2,7 @@ import { PaymentStatus } from "@/types/enums"
 
 export interface RegistrationData {
   id: string
-  userName: string
+  userName: string | null
   eventName: string
   date: string
   status: string

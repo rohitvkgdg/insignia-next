@@ -108,14 +108,25 @@ export async function deleteRegistration(registrationId: string) {
   }
 }
 
-export async function getRecentRegistrations(): Promise<RegistrationData[]> {
+export async function getRecentRegistrations(
+  page = 1,
+  limit = 10,
+  searchQuery?: string
+): Promise<{ data: RegistrationData[], metadata: { total: number; page: number; limit: number; totalPages: number } }> {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user || (session.user.role !== "ADMIN")) {
       throw new Error("Unauthorized")
     }
 
+    let whereClause = undefined;
+    if (searchQuery) {
+      whereClause = sql`CAST(registration.id AS TEXT) ILIKE ${`%${searchQuery}%`} OR 
+                       user.name ILIKE ${`%${searchQuery}%`}`;
+    }
+
     const registrations = await db.query.registration.findMany({
+      where: whereClause,
       with: {
         user: {
           columns: {
@@ -129,18 +140,37 @@ export async function getRecentRegistrations(): Promise<RegistrationData[]> {
           }
         }
       },
-      limit: 10,
+      limit,
+      offset: (page - 1) * limit,
       orderBy: (reg, { desc }) => [desc(reg.createdAt)]
-    })
+    });
 
-    return registrations.map(reg => ({
+    // Get total count
+    const totalResult = await db
+      .select({ count: sql<number>`count(*)`.as('count') })
+      .from(registration)
+      .where(whereClause || sql`TRUE`);
+
+    const total = totalResult[0].count;
+
+    const data = registrations.map(reg => ({
       id: reg.id,
       userName: reg.user.name,
       eventName: reg.event.title,
       date: reg.event.date.toISOString(),
       status: reg.paymentStatus === PaymentStatus.PAID ? "CONFIRMED" : "PENDING",
       paymentStatus: reg.paymentStatus as PaymentStatus,
-    }))
+    }));
+
+    return {
+      data,
+      metadata: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      }
+    };
   } catch (error) {
     logger.error("Failed to fetch recent registrations", { error })
     throw error

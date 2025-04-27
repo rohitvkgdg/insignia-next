@@ -75,7 +75,7 @@ export function EventForm({ defaultValues, action, isSubmitting: externalIsSubmi
   const router = useRouter()
 
   const form = useForm<EventFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       title: "",
       description: "",
@@ -86,6 +86,9 @@ export function EventForm({ defaultValues, action, isSubmitting: externalIsSubmi
       fee: 0,
       details: "",
       image: "",
+      isTeamEvent: false,
+      minTeamSize: null,
+      maxTeamSize: null,
       ...defaultValues
     }
   })
@@ -343,7 +346,7 @@ export function EventForm({ defaultValues, action, isSubmitting: externalIsSubmi
                     <Input 
                       type="number" 
                       min={2}
-                      {...field}
+                      value={field.value ?? ""}
                       onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
                     />
                   </FormControl>
@@ -362,7 +365,7 @@ export function EventForm({ defaultValues, action, isSubmitting: externalIsSubmi
                     <Input 
                       type="number" 
                       min={2}
-                      {...field}
+                      value={field.value ?? ""}
                       onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
                     />
                   </FormControl>

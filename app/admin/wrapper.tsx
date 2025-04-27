@@ -7,7 +7,7 @@ import { Role, PaymentStatus } from "@/types/enums"
 
 interface RegistrationData {
   id: string
-  userName: string
+  userName: string | null
   eventName: string
   date: string
   status: string
@@ -33,45 +33,40 @@ export default async function AdminWrapper() {
     
     // Check authorization
     if (user.role !== Role.ADMIN) {
-      throw new Error("Unauthorized: Insufficient permissions")
+      redirect("/auth/signin?error=unauthorized")
     }
 
     // Fetch initial data
-    const [registrations, events] = await Promise.all([
+    const [registrationsResponse, events] = await Promise.all([
       getRecentRegistrations(),
       getAdminEvents()
     ])
     
-    if (!Array.isArray(registrations)) {
-      throw new Error("Invalid response format from registration service")
-    }
+    // Transform events data to ensure it's serializable
+    const serializedEvents = events.map(event => ({
+      ...event,
+      date: new Date(event.date).toISOString(),
+      registrationCount: Number(event.registrationCount || 0)
+    }))
 
     // Validate registration data
-    const validRegistrations = registrations.filter((reg): reg is RegistrationData => {
-      if (!reg || typeof reg !== "object") return false
-      
-      return (
-        typeof reg.id === "string" &&
-        typeof reg.userName === "string" &&
-        typeof reg.eventName === "string" &&
-        typeof reg.date === "string" &&
-        typeof reg.status === "string" &&
-        Object.values(PaymentStatus).includes(reg.paymentStatus)
-      )
-    })
+    const validRegistrations = registrationsResponse.data.map(reg => ({
+      ...reg,
+      date: new Date(reg.date).toISOString()
+    }))
 
     return (
       <AdminDashboard 
         initialRegistrations={validRegistrations}
-        initialEvents={events}
+        initialEvents={serializedEvents}
       />
     )
   } catch (error) {
-    // Redirect to error page for critical failures
     if (error instanceof Error && error.message.includes("Unauthorized")) {
-      redirect("/unauthorized")
+      redirect("/auth/signin?error=unauthorized")
     }
-
-    throw error
+    
+    console.error("Admin dashboard error:", error)
+    throw new Error("Failed to load admin dashboard")
   }
 }

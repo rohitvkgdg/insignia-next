@@ -1,6 +1,7 @@
 import "@/styles/globals.css"
 import { type Metadata } from "next"
 import { Inter } from "next/font/google"
+import localFont from 'next/font/local'
 
 import { AuthProvider } from "@/components/auth-provider"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -13,6 +14,11 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { monitor } from "@/lib/monitor"
 
 const inter = Inter({ subsets: ["latin"] })
+const fresca = localFont({
+  src: '../public/fresca.ttf',
+  variable: '--font-fresca',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: "Insignia",
@@ -37,14 +43,12 @@ if (typeof window !== "undefined") {
 
 export default function RootLayout({
   children,
-  error,
 }: {
   children: React.ReactNode
-  error?: Error & { digest?: string }
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={fresca.className}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -54,13 +58,9 @@ export default function RootLayout({
           <AuthProvider>
             <div className="relative flex min-h-screen flex-col">
               <Navbar />
-              {error ? (
-                <ErrorBoundary error={error} reset={() => window.location.reload()} />
-              ) : (
-                <Suspense fallback={<Loading />}>
-                  <main className="flex-1">{children}</main>
-                </Suspense>
-              )}
+              <Suspense fallback={<Loading />}>
+                <main className="flex-1">{children}</main>
+              </Suspense>
               <Footer />
             </div>
             <Toaster />
