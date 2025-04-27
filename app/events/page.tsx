@@ -2,15 +2,16 @@ import { Suspense } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Calendar, Clock, MapPin, Users } from "lucide-react"
+import { Calendar, Clock, MapPin, Users, ChevronDown } from "lucide-react"
 import { formatDate } from "@/lib/utils"
+import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { db } from "@/lib/db"
 import { event, registration } from "@/schema"
 import { eventCategoryEnum } from "@/schema"
-import { sql } from "drizzle-orm"
-import { asc, eq, inArray } from "drizzle-orm"
+import { asc, eq, inArray, and } from "drizzle-orm"
+import { EventCategoryNavigation } from "@/app/events/event-navigation"
+import { CardContainer } from "@/components/ui/3d-card"
 
 // Add interfaces at the top of the file
 interface Event {
@@ -21,9 +22,10 @@ interface Event {
   time: string;
   location: string;
   image: string | null;
+  department: "CSE" | "ISE" | "AIML" | "ECE" | "EEE" | "MECH" | "CIVIL" | "PHY" | "CHEM" | "CHTY" | "HUM" | "MATH" | null;
 }
 
-async function getEvents(category?: string) {
+async function getEvents(category?: string, department?: string) {
   if (category && category !== "all") {
     const events = await db
       .select({
@@ -34,10 +36,18 @@ async function getEvents(category?: string) {
         time: event.time,
         location: event.location,
         image: event.image,
+        department: event.department,
       })
       .from(event)
       .leftJoin(registration, eq(registration.eventId, event.id))
-      .where(eq(event.category, category.toUpperCase() as typeof eventCategoryEnum.enumValues[number]))
+      .where(
+        category === "TECHNICAL" && department
+          ? and(
+              eq(event.category, category.toUpperCase() as typeof eventCategoryEnum.enumValues[number]),
+              eq(event.department, department.toUpperCase() as "CSE" | "ISE" | "AIML" | "ECE" | "EEE" | "MECH" | "CIVIL" | "PHY" | "CHEM" | "CHTY" | "HUM" | "MATH")
+            )
+          : eq(event.category, category.toUpperCase() as typeof eventCategoryEnum.enumValues[number])
+      )
       .groupBy(event.id)
       .orderBy(asc(event.date));
 
@@ -55,6 +65,7 @@ async function getEvents(category?: string) {
       time: event.time,
       location: event.location,
       image: event.image,
+      department: event.department,
     })
     .from(event)
     .where(inArray(event.category, ["CENTRALIZED", "TECHNICAL", "CULTURAL","FINEARTS","LITERARY"]))
@@ -67,52 +78,57 @@ async function getEvents(category?: string) {
 
 function EventCard({ event }: { event: Event }) {
   return (
-    <Card className="flex flex-col h-full overflow-hidden hover:shadow-lg transition-transform hover:scale-105">
-      <div className="relative aspect-auto mx-auto overflow-hidden p-2">
-        <img
-          src={event.image || "/placeholder.svg"}
-          alt={event.title}
-          className="h-full w-full object-cover rounded-md "
-          style={{
-            objectFit: 'cover',
-            aspectRatio: 1 / 1.414
-          }}
-        />
-      </div>
-      <CardHeader className="flex-1">
-        <CardTitle className="line-clamp-2 text-xl">{event.title}</CardTitle>
-        <CardDescription className="line-clamp-2">{event.description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-2">
-          <div className="flex items-center gap-2 text-sm">
-            <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-            <span className="truncate">{formatDate(event.date)}</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-            <span className="truncate">{event.time}</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-            <span className="truncate">{event.location}</span>
-          </div>
+    <CardContainer className="flex flex-col h-full overflow-hidden">
+      <Card className="w-full h-full">
+        <div className="w-full p-2">
+          <AspectRatio ratio={1 / 1.414} className="overflow-hidden rounded-md bg-muted">
+            <img
+              src={event.image || "/placeholder.svg"}
+              alt={event.title}
+              className="h-full w-full object-cover"
+              loading="lazy"
+              sizes="(min-width: 1536px) 20vw, (min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+              decoding="async"
+            />
+          </AspectRatio>
         </div>
-      </CardContent>
-      <CardFooter className="mt-auto">
-        <Link href={`/events/${event.id}`} className="w-full">
-          <Button className="w-full">View Details</Button>
-        </Link>
-      </CardFooter>
-    </Card>
+        <CardHeader className="flex-1 space-y-2">
+          <CardTitle className="line-clamp-2 text-lg sm:text-xl">{event.title}</CardTitle>
+          <CardDescription className="line-clamp-2 text-sm">{event.description}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-2">
+            <div className="flex items-center gap-2 text-xs sm:text-sm">
+              <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+              <span className="truncate">{formatDate(event.date)}</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs sm:text-sm">
+              <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+              <span className="truncate">{event.time}</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs sm:text-sm">
+              <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+              <span className="truncate">{event.location}</span>
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter className="mt-auto pt-0">
+          <Link href={`/events/${event.id}`} className="w-full">
+            <Button className="w-full" size="sm">View Details</Button>
+          </Link>
+        </CardFooter>
+      </Card>
+    </CardContainer>
   )
 }
 
 function EventSkeleton() {
   return (
     <Card className="flex flex-col h-full overflow-hidden">
-      <div className="h-[212px] w-[150px] mx-auto mt-4">
-        <Skeleton className="h-full w-full rounded-md" />
+      <div className="w-full p-2">
+        <AspectRatio ratio={1 / 1.414} className="overflow-hidden rounded-md bg-muted">
+          <Skeleton className="h-full w-full" />
+        </AspectRatio>
       </div>
       <CardHeader className="flex-1">
         <Skeleton className="h-6 w-3/4" />
@@ -122,15 +138,15 @@ function EventSkeleton() {
         <div className="grid gap-2">
           <div className="flex items-center gap-2">
             <Skeleton className="h-4 w-4 flex-shrink-0" />
-            <Skeleton className="h-4 flex-1" />
+            <Skeleton className="h-4 w-24" />
           </div>
           <div className="flex items-center gap-2">
             <Skeleton className="h-4 w-4 flex-shrink-0" />
-            <Skeleton className="h-4 flex-1" />
+            <Skeleton className="h-4 w-16" />
           </div>
           <div className="flex items-center gap-2">
             <Skeleton className="h-4 w-4 flex-shrink-0" />
-            <Skeleton className="h-4 flex-1" />
+            <Skeleton className="h-4 w-32" />
           </div>
         </div>
       </CardContent>
@@ -143,7 +159,7 @@ function EventSkeleton() {
 
 function EventGrid({ events }: { events: Event[] }) {
   return (
-    <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-0 sm:gap-x-6 sm:gap-y-0 p-4">
       {events.map((event: Event) => (
         <EventCard key={event.id} event={event} />
       ))}
@@ -153,7 +169,7 @@ function EventGrid({ events }: { events: Event[] }) {
 
 function EventSkeletonGrid() {
   return (
-    <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-0 sm:gap-x-6 sm:gap-y-0 p-4">
       {Array.from({ length: 10 }).map((_, i) => (
         <EventSkeleton key={i} />
       ))}
@@ -164,46 +180,28 @@ function EventSkeletonGrid() {
 export default async function EventsPage({
   searchParams,
 }: {
-  searchParams: { category?: string }
+  searchParams: { category?: string; department?: string }
 }) {
-  const events = await getEvents(await searchParams?.category || "all");
+  const events = await getEvents(searchParams?.category, searchParams?.department)
 
   return (
-    <div className="container py-10">
+    <div className="container py-8">
       <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Events</h1>
           <p className="text-muted-foreground">Browse and register for upcoming events</p>
         </div>
       </div>
-      <div className="mt-8">
-        <Tabs defaultValue={await searchParams?.category || "all"} className="w-full">
-          <TabsList className="mb-8">
-            <TabsTrigger value="all" asChild>
-              <Link href="/events">All Events</Link>
-            </TabsTrigger>
-            <TabsTrigger value="centralized" asChild>
-              <Link href="/events?category=centralized">Centralized</Link>
-            </TabsTrigger>
-            <TabsTrigger value="technical" asChild>
-              <Link href="/events?category=technical">Technical</Link>
-            </TabsTrigger>
-            <TabsTrigger value="cultural" asChild>
-              <Link href="/events?category=cultural">Cultural</Link>
-            </TabsTrigger>
-            <TabsTrigger value="finearts" asChild>
-              <Link href="/events?category=finearts">Finearts</Link>
-            </TabsTrigger>
-            <TabsTrigger value="literary" asChild>
-              <Link href="/events?category=literary">Literary</Link>
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value={await searchParams?.category || "all"} className="mt-0">
-            <Suspense fallback={<EventSkeletonGrid />}>
-              <EventGrid events={events} />
-            </Suspense>
-          </TabsContent>
-        </Tabs>
+      <div className="mt-8 flex flex-col items-center gap-4">
+        <EventCategoryNavigation 
+          currentCategory={searchParams?.category} 
+          department={searchParams?.department} 
+        />
+        <div className="w-full">
+          <Suspense fallback={<EventSkeletonGrid />}>
+            <EventGrid events={events} />
+          </Suspense>
+        </div>
       </div>
     </div>
   )

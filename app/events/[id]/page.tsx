@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import { Calendar, Clock, MapPin, Users, AlertCircle } from "lucide-react"
 import { getEventById } from "@/app/actions/events"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { AspectRatio } from "@/components/ui/aspect-ratio"
 import RegisterButton from "./register-button"
 import { formatDate } from "@/lib/utils"
 import { getServerSession } from "next-auth"
@@ -52,15 +53,24 @@ export default async function EventPage({ params }: { params: { id: string } }) 
     false;
 
   return (
-    <div className="container py-10">
+    <div className="container max-w-7xl mx-auto py-10">
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <div className="mb-6">
             <h1 className="text-3xl font-bold tracking-tight">{event.title}</h1>
-            <p className="text-muted-foreground">{event.description}</p>
+            <p className="text-muted-foreground mt-2">{event.description}</p>
           </div>
-          <div className="aspect-video overflow-hidden rounded-lg">
-            <img src={event.image || "/placeholder.svg"} alt={event.title} className="h-full w-full object-cover" />
+          <div className="relative w-full max-w-4xl mx-auto">
+            <AspectRatio ratio={1 / 1.414} className="overflow-hidden rounded-lg bg-muted">
+              <img 
+                src={event.image || "/placeholder.svg"} 
+                alt={event.title} 
+                className="h-full w-full object-cover object-center transition-all"
+                loading="eager"
+                sizes="(min-width: 1024px) 66vw, 100vw"
+                decoding="sync"
+              />
+            </AspectRatio>
           </div>
           <div className="mt-6 space-y-4">
             <h2 className="text-2xl font-bold">Event Details</h2>

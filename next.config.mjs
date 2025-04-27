@@ -11,6 +11,7 @@ const nextConfig = {
     domains: [
       "lh3.googleusercontent.com", // Google OAuth images
       "res.cloudinary.com", // If using Cloudinary for image hosting
+      "r2.sdmcetinsignia.com", // Added domain
     ],
   },
   experimental: {

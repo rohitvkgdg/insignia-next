@@ -3,16 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { getRecentRegistrations, getAdminEvents } from "@/app/actions/admin"
 import AdminDashboard from "./client"
-import { Role, PaymentStatus } from "@/types/enums"
-
-interface RegistrationData {
-  id: string
-  userName: string | null
-  eventName: string
-  date: string
-  status: string
-  paymentStatus: PaymentStatus
-}
+import { Role } from "@/types/enums"
 
 interface SessionUser {
   id: string

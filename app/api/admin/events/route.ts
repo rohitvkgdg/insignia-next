@@ -1,4 +1,6 @@
-import { NextRequest } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { getAdminEvents } from "@/app/actions/admin"
 
 export async function GET(request: NextRequest) {

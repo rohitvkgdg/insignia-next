@@ -161,7 +161,7 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
 
         {/* Tabs Section */}
         <div className="flex-1">
-          <Card className="w-fit">
+          <Card className="w-fit min-w-[350px]">
             <CardHeader>
               <CardTitle>Update Profile</CardTitle>
               <CardDescription>

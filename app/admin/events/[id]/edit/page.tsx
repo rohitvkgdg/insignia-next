@@ -10,19 +10,18 @@ import { EventFormData } from "@/app/actions/events"
 import { revalidatePath } from "next/cache"
 
 interface EditEventPageProps {
-  params: {
-    id: string
-  }
+  params: Promise<{ id: string }>
 }
 
 export default async function EditEventPage({ params }: EditEventPageProps) {
   const session = await getServerSession(authOptions)
+  const { id } = await params
   
   if (!session?.user || session.user.role !== "ADMIN") {
-    redirect("/auth/signin?callbackUrl=/admin/events/${params.id}/edit")
+    redirect("/auth/signin?callbackUrl=/admin/events/${id}/edit")
   }
 
-  const eventData = await getEventById(params.id)
+  const eventData = await getEventById(id)
   if (!eventData?.data) {
     redirect("/admin")
   }
@@ -57,7 +56,7 @@ export default async function EditEventPage({ params }: EditEventPageProps) {
       image: typeof updateData.image === 'string' ? updateData.image : undefined
     }
     
-    const result = await updateEvent(params.id, cleanedData, session.user.id)
+    const result = await updateEvent(id, cleanedData, session.user.id)
     
     if (!result.success) {
       throw new Error("Failed to update event")

@@ -14,6 +14,16 @@ import { AdminEventData } from "@/types/admin"
 import { EventAnalytics } from "@/components/admin/EventAnalytics"
 import { Pagination } from "@/components/ui/pagination"
 import { useDebounce } from "@/hooks/useDebounce"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface Props {
   initialRegistrations: RegistrationData[]
@@ -59,6 +69,7 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null)
   const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false)
   const [isLoadingRegistrations, setIsLoadingRegistrations] = useState(false)
+  const [eventToDelete, setEventToDelete] = useState<string | null>(null)
   const [registrationMetadata, setRegistrationMetadata] = useState<RegistrationMetadata>({
     total: 0,
     page: 1,
@@ -138,7 +149,7 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
       toast.success("Payment status updated successfully")
       setRegistrations(prev => 
         prev.map(reg => 
-          reg.id === registrationId 
+          reg.id === registrationId
             ? { ...reg, paymentStatus: PaymentStatus.PAID, status: "CONFIRMED" } 
             : reg
         )
@@ -171,27 +182,29 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
   }
 
   const handleToggleEventStatus = async (eventId: string) => {
+    setEventToDelete(eventId)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!eventToDelete) return
+
     try {
-      setIsTogglingStatus(eventId)
-      const response = await fetch(`/api/admin/toggle-event-status/${eventId}`, {
-        method: 'POST',
+      setIsTogglingStatus(eventToDelete)
+      const paddedEventId = eventToDelete.padStart(2, '0')
+      const response = await fetch(`/api/admin/events/${paddedEventId}`, {
+        method: 'DELETE',
       })
 
-      if (!response.ok) throw new Error('Failed to update event status')
+      if (!response.ok) throw new Error('Failed to delete event')
 
-      toast.success("Event status updated successfully")
-      setEvents(prev => 
-        prev.map(event => 
-          event.id === eventId 
-            ? { ...event } 
-            : event
-        )
-      )
+      toast.success("Event deleted successfully")
+      setEvents(prev => prev.filter(event => event.id !== eventToDelete))
     } catch (error) {
-      toast.error("Failed to update event status")
+      toast.error("Failed to delete event")
       console.error(error)
     } finally {
       setIsTogglingStatus(null)
+      setEventToDelete(null)
     }
   }
 
@@ -203,6 +216,24 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
 
   return (
     <div className="container py-10">
+      <AlertDialog open={!!eventToDelete} onOpenChange={() => setEventToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the event
+              and all associated registrations.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} disabled={isTogglingStatus === eventToDelete}>
+              {isTogglingStatus === eventToDelete ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="flex flex-col space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>

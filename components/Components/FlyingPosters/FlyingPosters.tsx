@@ -391,6 +391,12 @@ class Canvas {
   start = 0;
   loaded = 0;
 
+  autoScroll: boolean = true;
+  autoScrollSpeed: number = 2;
+  autoScrollEase: number = 0.1;
+  currentAutoScroll: number = 0;
+  heightTotal: number = 0;
+
   constructor({
     container,
     canvas,
@@ -427,6 +433,8 @@ class Canvas {
     this.update();
     this.addEventListeners();
     this.createPreloader();
+
+    requestAnimationFrame(this.update);
   }
 
   createRenderer() {
@@ -531,15 +539,42 @@ class Canvas {
   }
 
   update() {
+    requestAnimationFrame(this.update);
+
+    if (this.autoScroll && !this.isDown) {
+      const time = performance.now() * 0.001;
+      const amplitude = this.heightTotal * 0.5;
+      this.currentAutoScroll += this.autoScrollSpeed;
+
+      const targetScroll = amplitude * Math.sin(time * 0.5);
+      this.scroll.target = this.currentAutoScroll;
+    }
+
     this.scroll.current = lerp(
       this.scroll.current,
       this.scroll.target,
       this.scroll.ease,
     );
-    this.medias?.forEach((media) => media.update(this.scroll));
-    this.renderer.render({ scene: this.scene, camera: this.camera });
-    this.scroll.last = this.scroll.current;
-    requestAnimationFrame(this.update);
+
+    if (this.medias && this.medias.length > 0) {
+      this.heightTotal = this.medias[0].heightTotal;
+    }
+
+    this.scroll.current = Math.min(
+      Math.max(this.scroll.current, -this.heightTotal),
+      0,
+    );
+
+    if (this.medias) {
+      this.medias.forEach((media) =>
+        media.update({
+          current: -this.scroll.current,
+          target: -this.scroll.target,
+          ease: this.scroll.ease,
+          last: this.scroll.last,
+        }),
+      );
+    }
   }
 
   addEventListeners() {
