@@ -8,7 +8,7 @@ export async function GET() {
   try {
     const modelCommand = new GetObjectCommand({
       Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
-      Key: 'models/SDM2.gltf', // your model path
+      Key: 'models/SDM3.gltf', // your model path
     });
 
     const modelSignedUrl = await getSignedUrl(r2Client, modelCommand, { expiresIn: 3600 });

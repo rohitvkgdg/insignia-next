@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { Suspense } from "react"
 import AdminWrapper from "./wrapper"
 import { Card } from "@/components/ui/card"

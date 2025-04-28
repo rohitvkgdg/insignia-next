@@ -13,7 +13,6 @@ import { eventCategoryEnum, departmentEnum } from "@/schema"
 import { useState } from "react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
-import { uploadEventImage } from "@/lib/r2"
 import { Loader2 } from "lucide-react"
 
 const formSchema = z.object({
@@ -101,19 +100,19 @@ export function EventForm({ defaultValues, action, isSubmitting: externalIsSubmi
       let imageUrl = data.image
 
       // Only attempt upload if there's a file
-      if (data.imageFile) {
-        setIsUploading(true)
-        try {
-          const tempEventId = crypto.randomUUID()
-          imageUrl = await uploadEventImage(data.imageFile, data.id || tempEventId)
-        } catch (error) {
-          console.error("Image upload error:", error)
-          toast.error("Failed to upload image, but you can still save the event")
-          imageUrl = ""
-        } finally {
-          setIsUploading(false)
-        }
-      }
+      // if (data.imageFile) {
+      //   setIsUploading(true)
+      //   try {
+      //     const tempEventId = crypto.randomUUID()
+      //     imageUrl = await uploadEventImage(data.imageFile, data.id || tempEventId)
+      //   } catch (error) {
+      //     console.error("Image upload error:", error)
+      //     toast.error("Failed to upload image, but you can still save the event")
+      //     imageUrl = ""
+      //   } finally {
+      //     setIsUploading(false)
+      //   }
+      // }
 
       // Format the data for submission
       const formattedData = {

@@ -18,6 +18,7 @@ const nextConfig = {
     serverActions: {
       allowedOrigins: [
         process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:5174",
+        process.env.NEXT_PUBLIC_API_URL ?? "https://app.sdmcetinsignia.com",
       ],
     },
     // This can help prevent certain hydration errors

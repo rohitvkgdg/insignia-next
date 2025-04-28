@@ -21,7 +21,7 @@ export default function ThreeDmodel() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const directModelUrl = 'https://r2.sdmcetinsignia.com/models/SDM2.gltf'; // 👈 Your model URL here
+    const directModelUrl = 'https://r2.sdmcetinsignia.com/models/SDM3.gltf'; // 👈 Your model URL here
     setModelUrl(directModelUrl);
     setLoading(false);
   }, []);
@@ -52,7 +52,7 @@ export default function ThreeDmodel() {
               enablePan={false}
               enableRotate={true}
               autoRotate
-              autoRotateSpeed={1}
+              autoRotateSpeed={0.5}
               minPolarAngle={Math.PI / 2.5}
               maxPolarAngle={Math.PI / 2.1}
             />
@@ -64,4 +64,4 @@ export default function ThreeDmodel() {
 }
 
 // THREE loader cache fix
-useGLTF.preload('/SDM2.gltf'); // (Optional preload if static model)
+useGLTF.preload('/SDM3.gltf'); // (Optional preload if static model)
