@@ -27,6 +27,11 @@ interface Event {
 
 async function getEvents(category?: string, department?: string) {
   if (category && category !== "all") {
+    // Convert department to uppercase for consistency with the enum values in the database
+    const validDepartments = ["CSE", "ISE", "AIML", "ECE", "EEE", "MECH", "CIVIL", "PHY", "CHEM", "CHTY", "HUM", "MATH"] as const;
+    const departmentValue = department?.toUpperCase() as typeof validDepartments[number] | undefined;
+    const isValidDepartment = departmentValue && validDepartments.includes(departmentValue as any);
+    
     const events = await db
       .select({
         id: event.id,
@@ -41,15 +46,26 @@ async function getEvents(category?: string, department?: string) {
       .from(event)
       .leftJoin(registration, eq(registration.eventId, event.id))
       .where(
-        category === "technical" && department
+        category === "technical" && department && isValidDepartment
           ? and(
               eq(event.category, "TECHNICAL"),
-              eq(event.department, department.toUpperCase() as "CSE" | "ISE" | "AIML" | "ECE" | "EEE" | "MECH" | "CIVIL" | "PHY" | "CHEM" | "CHTY" | "HUM" | "MATH")
+              eq(event.department, departmentValue as typeof validDepartments[number])
             )
           : eq(event.category, category.toUpperCase() as typeof eventCategoryEnum.enumValues[number])
       )
       .groupBy(event.id)
       .orderBy(asc(event.date));
+
+    console.log(`Category: ${category}, Department: ${department}, Department value: ${departmentValue}, Found events: ${events.length}`);
+    
+    // Add detailed debugging for technical events
+    if (category === "technical") {
+      console.log("Technical events found:", events.map(e => ({
+        id: e.id,
+        title: e.title,
+        department: e.department
+      })));
+    }
 
     return events.map((e) => ({
       ...e,

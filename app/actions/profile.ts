@@ -4,7 +4,6 @@ import { getServerSession } from "next-auth"
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
-import { NextResponse } from "next/server"
 import { logger } from "@/lib/logger"
 import { authOptions } from "../api/auth/[...nextauth]/route"
 import { eq, and, not } from 'drizzle-orm'
@@ -13,6 +12,7 @@ import { updateProfileSchema } from "@/lib/validation"
 
 export interface RegistrationSummary {
   id: string
+  registrationId: string
   eventId: string
   eventName: string
   date: string
@@ -99,6 +99,7 @@ export async function getUserProfile() {
 
     const registrations: RegistrationSummary[] = userData.registrations.map((reg) => ({
       id: String(reg.id),
+      registrationId: String(reg.registrationId),
       eventId: reg.eventId,
       eventName: reg.event.title,
       date: new Date(reg.event.date).toISOString(),
@@ -167,7 +168,7 @@ export async function updateProfile(data: UpdateProfileInput): Promise<{ success
       }
     }
 
-    const { department, college, phone, usn } = parsed.data
+    const { college, phone, usn, name } = parsed.data
 
     await db.update(user)
       .set({
@@ -177,7 +178,7 @@ export async function updateProfile(data: UpdateProfileInput): Promise<{ success
         usn: parsed.data.usn,
         accommodation: parsed.data.accommodation,
         profileCompleted: Boolean(
-          department?.trim() && college?.trim() && phone?.trim() && usn?.trim()
+          name?.trim() && college?.trim() && phone?.trim() && usn?.trim()
         )
       })
       .where(eq(user.email, session.user.email))

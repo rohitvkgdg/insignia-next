@@ -9,6 +9,10 @@ module.exports = {
     max_memory_restart: '3G',
     env: {
       PORT: 5174,
+      NODE_ENV: "development"
+    },
+    env_production: {
+      PORT: 5174,
       NODE_ENV: "production"
     },
     wait_ready: true,

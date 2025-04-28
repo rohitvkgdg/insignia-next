@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { format } from "date-fns"
-import { CalendarDays, Clock, MapPin, DollarSign } from "lucide-react"
+import { CalendarDays, Clock, MapPin, DollarSign, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -27,7 +27,7 @@ export default function RegistrationsClient({ registrations }: RegistrationsClie
   }
 
   return (
-    <div className="container py-10">
+    <div className="container py-36">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">My Registrations</h1>
         <p className="text-muted-foreground">View your event registrations</p>
@@ -38,13 +38,24 @@ export default function RegistrationsClient({ registrations }: RegistrationsClie
           {registrations.map((registration) => (
             <Card key={registration.id}>
               <CardHeader>
-                <CardTitle className="text-xl">{registration.eventName}</CardTitle>
-                <CardDescription>
-                  Registered on {format(new Date(registration.createdAt), 'PPP')}
-                </CardDescription>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-xl">{registration.eventName}</CardTitle>
+                    <CardDescription>
+                      Registered on {format(new Date(registration.createdAt), 'PPP')}
+                    </CardDescription>
+                  </div>
+                  <Badge variant={getPaymentBadgeVariant(registration.paymentStatus)}>
+                    {registration.paymentStatus}
+                  </Badge>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Registration ID: {registration.registrationId}</span>
+                  </div>
                   <div className="flex items-center gap-2">
                     <CalendarDays className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">
@@ -62,11 +73,6 @@ export default function RegistrationsClient({ registrations }: RegistrationsClie
                   <div className="flex items-center gap-2">
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">₹{registration.fee}</span>
-                  </div>
-                  <div className="pt-2">
-                    <Badge variant={getPaymentBadgeVariant(registration.paymentStatus)}>
-                      {registration.paymentStatus}
-                    </Badge>
                   </div>
                 </div>
               </CardContent>

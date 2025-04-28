@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
-import { getRecentRegistrations, getAdminEvents } from "@/app/actions/admin"
+import { getRegistrations, getAdminEvents } from "@/app/actions/admin"
 import AdminDashboard from "./client"
 import { Role } from "@/types/enums"
 
@@ -27,29 +27,17 @@ export default async function AdminWrapper() {
       redirect("/auth/signin?error=unauthorized")
     }
 
-    // Fetch initial data
-    const [registrationsResponse, events] = await Promise.all([
-      getRecentRegistrations(),
-      getAdminEvents()
+    // Fetch initial data with pagination
+    const [registrationsResponse, eventsResponse] = await Promise.all([
+      getRegistrations(1, 10), // page 1, 10 items per page
+      getAdminEvents(1, 12)    // page 1, 12 items per page
     ])
     
-    // Transform events data to ensure it's serializable
-    const serializedEvents = events.map(event => ({
-      ...event,
-      date: new Date(event.date).toISOString(),
-      registrationCount: Number(event.registrationCount || 0)
-    }))
-
-    // Validate registration data
-    const validRegistrations = registrationsResponse.data.map(reg => ({
-      ...reg,
-      date: new Date(reg.date).toISOString()
-    }))
-
+    // Return the client component with initial data
     return (
       <AdminDashboard 
-        initialRegistrations={validRegistrations}
-        initialEvents={serializedEvents}
+        initialRegistrations={registrationsResponse.data}
+        initialEvents={eventsResponse.data}
       />
     )
   } catch (error) {

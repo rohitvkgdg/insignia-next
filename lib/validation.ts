@@ -73,13 +73,11 @@ export const changeRoleSchema = z.object({
 })
 
 export const updatePaymentStatusSchema = z.object({
-  paymentId: z.string().uuid("Invalid payment ID format"),
-  status: z.nativeEnum(PaymentStatus, { 
+  id: z.string().uuid("Invalid registration ID"),
+  paymentStatus: z.nativeEnum(PaymentStatus, { 
     errorMap: () => ({ message: "Invalid payment status" }) 
   }),
-  transactionId: z.string().max(100).optional(),
-  notes: z.string().max(500).optional(),
-})
+});
 
 // Profile update validation schema
 export const updateProfileSchema = z.object({

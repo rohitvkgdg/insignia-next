@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth"
 import { z } from "zod"
 import { db } from "@/lib/db"
 import { eq } from "drizzle-orm"
-import { registration, event } from "@/schema"
+import { registration, event, user } from "@/schema"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { logger } from "@/lib/logger"
 import { revalidatePath } from "next/cache"
@@ -11,11 +11,20 @@ import { sql, desc } from "drizzle-orm/sql"
 
 export type RegistrationData = {
   id: string
+  registrationId: string
   userName: string | null
+  userEmail: string | null
+  userPhone: string | null
+  userUSN: string | null
   eventName: string
+  eventFee: string | number
   date: string
+  time: string
+  location: string
+  createdAt: string
   status: string
   paymentStatus: PaymentStatus
+  teamSize: number
 }
 
 export type AdminEventData = {
@@ -26,7 +35,11 @@ export type AdminEventData = {
   time: string
   location: string
   category: string
+  fee: number
   registrationCount: number
+  paidRegistrations: number
+  revenue: number
+  createdAt: string
 }
 
 // Validation schemas
@@ -108,10 +121,12 @@ export async function deleteRegistration(registrationId: string) {
   }
 }
 
-export async function getRecentRegistrations(
+export async function getRegistrations(
   page = 1,
   limit = 10,
-  searchQuery?: string
+  searchQuery?: string,
+  sortBy: string = 'createdAt',
+  sortOrder: 'asc' | 'desc' = 'desc'
 ): Promise<{ data: RegistrationData[], metadata: { total: number; page: number; limit: number; totalPages: number } }> {
   try {
     const session = await getServerSession(authOptions)
@@ -122,8 +137,26 @@ export async function getRecentRegistrations(
     let whereClause = undefined;
     if (searchQuery) {
       whereClause = sql`CAST(registration.id AS TEXT) ILIKE ${`%${searchQuery}%`} OR 
-                       user.name ILIKE ${`%${searchQuery}%`}`;
+                       user.name ILIKE ${`%${searchQuery}%`} OR
+                       event.title ILIKE ${`%${searchQuery}%`}`;
     }
+
+    // Determine ordering
+    const getOrderBy = (reg: any, { desc, asc }: any) => {
+      switch(sortBy) {
+        case 'userName':
+          return sortOrder === 'desc' ? [desc(sql`user.name`)] : [asc(sql`user.name`)];
+        case 'eventName':
+          return sortOrder === 'desc' ? [desc(sql`event.title`)] : [asc(sql`event.title`)];
+        case 'date':
+          return sortOrder === 'desc' ? [desc(sql`event.date`)] : [asc(sql`event.date`)];
+        case 'status':
+          return sortOrder === 'desc' ? [desc(registration.paymentStatus)] : [asc(registration.paymentStatus)];
+        case 'createdAt':
+        default:
+          return sortOrder === 'desc' ? [desc(reg.createdAt)] : [asc(reg.createdAt)];
+      }
+    };
 
     const registrations = await db.query.registration.findMany({
       where: whereClause,
@@ -131,35 +164,53 @@ export async function getRecentRegistrations(
         user: {
           columns: {
             name: true,
+            email: true,
+            phone: true,
+            usn: true
           }
         },
         event: {
           columns: {
             title: true,
             date: true,
+            fee: true,
+            location: true,
+            time: true
           }
-        }
+        },
+        teamMembers: true
       },
       limit,
       offset: (page - 1) * limit,
-      orderBy: (reg, { desc }) => [desc(reg.createdAt)]
+      orderBy: getOrderBy
     });
 
     // Get total count
     const totalResult = await db
       .select({ count: sql<number>`count(*)`.as('count') })
       .from(registration)
+      .leftJoin(event, eq(registration.eventId, event.id))
+      .leftJoin(user, eq(registration.userId, user.id))
       .where(whereClause || sql`TRUE`);
 
     const total = totalResult[0].count;
 
     const data = registrations.map(reg => ({
       id: reg.id,
+      registrationId: reg.registrationId,
       userName: reg.user.name,
+      userEmail: reg.user.email,
+      userPhone: reg.user.phone,
+      userUSN: reg.user.usn,
       eventName: reg.event.title,
+      eventFee: reg.event.fee,
       date: reg.event.date.toISOString(),
+      time: reg.event.time,
+      location: reg.event.location,
+      createdAt: reg.createdAt.toISOString(),
       status: reg.paymentStatus === PaymentStatus.PAID ? "CONFIRMED" : "PENDING",
       paymentStatus: reg.paymentStatus as PaymentStatus,
+      teamSize: reg.teamMembers?.length || 0
     }));
 
     return {
@@ -172,39 +223,108 @@ export async function getRecentRegistrations(
       }
     };
   } catch (error) {
-    logger.error("Failed to fetch recent registrations", { error })
+    logger.error("Failed to fetch registrations", { error })
     throw error
   }
 }
 
-export async function getAdminEvents(): Promise<AdminEventData[]> {
+export async function getAdminEvents(
+  page = 1,
+  limit = 10,
+  searchQuery?: string,
+  sortBy: string = 'date',
+  sortOrder: 'asc' | 'desc' = 'desc'
+): Promise<{ data: AdminEventData[], metadata: { total: number; page: number; limit: number; totalPages: number } }> {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user || (session.user.role !== "ADMIN")) {
       throw new Error("Unauthorized")
     }
 
+    let whereClause = undefined;
+    if (searchQuery) {
+      whereClause = sql`event.title ILIKE ${`%${searchQuery}%`} OR 
+                      event.description ILIKE ${`%${searchQuery}%`} OR
+                      event.category ILIKE ${`%${searchQuery}%`} OR
+                      event.location ILIKE ${`%${searchQuery}%`}`;
+    }
+
+    // Determine ordering
+    const getOrderBy = (evt: any, { desc, asc }: any) => {
+      switch(sortBy) {
+        case 'title':
+          return sortOrder === 'desc' ? [desc(evt.title)] : [asc(evt.title)];
+        case 'category':
+          return sortOrder === 'desc' ? [desc(evt.category)] : [asc(evt.category)];
+        case 'registrations':
+          // This is a bit complex as we need to count relationships
+          return sortOrder === 'desc' 
+            ? [desc(sql`(SELECT COUNT(*) FROM "registration" WHERE "registration"."eventId" = "event"."id")`)]
+            : [asc(sql`(SELECT COUNT(*) FROM "registration" WHERE "registration"."eventId" = "event"."id")`)];
+        case 'date':
+        default:
+          return sortOrder === 'desc' ? [desc(evt.date)] : [asc(evt.date)];
+      }
+    };
+
+    // Fetch events with pagination
     const events = await db.query.event.findMany({
+      where: whereClause,
       with: {
         registrations: {
           columns: {
             id: true,
+            paymentStatus: true,
           }
         }
       },
-      orderBy: (events, { desc }) => [desc(events.date)]
-    })
+      limit,
+      offset: (page - 1) * limit,
+      orderBy: getOrderBy
+    });
 
-    return events.map(event => ({
-      id: event.id,
-      title: event.title,
-      description: event.description || "",
-      date: event.date.toISOString(),
-      time: event.time,
-      location: event.location,
-      category: event.category,
-      registrationCount: event.registrations.length,
-    }))
+    // Get total count for pagination
+    const totalResult = await db
+      .select({ count: sql<number>`count(*)`.as('count') })
+      .from(event)
+      .where(whereClause || sql`TRUE`);
+    
+    const total = totalResult[0].count;
+
+    // Prepare data for frontend
+    const data = events.map(event => {
+      // Calculate paid registrations for revenue
+      const paidRegistrations = event.registrations.filter(reg => 
+        reg.paymentStatus === PaymentStatus.PAID
+      ).length;
+      
+      const revenue = paidRegistrations * Number(event.fee);
+      
+      return {
+        id: event.id,
+        title: event.title,
+        description: event.description || "",
+        date: event.date.toISOString(),
+        time: event.time,
+        location: event.location,
+        category: event.category,
+        fee: Number(event.fee),
+        registrationCount: event.registrations.length,
+        paidRegistrations,
+        revenue,
+        createdAt: event.createdAt.toISOString()
+      };
+    });
+
+    return {
+      data,
+      metadata: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      }
+    };
   } catch (error) {
     logger.error("Failed to fetch admin events", { error })
     throw error

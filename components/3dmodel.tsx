@@ -64,4 +64,4 @@ export default function ThreeDmodel() {
 }
 
 // THREE loader cache fix
-useGLTF.preload('/SDM3.gltf'); // (Optional preload if static model)
+// useGLTF.preload('/SDM3.gltf'); // (Optional preload if static model)

@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ChevronDown } from "lucide-react"
 
 export function EventCategoryNavigation({ currentCategory, department }: { 
@@ -90,7 +90,7 @@ export function EventCategoryNavigation({ currentCategory, department }: {
   }
 
   return (
-    <Tabs defaultValue={currentCategory || "all"} className="w-full">
+    <Tabs value={currentCategory || "all"} className="w-fit">
       <div className="flex flex-col items-center gap-4">
         <TabsList className="mb-4 h-auto p-1 grid grid-cols-3 md:flex md:grid-cols-none gap-1">
           <TabsTrigger value="centralized" asChild className="px-3 py-1.5 h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
@@ -111,44 +111,24 @@ export function EventCategoryNavigation({ currentCategory, department }: {
         </TabsList>
         
         {currentCategory === "technical" && (
-          <TabsList className="mb-4 h-auto p-1 grid grid-cols-4 md:flex md:grid-cols-none gap-1">
-            <TabsTrigger value="cse" asChild className="px-3 py-1.5 h-auto">
-              <Link href="/events?category=technical&department=cse">CSE</Link>
-            </TabsTrigger>
-            <TabsTrigger value="ise" asChild className="px-3 py-1.5 h-auto">
-              <Link href="/events?category=technical&department=ise">ISE</Link>
-            </TabsTrigger>
-            <TabsTrigger value="aiml" asChild className="px-3 py-1.5 h-auto">
-              <Link href="/events?category=technical&department=aiml">AIML</Link>
-            </TabsTrigger>
-            <TabsTrigger value="ece" asChild className="px-3 py-1.5 h-auto">
-              <Link href="/events?category=technical&department=ece">ECE</Link>
-            </TabsTrigger>
-            <TabsTrigger value="eee" asChild className="px-3 py-1.5 h-auto">
-              <Link href="/events?category=technical&department=eee">EEE</Link>
-            </TabsTrigger>
-            <TabsTrigger value="mech" asChild className="px-3 py-1.5 h-auto">
-              <Link href="/events?category=technical&department=mech">MECH</Link>
-            </TabsTrigger>
-            <TabsTrigger value="civil" asChild className="px-3 py-1.5 h-auto">
-              <Link href="/events?category=technical&department=civil">CIVIL</Link>
-            </TabsTrigger>
-            <TabsTrigger value="phy" asChild className="px-3 py-1.5 h-auto">
-              <Link href="/events?category=technical&department=phy">PHY</Link>
-            </TabsTrigger>
-            <TabsTrigger value="chem" asChild className="px-3 py-1.5 h-auto">
-              <Link href="/events?category=technical&department=chem">CHEM</Link>
-            </TabsTrigger>
-            <TabsTrigger value="chty" asChild className="px-3 py-1.5 h-auto">
-              <Link href="/events?category=technical&department=chty">CHTY</Link>
-            </TabsTrigger>
-            <TabsTrigger value="hum" asChild className="px-3 py-1.5 h-auto">
-              <Link href="/events?category=technical&department=hum">HUM</Link>
-            </TabsTrigger>
-            <TabsTrigger value="math" asChild className="px-3 py-1.5 h-auto">
-              <Link href="/events?category=technical&department=math">MATH</Link>
-            </TabsTrigger>
-          </TabsList>
+          <Tabs value={department || undefined} className="w-full">
+            <TabsList className="mb-4 h-auto p-1 grid grid-cols-4 md:flex md:grid-cols-none gap-1">
+              {[
+                ['CSE', 'cse'], ['ISE', 'ise'], ['AIML', 'aiml'], ['ECE', 'ece'],
+                ['EEE', 'eee'], ['MECH', 'mech'], ['CIVIL', 'civil'], ['PHY', 'phy'],
+                ['CHEM', 'chem'], ['CHTY', 'chty'], ['HUM', 'hum'], ['MATH', 'math']
+              ].map(([label, value]) => (
+                <TabsTrigger 
+                  key={value}
+                  value={value} 
+                  asChild 
+                  className="px-3 py-1.5 h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
+                  <Link href={`/events?category=technical&department=${value}`}>{label}</Link>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         )}
       </div>
     </Tabs>
