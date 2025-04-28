@@ -26,6 +26,11 @@ export default function Navbar() {
     return pathname === path
   }
 
+  const handleSignIn = () => {
+    const callbackUrl = encodeURIComponent(pathname)
+    signIn("google", { callbackUrl: pathname })
+  }
+
   const navItems = [
     { name: "Home", link: "/" },
     { name: "Events", link: "/events" },
@@ -86,7 +91,11 @@ export default function Navbar() {
           {status === "authenticated" ? (
             <UserMenu />
           ) : (
-            <Button onClick={() => signIn("google")} variant="default" className="rounded-full">
+            <Button 
+              onClick={handleSignIn} 
+              variant="default" 
+              className="rounded-full z-50 cursor-pointer pointer-events-auto relative"
+            >
               Sign In
             </Button>
           )}
@@ -107,7 +116,11 @@ export default function Navbar() {
             {status === "authenticated" ? (
               <UserMenu />
             ) : (
-              <Button onClick={() => signIn("google")} variant="default" className="rounded-full">
+              <Button 
+                onClick={handleSignIn} 
+                variant="default" 
+                className="rounded-full z-50 cursor-pointer pointer-events-auto relative"
+              >
                 Sign In
               </Button>
             )}

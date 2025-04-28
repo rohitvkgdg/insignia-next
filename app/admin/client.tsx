@@ -234,7 +234,7 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className="flex flex-col space-y-6">
+      <div className="flex flex-col mt-36 space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
           <p className="text-muted-foreground">Manage event registrations and payment statuses</p>

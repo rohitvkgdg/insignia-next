@@ -97,7 +97,7 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
   }
 
   return (
-    <div className="container py-10 flex flex-col items-center">
+    <div className="container py-36 flex flex-col items-center">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">My Profile</h1>
         <p className="text-muted-foreground">Manage your personal information and event registrations</p>

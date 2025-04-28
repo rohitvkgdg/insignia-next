@@ -53,14 +53,15 @@ export default async function EventPage({ params }: { params: { id: string } }) 
     false;
 
   return (
-    <div className="container max-w-7xl mx-auto py-10">
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold tracking-tight">{event.title}</h1>
-            <p className="text-muted-foreground mt-2">{event.description}</p>
-          </div>
-          <div className="relative w-full max-w-4xl mx-auto">
+    <div className="container max-w-7xl mx-auto py-36">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">{event.title}</h1>
+        <p className="text-muted-foreground mt-2">{event.description}</p>
+      </div>
+      
+      <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex-1">
+          <div className="relative w-full max-w-xs mx-auto">
             <AspectRatio ratio={1 / 1.414} className="overflow-hidden rounded-lg bg-muted">
               <img 
                 src={event.image || "/placeholder.svg"} 
@@ -79,7 +80,8 @@ export default async function EventPage({ params }: { params: { id: string } }) 
             )}
           </div>
         </div>
-        <div>
+
+        <div className="w-full lg:w-[350px] lg:ml-8">
           <Card>
             <CardHeader>
               <CardTitle>Registration</CardTitle>

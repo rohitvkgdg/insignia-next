@@ -49,7 +49,7 @@ export default function Home() {
               
               {/* 3D Model Background */}
               <div className="absolute inset-0 w-full h-full z-10">
-                {/* <ThreeDmodel/> */}
+                <ThreeDmodel/>
               </div>
 
               {/* Content Overlay */}
@@ -120,6 +120,43 @@ export default function Home() {
                 </div>
               </div>
             </section>
+            {/* Insignia Logo Section */}
+            <section className="w-full py-4 md:py-24 lg:py-32 overflow-x-visible">
+              <div className="container relative">
+              <div className="flex flex-col items-center justify-between space-y-4 text-center mb-12">
+              <div className="space-y-2 flex items-center w-full justify-between relative">
+              <div className="absolute -left-[42%] md:-left-[32%] lg:-left-[35%] xl:-left-[28%] 2xl:-left-[43%] animate-spin-slow">
+                <Image 
+                src={"/Elements/violet-chakra.svg"} 
+                alt="Insignia Logo" 
+                className="p-2 w-[200px] md:w-[400px] lg:w-[600px]" 
+                width={600} 
+                height={100}
+                />
+              </div>
+              <div className="mx-auto">
+                <Image 
+                src={"/Elements/ins-logo-yellow.svg"} 
+                alt="Insignia Logo" 
+                className="p-2 w-[200px] md:w-[300px] lg:w-[400px]" 
+                width={400} 
+                height={100}
+                />
+              </div>
+              <div className="absolute -right-[42%] md:-right-[32%] lg:-right-[35%] xl:-right-[28%] 2xl:-right-[43%] animate-spin-slow">
+                <Image 
+                src={"/Elements/violet-chakra.svg"} 
+                alt="Insignia Logo" 
+                className="p-2 w-[200px] md:w-[400px] lg:w-[600px]" 
+                width={600} 
+                height={100}
+                />
+              </div>
+              </div>
+              </div>
+              </div>
+            </section>
+
             {/* Artist Section */}
             <section className="w-full py-4 md:py-24 lg:py-32">
               <div className="container px-4 md:px-6">
