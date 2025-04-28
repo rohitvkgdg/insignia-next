@@ -7,6 +7,8 @@ import Image from "next/image"
 import { LoadingScreen } from "@/components/loading-screen"
 import { CustomSVGCard } from "@/components/ui/custom-svg-card"
 import CountdownTimer from "@/components/Components/Counter/CountdownTimer"
+import ThreeDmodel from "@/components/3dmodel"
+import { GallerySection } from "@/components/gallery-section"
 
 export const metadata = {
   title: "Insignia | A National Level Techno-cultural Fest",
@@ -36,43 +38,51 @@ export default function Home() {
         </div>
         <div className="relative z-20 flex flex-col">
           {/* Content */}
-          <div className="flex flex-col m-4">
+          <div className="flex flex-col my-4">
             {/* Hero Section */}
-            <div>
-            <div className="absolute flex top-5 lg:left-20 lg:right-10 justify-around w-[90%]">
-              <Image src={"/images/sdm-logo.png"} alt="SDM Logo" width={40} height={20}/>
-              <p className="text-xs md:text-base lg:text-lg px-10 text-center font-bold text-white">SHRI DHARMASTHALA MANJUNATHESHWARA COLLEGE OF ENGINEERING & TECHNOLOGY</p>
-              <Image src={"/images/hegde.png"} alt="Image" width={40} height={25}/>
-            </div>
-            </div>
-            <section className="w-full py-48 md:py-32 lg:py-32 xl:py-60">
-              <div className="container px-4 md:px-6">
-                <div className="flex flex-col items-center space-y-4 text-center">
-                  <div className="relative">
-                    <Image
-                      src="https://r2.sdmcetinsignia.com/insignia25.svg"
-                      alt="Insignia"
-                      height={600}
-                      width={600}
-                      style={{ objectFit: 'contain' }}
-                      priority
-                    />
-                  </div>
-                  <div className="space-y-8 pt-24">
-                    <div className="space-x-4">
-                      <Link href="/events">
-                        <Button className="px-6 text-base py-2">Explore Events<ArrowRight /></Button>
-                      </Link>
-                      <SignInButton />
-                    </div>
-                    <CountdownTimer />
-                  </div>
-                </div>
+            <div className="relative min-h-screen rounded-2xl">
+              <div className="absolute flex top-1 w-[90%] items-center mx-4 lg:left-20 lg:right-10 justify-around z-30">
+                <Image src={"/images/sdm-logo.png"} alt="SDM Logo" className="p-2" width={50} height={20}/>
+                <p className="text-[10px] md:text-base lg:text-lg px-3 text-center font-bold text-white">SHRI DHARMASTHALA MANJUNATHESHWARA COLLEGE OF ENGINEERING & TECHNOLOGY</p>
+                <Image src={"/images/hegde.png"} alt="Image" width={40} className="p-1" height={25}/>
               </div>
-            </section>
+              
+              {/* 3D Model Background */}
+              <div className="absolute inset-0 w-full h-full z-10">
+                {/* <ThreeDmodel/> */}
+              </div>
+
+              {/* Content Overlay */}
+              <div className="relative z-20">
+                <section className="w-full py-48 md:py-32 lg:py-32 xl:py-60">
+                  <div className="container px-4 md:px-6">
+                    <div className="flex flex-col items-center space-y-4 text-center">
+                      <div className="relative">
+                        <Image
+                          src="https://r2.sdmcetinsignia.com/insignia25.svg"
+                          alt="Insignia"
+                          height={600}
+                          width={600}
+                          style={{ objectFit: 'contain' }}
+                        />
+                      </div>
+                      <div className="space-y-8 pt-4">
+                        <div className="space-x-4">
+                          <Link href="/events">
+                            <Button className="px-6 text-base py-2 rounded-full">Explore Events<ArrowRight /></Button>
+                          </Link>
+                          <SignInButton />
+                        </div>
+                        <CountdownTimer />
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
 
             {/* Categories Section */}
-            <section className="w-full py-12">
+            <section className="w-full py-2">
               <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
                   <div className="space-y-2">
@@ -110,6 +120,18 @@ export default function Home() {
                 </div>
               </div>
             </section>
+            {/* Artist Section */}
+            <section className="w-full py-4 md:py-24 lg:py-32">
+              <div className="container px-4 md:px-6">
+                <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
+                  <div className="space-y-2">
+                    <Image src={"/Elements/shashwat-singh-image.png"} alt="Shashwat Singh" className="p-2" width={600} height={100}/>
+                  </div>
+                </div>
+              </div>
+              </section>
+            {/* Gallery Section */}
+            <GallerySection />
 
             {/* Features Section */}
             <section className="w-full py-12 md:py-24 lg:py-32">

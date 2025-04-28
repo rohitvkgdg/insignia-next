@@ -86,7 +86,7 @@ export default function Navbar() {
           {status === "authenticated" ? (
             <UserMenu />
           ) : (
-            <Button onClick={() => signIn("google")} variant="default">
+            <Button onClick={() => signIn("google")} variant="default" className="rounded-full">
               Sign In
             </Button>
           )}
@@ -107,7 +107,7 @@ export default function Navbar() {
             {status === "authenticated" ? (
               <UserMenu />
             ) : (
-              <Button onClick={() => signIn("google")} variant="default">
+              <Button onClick={() => signIn("google")} variant="default" className="rounded-full">
                 Sign In
               </Button>
             )}
@@ -116,20 +116,8 @@ export default function Navbar() {
         <MobileNavMenu isOpen={isMobileMenuOpen} onCloseAction={() => setIsMobileMenuOpen(false)}>
           <NavItems items={navItems} onItemClick={() => setIsMobileMenuOpen(false)} />
           <div>
-            {status === "authenticated" ? (
-              <>
-                <Link href="/" className="block px-4 text-sm">Home</Link>
-                <Link href="/events" className="block px-4 py-2 text-sm">Events</Link>
-              </>
-            ) : (
-              <Button 
-                onClick={() => signIn("google")} 
-                variant="default"
-                className="w-full"
-              >
-                Sign In
-              </Button>
-            )}
+            <Link href="/" className="block px-4 pt-2 text-sm">Home</Link>
+            <Link href="/events" className="block px-4 py-2 text-sm">Events</Link>
           </div>
         </MobileNavMenu>
       </MobileNav>

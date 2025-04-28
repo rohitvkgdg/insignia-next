@@ -41,9 +41,9 @@ async function getEvents(category?: string, department?: string) {
       .from(event)
       .leftJoin(registration, eq(registration.eventId, event.id))
       .where(
-        category === "TECHNICAL" && department
+        category === "technical" && department
           ? and(
-              eq(event.category, category.toUpperCase() as typeof eventCategoryEnum.enumValues[number]),
+              eq(event.category, "TECHNICAL"),
               eq(event.department, department.toUpperCase() as "CSE" | "ISE" | "AIML" | "ECE" | "EEE" | "MECH" | "CIVIL" | "PHY" | "CHEM" | "CHTY" | "HUM" | "MATH")
             )
           : eq(event.category, category.toUpperCase() as typeof eventCategoryEnum.enumValues[number])

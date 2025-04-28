@@ -12,7 +12,7 @@ export default function SignInButton() {
   }
 
   return (
-    <Button variant="outline" onClick={() => signIn("google")}>
+    <Button variant="outline" className="rounded-full" onClick={() => signIn("google")}>
       Sign In
     </Button>
   )

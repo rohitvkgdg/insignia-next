@@ -5,6 +5,7 @@
       "name": "insignia-next",
       "dependencies": {
         "@aws-sdk/client-s3": "^3.787.0",
+        "@aws-sdk/s3-request-presigner": "^3.797.0",
         "@hookform/resolvers": "^5.0.1",
         "@radix-ui/react-accordion": "^1.2.8",
         "@radix-ui/react-alert-dialog": "^1.1.11",
@@ -151,6 +152,8 @@
 
     "@aws-sdk/region-config-resolver": ["@aws-sdk/region-config-resolver@3.775.0", "", { "dependencies": { "@aws-sdk/types": "3.775.0", "@smithy/node-config-provider": "^4.0.2", "@smithy/types": "^4.2.0", "@smithy/util-config-provider": "^4.0.0", "@smithy/util-middleware": "^4.0.2", "tslib": "^2.6.2" } }, ""],
 
+    "@aws-sdk/s3-request-presigner": ["@aws-sdk/s3-request-presigner@3.797.0", "", { "dependencies": { "@aws-sdk/signature-v4-multi-region": "3.796.0", "@aws-sdk/types": "3.775.0", "@aws-sdk/util-format-url": "3.775.0", "@smithy/middleware-endpoint": "^4.1.0", "@smithy/protocol-http": "^5.1.0", "@smithy/smithy-client": "^4.2.0", "@smithy/types": "^4.2.0", "tslib": "^2.6.2" } }, "sha512-ncEsGwmQIkXi3IREbGLC6X5sY38WM1WUAdaU5uQmBPOGEVQHtDyrIObBsIzK99j83SGWi8RqO7/n0jMGZPmeQw=="],
+
     "@aws-sdk/signature-v4-multi-region": ["@aws-sdk/signature-v4-multi-region@3.796.0", "", { "dependencies": { "@aws-sdk/middleware-sdk-s3": "3.796.0", "@aws-sdk/types": "3.775.0", "@smithy/protocol-http": "^5.1.0", "@smithy/signature-v4": "^5.1.0", "@smithy/types": "^4.2.0", "tslib": "^2.6.2" } }, ""],
 
     "@aws-sdk/token-providers": ["@aws-sdk/token-providers@3.797.0", "", { "dependencies": { "@aws-sdk/nested-clients": "3.797.0", "@aws-sdk/types": "3.775.0", "@smithy/property-provider": "^4.0.2", "@smithy/shared-ini-file-loader": "^4.0.2", "@smithy/types": "^4.2.0", "tslib": "^2.6.2" } }, ""],
@@ -160,6 +163,8 @@
     "@aws-sdk/util-arn-parser": ["@aws-sdk/util-arn-parser@3.723.0", "", { "dependencies": { "tslib": "^2.6.2" } }, ""],
 
     "@aws-sdk/util-endpoints": ["@aws-sdk/util-endpoints@3.787.0", "", { "dependencies": { "@aws-sdk/types": "3.775.0", "@smithy/types": "^4.2.0", "@smithy/util-endpoints": "^3.0.2", "tslib": "^2.6.2" } }, ""],
+
+    "@aws-sdk/util-format-url": ["@aws-sdk/util-format-url@3.775.0", "", { "dependencies": { "@aws-sdk/types": "3.775.0", "@smithy/querystring-builder": "^4.0.2", "@smithy/types": "^4.2.0", "tslib": "^2.6.2" } }, "sha512-Nw4nBeyCbWixoGh8NcVpa/i8McMA6RXJIjQFyloJLaPr7CPquz7ZbSl0MUWMFVwP/VHaJ7B+lNN3Qz1iFCEP/Q=="],
 
     "@aws-sdk/util-locate-window": ["@aws-sdk/util-locate-window@3.723.0", "", { "dependencies": { "tslib": "^2.6.2" } }, ""],
 
