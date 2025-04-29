@@ -20,9 +20,14 @@ export async function GET(request: NextRequest) {
 
     const result = await getRegistrations(page, limit, search, sortBy, sortOrder)
     
+    if (!result) {
+      return NextResponse.json({ error: "No registrations found" }, { status: 404 })
+    }
+
     return NextResponse.json(result)
   } catch (error) {
-    logger.error("Error fetching registrations", { error })
-    return NextResponse.json({ error: "Failed to fetch registrations" }, { status: 500 })
+    logger.error("Error in registrations API route:", { error })
+    const message = error instanceof Error ? error.message : "Failed to fetch registrations"
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

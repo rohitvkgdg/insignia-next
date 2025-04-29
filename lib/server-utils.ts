@@ -40,20 +40,24 @@ export async function handleError(error: unknown) {
   )
 }
 
-// Add this enum for department codes
+// Add department code enum at the top with all departments
 export enum DepartmentCode {
-  CENTRALIZED = "CN",
   COMPUTER_SCIENCE = "CSE",
-  ELECTRONICS = "ECE",
-  MECHANICAL = "ME",
-  CIVIL = "CV",
-  ELECTRICAL = "EEE",
   INFORMATION_SCIENCE = "ISE",
-  AIML = "AIML",
-  CHEMICAL = "CHE",
-  FINEARTS = "FA",
+  AI_ML = "AIML",
+  ELECTRONICS = "ECE",
+  ELECTRICAL = "EEE",
+  MECHANICAL = "MECH",
+  CIVIL = "CIVIL",
+  PHYSICS = "PHY",
+  CHEMISTRY = "CHEM",
+  CHEMICAL = "CHTY",
+  HUMANITIES = "HUM",
+  MATHEMATICS = "MATH",
+  CENTRALIZED = "CEN",
+  CULTURAL = "CUL",
   LITERARY = "LIT",
-  CULTURAL = "CUL"
+  FINEARTS = "FNA"
 }
 
 export async function generateUserId(): Promise<string> {
@@ -103,11 +107,50 @@ export async function generateRegistrationId(eventId: string, userId: string): P
   
   // Determine department code based on event category/department
   let deptCode: string;
-  if (eventData.department) {
-    // If event has a specific department
-    deptCode = DepartmentCode.COMPUTER_SCIENCE; // Default to CSE, modify as needed
+  if (eventData.category === "TECHNICAL" && eventData.department) {
+    // Map department to corresponding code for technical events
+    switch (eventData.department) {
+      case "CSE":
+        deptCode = DepartmentCode.COMPUTER_SCIENCE;
+        break;
+      case "ISE":
+        deptCode = DepartmentCode.INFORMATION_SCIENCE;
+        break;
+      case "AIML":
+        deptCode = DepartmentCode.AI_ML;
+        break;
+      case "ECE":
+        deptCode = DepartmentCode.ELECTRONICS;
+        break;
+      case "EEE":
+        deptCode = DepartmentCode.ELECTRICAL;
+        break;
+      case "MECH":
+        deptCode = DepartmentCode.MECHANICAL;
+        break;
+      case "CIVIL":
+        deptCode = DepartmentCode.CIVIL;
+        break;
+      case "PHY":
+        deptCode = DepartmentCode.PHYSICS;
+        break;
+      case "CHEM":
+        deptCode = DepartmentCode.CHEMISTRY;
+        break;
+      case "CHTY":
+        deptCode = DepartmentCode.CHEMICAL;
+        break;
+      case "HUM":
+        deptCode = DepartmentCode.HUMANITIES;
+        break;
+      case "MATH":
+        deptCode = DepartmentCode.MATHEMATICS;
+        break;
+      default:
+        deptCode = DepartmentCode.CENTRALIZED;
+    }
   } else {
-    // Determine based on category
+    // For non-technical events, determine based on category
     switch (eventData.category) {
       case "CULTURAL":
         deptCode = DepartmentCode.CULTURAL;
@@ -124,7 +167,7 @@ export async function generateRegistrationId(eventId: string, userId: string): P
   }
   
   // Format event ID to 2 digits and user ID to 5 digits
-  const formattedEventId = eventData.id.padStart(2, '0');
+  const formattedEventId = eventData.id.slice(-2).padStart(2, '0');
   const formattedUserId = userData.numericId.toString().padStart(5, '0');
   
   // Format: INS-{deptCode}-{eventId}-{userId}

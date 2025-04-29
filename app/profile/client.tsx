@@ -81,7 +81,6 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
       // Handle redirect after successful update
       if (callbackUrl) {
         const decodedUrl = decodeURIComponent(callbackUrl)
-        console.log('Redirecting to:', decodedUrl) // Debug log
         await router.push(decodedUrl)
       } else {
         router.refresh()

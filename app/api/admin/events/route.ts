@@ -20,9 +20,14 @@ export async function GET(request: NextRequest) {
 
     const result = await getAdminEvents(page, limit, search, sortBy, sortOrder)
     
+    if (!result) {
+      return NextResponse.json({ error: "No events found" }, { status: 404 })
+    }
+
     return NextResponse.json(result)
   } catch (error) {
-    logger.error("Error fetching events", { error })
-    return NextResponse.json({ error: "Failed to fetch events" }, { status: 500 })
+    logger.error("Error in events API route:", { error })
+    const message = error instanceof Error ? error.message : "Failed to fetch events"
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

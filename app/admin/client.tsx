@@ -147,14 +147,23 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
       })
       
       const response = await fetch(`/api/admin/registrations?${queryParams}`)
-      if (!response.ok) throw new Error('Failed to fetch registrations')
-      
       const data = await response.json()
-      setRegistrations(data.data)
-      setRegistrationsMetadata(data.metadata)
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          // Handle no results found
+          setRegistrations([])
+          setRegistrationsMetadata({ total: 0, page: 1, limit: registrationsMetadata.limit, totalPages: 0 })
+          return
+        }
+        throw new Error(data.error || 'Failed to fetch registrations')
+      }
+
+      setRegistrations(data.data || [])
+      setRegistrationsMetadata(data.metadata || { total: 0, page: 1, limit: registrationsMetadata.limit, totalPages: 0 })
     } catch (error) {
-      toast.error("Failed to load registrations")
-      console.error(error)
+      console.error('Registration fetch error:', error)
+      toast.error(error instanceof Error ? error.message : "Failed to load registrations. Please try again.")
     } finally {
       setIsLoadingRegistrations(false)
     }
@@ -178,14 +187,23 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
       })
       
       const response = await fetch(`/api/admin/events?${queryParams}`)
-      if (!response.ok) throw new Error('Failed to fetch events')
-      
       const data = await response.json()
-      setEvents(data.data)
-      setEventsMetadata(data.metadata)
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          // Handle no results found
+          setEvents([])
+          setEventsMetadata({ total: 0, page: 1, limit: eventsMetadata.limit, totalPages: 0 })
+          return
+        }
+        throw new Error(data.error || 'Failed to fetch events')
+      }
+
+      setEvents(data.data || [])
+      setEventsMetadata(data.metadata || { total: 0, page: 1, limit: eventsMetadata.limit, totalPages: 0 })
     } catch (error) {
-      toast.error("Failed to load events")
-      console.error(error)
+      console.error('Event fetch error:', error)
+      toast.error(error instanceof Error ? error.message : "Failed to load events. Please try again.")
     } finally {
       setIsLoadingEvents(false)
     }

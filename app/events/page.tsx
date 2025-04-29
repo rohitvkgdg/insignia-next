@@ -56,17 +56,6 @@ async function getEvents(category?: string, department?: string) {
       .groupBy(event.id)
       .orderBy(asc(event.date));
 
-    console.log(`Category: ${category}, Department: ${department}, Department value: ${departmentValue}, Found events: ${events.length}`);
-    
-    // Add detailed debugging for technical events
-    if (category === "technical") {
-      console.log("Technical events found:", events.map(e => ({
-        id: e.id,
-        title: e.title,
-        department: e.department
-      })));
-    }
-
     return events.map((e) => ({
       ...e,
     }));
