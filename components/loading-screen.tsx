@@ -12,7 +12,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
   
   useEffect(() => {
     // Set a minimum loading time to prevent flickering
-    const minLoadTime = 2000 // 2 seconds
+    const minLoadTime = 3000 // 2 seconds
     const loadTimer = setTimeout(() => {
       setIsLoading(false)
     }, minLoadTime)
@@ -38,16 +38,17 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
-            className="fixed inset-0 z-[99999] bg-background flex items-center justify-center"
+            className="fixed inset-0 bg-background flex items-center justify-center"
             style={{
               position: 'fixed',
               top: 0,
               left: 0,
               right: 0,
               bottom: 0,
+              zIndex: 99999999 // Increased z-index to be above navbar
             }}
           >
-            <div className="relative w-[400px] h-[400px]">
+            <div className="relative w-[400px] h-[400px] flex items-center justify-center">
               <img
                 src="https://r2.sdmcetinsignia.com/insignia25.svg"
                 alt="Insignia"
@@ -59,7 +60,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
       </AnimatePresence>
 
       <div 
-        className={isLoading ? 'hidden' : 'contents'}
+        className={isLoading ? 'invisible' : 'contents'}
         aria-hidden={isLoading}
       >
         {children}

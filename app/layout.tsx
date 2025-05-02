@@ -40,6 +40,14 @@ if (typeof window !== "undefined") {
   monitor.getPerformanceMetrics()
 }
 
+function LoadingScreen({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={<Loading />}>
+      {children}
+    </Suspense>
+  )
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -55,29 +63,29 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <div className="relative flex min-h-screen flex-col bg-[#0a0714] overflow-hidden">
-              {/* Gradient Overlaybg-[#1b133a] */}
-              <div className="absolute inset-0 bg-gradient-to-b from-blue-900 via-blue-950 to-transparent opacity-70 z-0" />
+            <LoadingScreen>
+              <div className="relative flex min-h-screen flex-col bg-[#0a0714] overflow-hidden">
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-b from-blue-900 via-blue-950 to-transparent opacity-70 z-0" />
 
-              {/* Noise Texture Overlay */}
-              <svg className="absolute inset-0 w-full h-full opacity-5 z-0" xmlns="http://www.w3.org/2000/svg">
-                <filter id="noiseFilter">
-                  <feTurbulence
-                    type="fractalNoise"
-                    baseFrequency="0.7"
-                    numOctaves="2"
-                    stitchTiles="stitch"
-                  />
-                </filter>
-                <rect width="100%" height="100%" filter="url(#noiseFilter)" />
-              </svg>
-              
-              <Navbar />
-              <Suspense fallback={<Loading />}>
-                <main className="flex-1 relative z-10">{children}</main>
-              </Suspense>
-              <Footer />
-            </div>
+                {/* Noise Texture Overlay */}
+                <svg className="absolute inset-0 w-full h-full opacity-5 z-0" xmlns="http://www.w3.org/2000/svg">
+                  <filter id="noiseFilter">
+                    <feTurbulence
+                      type="fractalNoise"
+                      baseFrequency="0.7"
+                      numOctaves="2"
+                      stitchTiles="stitch"
+                    />
+                  </filter>
+                  <rect width="100%" height="100%" filter="url(#noiseFilter)" />
+                </svg>
+                
+                <Navbar />
+                <main className="flex-1 relative">{children}</main>
+                <Footer />
+              </div>
+            </LoadingScreen>
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
