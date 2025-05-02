@@ -23,98 +23,99 @@ export default function Footer() {
   return (
     <footer className="bg-transparent backdrop-blur-lg">
       <div className="container py-8 md:py-12">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-5">
           <div className="space-y-4">
-            <div className="flex">
-              <Image src={"/Elements/ins-logo-yellow.svg"} alt="Logo" width={30} height={30}/>
-              <h3 className="text-lg font-bold gradient-text">Insignia</h3>
+            <div className="flex items-center">
+              <Image src={"/Elements/ins-logo-yellow.svg"} alt="Logo" width={100} height={100}/>
+              <h3 className="text-2xl font-bold gradient-text ml-5">Insignia '25</h3>
             </div>
-            <p className="text-sm text-muted-foreground">A National Level Techno-cultural Fest by SDM College of Engineering & Technology</p>
+            <p className="text-sm ">A National Level Techno-cultural Fest by SDM College of Engineering & Technology</p>
             <div className="flex space-x-4">
-              <Link href="https://www.instagram.com/officialinsignia" className="text-muted-foreground hover:text-primary">
+              <Link href="https://www.instagram.com/officialinsignia" className=" hover:text-primary">
                 <Instagram className="h-5 w-5" />
                 <span className="sr-only">Instagram</span>
               </Link>
-              <Link href="https://www.facebook.com/insignia.sdmcet" className="text-muted-foreground hover:text-primary">
+              <Link href="https://www.facebook.com/insignia.sdmcet" className=" hover:text-primary">
                 <Facebook className="h-5 w-5" />
                 <span className="sr-only">Facebook</span>
               </Link>
             </div>
-            <div className="flex flex-col space-x-4">
-              <p className="text-sm text-muted-foreground">Contact us on:</p>
-                <p className="text-sm text-muted-foreground">
-                Anush: <a href="tel:+916366164456" className="hover:text-primary">+91 81975 17399</a>
-                </p>
-                <p className="text-sm text-muted-foreground">
-                Shreyas: <a href="tel:+916366164456" className="hover:text-primary">+91 63661 64456</a>
-                </p>
-                <p className="text-sm text-muted-foreground">
-                Vikas: <a href="tel:+917676636905" className="hover:text-primary">+91 76766 36905</a>
-                </p>
-            </div>
           </div>
+          
           <div className="space-y-4">
-            <h3 className="text-sm font-medium">Events</h3>
+            <h3 className="text-xl font-semibold">Events</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/events?category=centralized" className="text-muted-foreground hover:text-primary">
+                <Link href="/events?category=centralized" className=" hover:text-primary">
                   Centralized Events
                 </Link>
               </li>
               <li>
-                <Link href="/events?category=technical" className="text-muted-foreground hover:text-primary">
+                <Link href="/events?category=technical" className=" hover:text-primary">
                   Technical Events
                 </Link>
               </li>
               <li>
-                <Link href="/events?category=cultural" className="text-muted-foreground hover:text-primary">
+                <Link href="/events?category=cultural" className=" hover:text-primary">
                   Cultural Events
                 </Link>
               </li>
               <li>
-                <Link href="/events?category=finearts" className="text-muted-foreground hover:text-primary">
+                <Link href="/events?category=finearts" className=" hover:text-primary">
                   Finearts Events
                 </Link>
               </li>
               <li>
-                <Link href="/events?category=literary" className="text-muted-foreground hover:text-primary">
+                <Link href="/events?category=literary" className=" hover:text-primary">
                   Literary Events
                 </Link>
               </li>
             </ul>
           </div>
+          <div className="flex flex-col space-x-auto space-y-2">
+              <p className="text-xl font-semibold">Contact Us</p>
+                <p className="text-sm ">
+                Anush: <a href="tel:+916366164456" className="hover:text-primary">+91 81975 17399</a>
+                </p>
+                <p className="text-sm ">
+                Shreyas: <a href="tel:+916366164456" className="hover:text-primary">+91 63661 64456</a>
+                </p>
+                <p className="text-sm ">
+                Vikas: <a href="tel:+917676636905" className="hover:text-primary">+91 76766 36905</a>
+                </p>
+            </div>
           <div className="space-y-4">
-            <h3 className="text-sm font-medium">Resources</h3>
+            <h3 className="text-xl font-semibold">Resources</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/faq" className="text-muted-foreground hover:text-primary">
+                <Link href="/faq" className=" hover:text-primary">
                   FAQ
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="text-muted-foreground hover:text-primary">
+                <Link href="/about" className=" hover:text-primary">
                   About
                 </Link>
               </li>
             </ul>
           </div>
           <div className="space-y-4">
-            <h3 className="text-sm font-medium">Legal</h3>
+            <h3 className="text-xl font-semibold">Legal</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/privacy" className="text-muted-foreground hover:text-primary">
+                <Link href="/privacy" className=" hover:text-primary">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="text-muted-foreground hover:text-primary">
+                <Link href="/terms" className=" hover:text-primary">
                   Terms of Service
                 </Link>
               </li>
             </ul>
           </div>
         </div>
-        <div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">
+        <div className="mt-8 border-t pt-8 text-center text-sm ">
           <p>&copy; {new Date().getFullYear()} Insignia. All rights reserved.</p>
         </div>
       </div>
