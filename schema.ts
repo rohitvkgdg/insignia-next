@@ -19,8 +19,6 @@ export const user = pgTable('user', {
   accommodation: boolean('accommodation').default(false).notNull(),
   usn: text('usn').unique(),
   profileCompleted: boolean('profileCompleted').default(false).notNull(),
-  createdAt: timestamp('createdAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updatedAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
 });
 
 // Account table (for OAuth)

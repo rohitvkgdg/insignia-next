@@ -8,6 +8,7 @@ import { db } from "@/lib/db"
 import { eq } from "drizzle-orm"
 import { user as userTable, account as accountTable } from "@/schema"
 import { generateUserId } from "@/lib/server-utils"
+import { getServerSession } from "next-auth/next"
 
 // Verify required environment variables
 const requiredEnvVars = [
@@ -132,31 +133,27 @@ export const authOptions: NextAuthOptions = {
       }
     },
     async redirect({ url, baseUrl }) {
-      // Redirect to profile page if profile is not complete
       try {
-        // Check if this is a new sign in by looking at the URL
-        const currentUrl = new URL(url.startsWith('http') ? url : baseUrl + url);
-        const isNewSignIn = currentUrl.searchParams.has('error') || 
-                           currentUrl.pathname === '/signin' || 
-                           currentUrl.pathname === '/';
-                           
-        if (isNewSignIn) {
-          // On new sign in, always check profile completion
-          const email = currentUrl.searchParams.get('email');
-          if (email) {
+        // If it's a relative callback URL, make it absolute
+        if (url.startsWith('/')) url = `${baseUrl}${url}`
+        
+        // For sign in/callback, check profile completion
+        if (url.includes('signin') || url.includes('callback')) {
+          const session = await getServerSession(authOptions);
+          if (session?.user?.email) {
             const currentUser = await db.query.user.findFirst({
-              where: eq(userTable.email, email)
+              where: eq(userTable.email, session.user.email)
             });
 
-            if (!currentUser?.profileCompleted) {
-              return `${baseUrl}/profile?callbackUrl=${encodeURIComponent(url)}`;
+            // If profile is incomplete, redirect to profile page with original URL as callback
+            if (!session.user.profileCompleted) {
+                return `${baseUrl}/profile`;
             }
           }
         }
 
-        // Default NextAuth redirect logic
+        // Allow redirects within the same site
         if (url.startsWith(baseUrl)) return url;
-        if (url.startsWith("/")) return `${baseUrl}${url}`;
         return baseUrl;
       } catch (error) {
         logger.error("Error in redirect callback:", { error: error instanceof Error ? error.message : String(error) })

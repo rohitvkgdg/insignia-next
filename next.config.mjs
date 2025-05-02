@@ -8,10 +8,22 @@ const nextConfig = {
   },
   images: {
     unoptimized: false,
-    domains: [
-      "lh3.googleusercontent.com", // Google OAuth images
-      "res.cloudinary.com", // If using Cloudinary for image hosting
-      "r2.sdmcetinsignia.com", // Added domain
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'r2.sdmcetinsignia.com',
+        pathname: '/**',
+      },
     ],
   },
   experimental: {
