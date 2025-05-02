@@ -136,7 +136,7 @@ export async function getRegistrations(
 
     let whereClause = undefined;
     if (searchQuery) {
-      whereClause = sql`CAST(registration.id AS TEXT) ILIKE ${`%${searchQuery}%`} OR 
+      whereClause = sql`registration."registrationId" ILIKE ${`%${searchQuery}%`} OR 
                        user.name ILIKE ${`%${searchQuery}%`} OR
                        event.title ILIKE ${`%${searchQuery}%`}`;
     }

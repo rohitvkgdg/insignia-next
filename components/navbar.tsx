@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { useSession, signIn, signOut } from "next-auth/react"
@@ -21,10 +22,6 @@ export default function Navbar() {
   const { data: session, status } = useSession()
   const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-
-  const isActive = (path: string) => {
-    return pathname === path
-  }
 
   const handleSignIn = () => {
     const callbackUrl = encodeURIComponent(pathname)
@@ -80,8 +77,11 @@ export default function Navbar() {
     <ResizableNavbar>
       <NavBody>
         <div className="flex items-center gap-2">
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold gradient-text">Insignia</span>
+          <Link href="/" className="flex items-center space-x-2 z-50">
+            <div className="flex items-center space-x-2">
+              <Image src={"/Elements/ins-logo-yellow.svg"} alt="Logo" width={30} height={30}/>
+              <span className="text-2xl font-bold gradient-text">Insignia</span>
+            </div>            
           </Link>
           <nav className="hidden md:flex">
             <NavItems items={navItems} />

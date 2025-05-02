@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,7 +17,7 @@ import { Switch } from "@/components/ui/switch"
 
 export default function ProfileClient({ profile }: { profile: UserProfileData }) {
   const router = useRouter()
-  const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
+  const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
@@ -45,51 +45,42 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
 
   // Handle form submission
   async function handleProfileUpdate(formData: FormData) {
-    if (!validateUsn()) {
-      toast.error("USN fields do not match")
-      return
-    }
-
     setIsSubmitting(true)
     setFormError(null)
 
+    if (!validateUsn()) {
+      setIsSubmitting(false)
+      return
+    }
+
     try {
-      // Extract and format form data
-      const semesterValue = formData.get("semester") as string;
-      const semester = semesterValue === "none" ? null : semesterValue ? Number(semesterValue) : null;
+      const data: UpdateProfileInput = {
+        name: formData.get('name') as string,
+        phone: formData.get('phone') as string,
+        college: formData.get('college') as string,
+        department: formData.get('department') as string,
+        usn: formData.get('usn') as string,
+        accommodation: formData.get('accommodation') === 'on'
+      }
 
-      // Create a plain object with explicit type casting
-      const data = {
-        name: String(formData.get("name")),
-        phone: String(formData.get("phone")),
-        department: String(formData.get("department")),
-        semester,
-        college: String(formData.get("college")),
-        usn: String(formData.get("usn")),
-        accommodation: formData.get("accommodation") === "true"
-      } satisfies UpdateProfileInput;
-
-      // Call the server action to update profile
       const result = await updateProfile(data)
 
-      if (!result || 'error' in result) {
-        throw new Error(typeof result?.error === 'string' ? result.error : "Failed to update profile")
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update profile')
       }
 
       toast.success("Profile updated successfully")
-
-      // Handle redirect after successful update
+      
+      // If there's a callback URL, redirect to it
       if (callbackUrl) {
-        const decodedUrl = decodeURIComponent(callbackUrl)
-        await router.push(decodedUrl)
+        router.push(decodeURIComponent(callbackUrl))
       } else {
         router.refresh()
       }
     } catch (error) {
-      let message = "Failed to update profile"
-      if (error instanceof Error) message = error.message
-      setFormError(message)
-      toast.error(message)
+      console.error('Profile update error:', error)
+      setFormError(error instanceof Error ? error.message : "Failed to update profile")
+      toast.error(error instanceof Error ? error.message : "Failed to update profile")
     } finally {
       setIsSubmitting(false)
     }
@@ -99,7 +90,11 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
     <div className="container py-36 flex flex-col items-center">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">My Profile</h1>
-        <p className="text-muted-foreground">Manage your personal information and event registrations</p>
+        <p className="text-muted-foreground">
+          {!profile.profileCompleted 
+            ? "Please complete your profile to register for events" 
+            : "Manage your personal information and event registrations"}
+        </p>
       </div>
 
       <div className="flex flex-col align-center gap-8 lg:flex-row">

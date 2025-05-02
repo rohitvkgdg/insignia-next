@@ -2,12 +2,10 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useSession, signIn } from "next-auth/react"
+import { signIn, useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
-import { toast } from "sonner"
 import { registerForEvent } from "@/app/actions/events"
-import { Loader2, Check } from "lucide-react"
-import TeamRegistrationForm from "./team-registration-form"
+import { toast } from "sonner"
 
 interface RegisterButtonProps {
   eventId: string
@@ -32,34 +30,38 @@ export default function RegisterButton({
   const handleRegister = async () => {
     try {
       setIsLoading(true)
-      // Check if user is authenticated
+      
+      // If user is not authenticated, save current event URL and redirect to sign in
       if (status !== "authenticated") {
+        const eventUrl = `/events/${eventId}`
         await signIn("google", {
-          callbackUrl: `/events/${eventId}`,
+          callbackUrl: eventUrl,
           redirect: true
         })
         return
       }
 
-      // Check if profile is completed
-      if (!session?.user?.profileCompleted) {
+      // Check profile completion
+      if (!session.user.profileCompleted) {
         const callbackUrl = encodeURIComponent(`/events/${eventId}`)
         toast.info("Please complete your profile first")
-        await router.push(`/profile?callbackUrl=${callbackUrl}`)
+        router.push(`/profile?callbackUrl=${callbackUrl}`)
         return
       }
 
+      // If it's a team event, redirect to team registration form
+      if (isTeamEvent) {
+        router.push(`/events/${eventId}/team-registration`)
+        return
+      }
+
+      // Otherwise, proceed with individual registration
       const result = await registerForEvent(eventId)
+
       if (!result.success) {
-        if (result.code === "INCOMPLETE_PROFILE") {
-          const callbackUrl = encodeURIComponent(`/events/${eventId}`)
-          toast.info("Please complete your profile first")
-          router.push(`/profile?callbackUrl=${callbackUrl}`)
-          return
-        }
         throw new Error(result.error)
       }
-      
+
       setRegistered(true)
       toast.success("Successfully registered for the event")
       router.refresh()
@@ -70,33 +72,20 @@ export default function RegisterButton({
     }
   }
 
-  if (registered || isRegistered) {
+  if (registered) {
     return (
-      <Button className="w-full" variant="secondary" disabled>
-        <Check className="mr-2 h-4 w-4" />
+      <Button variant="outline" disabled>
         Registered
       </Button>
     )
   }
 
-  if (isTeamEvent) {
-    return (
-      <TeamRegistrationForm 
-        eventId={eventId} 
-        minTeamSize={minTeamSize} 
-        maxTeamSize={maxTeamSize} 
-      />
-    )
-  }
-
   return (
-    <Button
-      onClick={handleRegister}
-      className="w-full"
+    <Button 
+      onClick={handleRegister} 
       disabled={isLoading}
     >
-      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-      {isLoading ? "Registering..." : "Register"}
+      {isLoading ? "Registering..." : "Register Now"}
     </Button>
   )
 }

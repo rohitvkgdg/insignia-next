@@ -56,14 +56,10 @@ export const authOptions: NextAuthOptions = {
         },
       },
       async profile(profile) {
-        const user = await createUser(profile);
+        const newUser = await createUser(profile);
         return {
-          id: profile.sub,
-          numericId: user.numericId,
-          name: profile.name || "",
-          email: profile.email || "",
-          role: Role.USER,
-          profileCompleted: false,
+          ...newUser,
+          image: profile.image,
         }
       }
     }),
@@ -86,62 +82,88 @@ export const authOptions: NextAuthOptions = {
       }
       return session
     },
-    async jwt({ token, user }) {
-      if (user) {
-        token.role = user.role
-        token.profileCompleted = user.profileCompleted
+    async jwt({ token, user: authUser, account, profile }) {
+      if (authUser) {
+        token.role = authUser.role
+        token.profileCompleted = authUser.profileCompleted
       }
+
+      // If this is a sign-in event, check profile completion
+      if (account && profile && token.sub) {
+        const dbUser = await db.query.user.findFirst({
+          where: eq(userTable.id, token.sub)
+        });
+        if (dbUser) {
+          token.profileCompleted = dbUser.profileCompleted
+        }
+      }
+      
       return token
     },
-    async signIn({ user, account, profile }) {
+    async signIn({ user: authUser, account, profile }) {
       try {
-        if (!user.email) {
-          logger.error("Sign-in attempt without email", { userId: user.id })
+        if (!authUser.email) {
+          logger.error("Sign-in attempt without email", { userId: authUser.id })
           return false
         }
 
-        if (account?.provider === "google") {
-          // Check if user exists
-          if (!profile?.email) return false;
-          
+        if (account?.provider === "google" && profile?.email) {
           const existingUser = await db.query.user.findFirst({
             where: eq(userTable.email, profile.email)
           });
           
           if (!existingUser) {
-            // Create new user with sequential numeric ID
             const newUser = await createUser(profile);
-            await db.insert(userTable).values(newUser);
-          }
-        }
-
-        // Check if this user exists already
-        const existingUser = await db.query.user.findFirst({
-          where: eq(userTable.email, user.email),
-        })
-
-        // For existing users, ensure we link the account properly
-        if (existingUser) {
-          const existingAccount = await db.query.account.findFirst({
-            where: eq(accountTable.userId, existingUser.id),
-          })
-
-          // If this is a different provider but same email, we'll update the account
-          if (existingAccount && existingAccount.provider !== account?.provider) {
-            logger.info("Linking new provider to existing account", { 
-              email: user.email,
-              provider: account?.provider 
-            })
+            await db.insert(userTable).values({
+              id: newUser.id,
+              numericId: newUser.numericId,
+              name: newUser.name || null,
+              email: newUser.email,
+              role: newUser.role,
+              profileCompleted: false,
+            });
           }
         }
 
         return true
       } catch (error) {
-        logger.error("Error during sign-in:", { email: user.email, error })
+        logger.error("Error during sign-in:", { email: authUser.email, error: error instanceof Error ? error.message : String(error) })
         return false
       }
+    },
+    async redirect({ url, baseUrl }) {
+      // Redirect to profile page if profile is not complete
+      try {
+        // Check if this is a new sign in by looking at the URL
+        const currentUrl = new URL(url.startsWith('http') ? url : baseUrl + url);
+        const isNewSignIn = currentUrl.searchParams.has('error') || 
+                           currentUrl.pathname === '/signin' || 
+                           currentUrl.pathname === '/';
+                           
+        if (isNewSignIn) {
+          // On new sign in, always check profile completion
+          const email = currentUrl.searchParams.get('email');
+          if (email) {
+            const currentUser = await db.query.user.findFirst({
+              where: eq(userTable.email, email)
+            });
+
+            if (!currentUser?.profileCompleted) {
+              return `${baseUrl}/profile?callbackUrl=${encodeURIComponent(url)}`;
+            }
+          }
+        }
+
+        // Default NextAuth redirect logic
+        if (url.startsWith(baseUrl)) return url;
+        if (url.startsWith("/")) return `${baseUrl}${url}`;
+        return baseUrl;
+      } catch (error) {
+        logger.error("Error in redirect callback:", { error: error instanceof Error ? error.message : String(error) })
+        return baseUrl;
+      }
     }
-  },
+  }
 }
 
 const handler = NextAuth(authOptions)
