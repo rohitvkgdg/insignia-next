@@ -109,6 +109,7 @@ export default function Navbar() {
             onClickAction={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
           />
           <Link href="/" className="flex items-center space-x-2">
+            <Image src={"/Elements/ins-logo-yellow.svg"} alt="Logo" width={30} height={30}/>
             <span className="text-2xl font-bold gradient-text ml-2">Insignia</span>
           </Link>
           </div>
@@ -129,7 +130,7 @@ export default function Navbar() {
         <MobileNavMenu isOpen={isMobileMenuOpen} onCloseAction={() => setIsMobileMenuOpen(false)}>
           <NavItems items={navItems} onItemClick={() => setIsMobileMenuOpen(false)} />
           <div>
-            <Link href="/" className="block px-4 pt-2 text-sm">Home</Link>
+            <Link href="/" className="block px-4 py-2 pt-2 text-sm">Home</Link>
             <Link href="/events" className="block px-4 py-2 text-sm">Events</Link>
           </div>
         </MobileNavMenu>
