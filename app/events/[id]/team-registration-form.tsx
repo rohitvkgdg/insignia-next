@@ -1,12 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { X, Plus, Loader2 } from "lucide-react"
+import { X, Plus, Loader2, Users } from "lucide-react"
 import { registerForEvent } from "@/app/actions/events"
 import { toast } from "sonner"
 
@@ -25,14 +25,19 @@ export default function TeamRegistrationForm({
   const [teamMembers, setTeamMembers] = useState([{ name: "", usn: "", phone: "" }])
   const router = useRouter()
 
+  // Start with 1 member since team leader is already included
+  useEffect(() => {
+    setTeamMembers(Array(1).fill({ name: "", usn: "", phone: "" }))
+  }, [])
+
   const handleAddMember = () => {
-    if (teamMembers.length < maxTeamSize) {
+    if (teamMembers.length < (maxTeamSize - 1)) { // Subtract 1 to account for team leader
       setTeamMembers([...teamMembers, { name: "", usn: "", phone: "" }])
     }
   }
 
   const handleRemoveMember = (index: number) => {
-    if (teamMembers.length > minTeamSize) {
+    if (teamMembers.length > (minTeamSize - 1)) { // Subtract 1 to account for team leader
       setTeamMembers(teamMembers.filter((_, i) => i !== index))
     }
   }
@@ -64,23 +69,37 @@ export default function TeamRegistrationForm({
         throw new Error(result.error)
       }
 
-      toast.success("Successfully registered for the event")
+      toast.success("Successfully registered your team for the event")
       router.refresh()
+      router.push(`/events/${eventId}`)
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to register for event")
+      toast.error(error instanceof Error ? error.message : "Failed to register team for event")
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Team Leader Section */}
+      <Card className="p-4 border-2 border-primary">
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Users className="h-5 w-5 text-primary" />
+            <h3 className="font-medium text-lg">Team Leader (You)</h3>
+          </div>
+          <p className="text-sm text-muted-foreground">Your profile information will be used as the team leader details</p>
+        </div>
+      </Card>
+
+      {/* Additional Team Members */}
       <div className="space-y-4">
+        <h3 className="font-medium text-lg">Additional Team Members</h3>
         {teamMembers.map((member, index) => (
           <Card key={index} className="p-4">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-medium">Team Member {index + 1}</h3>
-              {teamMembers.length > minTeamSize && (
+              <h3 className="font-medium">Team Member {index + 2}</h3> {/* Add 2 to account for team leader being 1 */}
+              {teamMembers.length > (minTeamSize - 1) && (
                 <Button
                   type="button"
                   variant="ghost"
@@ -133,7 +152,7 @@ export default function TeamRegistrationForm({
       </div>
       
       <div className="flex gap-4">
-        {teamMembers.length < maxTeamSize && (
+        {teamMembers.length < (maxTeamSize - 1) && ( // Subtract 1 to account for team leader
           <Button
             type="button"
             variant="outline"

@@ -1,8 +1,25 @@
+"use client"
+
 import Link from "next/link"
 import { Instagram, Facebook, Twitter, X } from "lucide-react"
 import Image from "next/image"
+import { useEffect, useState } from "react"
 
 export default function Footer() {
+  const [isLoading, setIsLoading] = useState(true)
+  
+  useEffect(() => {
+      const loadTimer = setTimeout(() => {
+        setIsLoading(false)
+      }, 3000)
+  
+      return () => clearTimeout(loadTimer)
+    }, [])
+  
+    if (isLoading) {
+      return null
+    }
+
   return (
     <footer className="bg-transparent backdrop-blur-lg">
       <div className="container py-8 md:py-12">
@@ -25,6 +42,9 @@ export default function Footer() {
             </div>
             <div className="flex flex-col space-x-4">
               <p className="text-sm text-muted-foreground">Contact us on:</p>
+                <p className="text-sm text-muted-foreground">
+                Anush: <a href="tel:+916366164456" className="hover:text-primary">+91 81975 17399</a>
+                </p>
                 <p className="text-sm text-muted-foreground">
                 Shreyas: <a href="tel:+916366164456" className="hover:text-primary">+91 63661 64456</a>
                 </p>
@@ -69,11 +89,6 @@ export default function Footer() {
               <li>
                 <Link href="/faq" className="text-muted-foreground hover:text-primary">
                   FAQ
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="text-muted-foreground hover:text-primary">
-                  Contact Us
                 </Link>
               </li>
               <li>

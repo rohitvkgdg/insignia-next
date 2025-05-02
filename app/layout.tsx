@@ -10,7 +10,6 @@ import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
 import { Suspense } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import { monitor } from "@/lib/monitor"
 
 const inter = Inter({ subsets: ["latin"] })
 const fresca = localFont({
@@ -26,18 +25,13 @@ export const metadata: Metadata = {
 
 function Loading() {
   return (
-    <div className="container mx-auto p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
       <div className="space-y-4">
         <Skeleton className="h-8 w-[250px]" />
         <Skeleton className="h-[200px] w-full" />
       </div>
     </div>
   )
-}
-
-// Initialize performance monitoring
-if (typeof window !== "undefined") {
-  monitor.getPerformanceMetrics()
 }
 
 function LoadingScreen({ children }: { children: React.ReactNode }) {
@@ -56,39 +50,43 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={fresca.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <AuthProvider>
-            <LoadingScreen>
+        <LoadingScreen>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <AuthProvider>
               <div className="relative flex min-h-screen flex-col bg-[#0a0714] overflow-hidden">
                 {/* Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-b from-blue-900 via-blue-950 to-transparent opacity-70 z-0" />
 
                 {/* Noise Texture Overlay */}
-                <svg className="absolute inset-0 w-full h-full opacity-5 z-0" xmlns="http://www.w3.org/2000/svg">
-                  <filter id="noiseFilter">
-                    <feTurbulence
-                      type="fractalNoise"
-                      baseFrequency="0.7"
-                      numOctaves="2"
-                      stitchTiles="stitch"
-                    />
-                  </filter>
-                  <rect width="100%" height="100%" filter="url(#noiseFilter)" />
-                </svg>
-                
+                <div className="absolute inset-0 w-full h-full opacity-5 z-500">
+                  <svg width="100%" height="100%">
+                    <filter id="noiseFilter">
+                      <feTurbulence
+                        type="fractalNoise"
+                        baseFrequency="0.7"
+                        numOctaves="2"
+                        stitchTiles="stitch"
+                      />
+                    </filter>
+                    <rect width="100%" height="100%" filter="url(#noiseFilter)" />
+                  </svg>
+                </div>
+
                 <Navbar />
-                <main className="flex-1 relative">{children}</main>
+                  <main className="flex-1 relative z-10">
+                  {children}
+                </main>
                 <Footer />
               </div>
-            </LoadingScreen>
-            <Toaster />
-          </AuthProvider>
-        </ThemeProvider>
+            </AuthProvider>
+          </ThemeProvider>
+          <Toaster />
+        </LoadingScreen>
       </body>
     </html>
   )

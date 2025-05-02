@@ -303,13 +303,16 @@ export async function registerForEvent(eventId: string, notes?: string, teamMemb
     
     const userId = session.user.id
     
-    // Check if user profile is complete and get numericId
+    // Get user profile data for team leader info
     const userData = await db.query.user.findFirst({
       where: eq(user.id, userId),
       columns: {
         profileCompleted: true,
         id: true,
-        numericId: true
+        numericId: true,
+        name: true,
+        usn: true,
+        phone: true
       }
     });
     
@@ -322,6 +325,14 @@ export async function registerForEvent(eventId: string, notes?: string, teamMemb
         success: false, 
         error: "Please complete your profile before registering for events", 
         code: "INCOMPLETE_PROFILE" 
+      }
+    }
+
+    if (!userData.name || !userData.usn || !userData.phone) {
+      return {
+        success: false,
+        error: "Your profile is missing required information (name, USN, or phone)",
+        code: "INCOMPLETE_PROFILE"
       }
     }
 
@@ -339,7 +350,7 @@ export async function registerForEvent(eventId: string, notes?: string, teamMemb
       return { success: false, error: "Already registered for this event", code: "ALREADY_REGISTERED" }
     }
     
-    // Check if event exists and has capacity
+    // Check if event exists and get its details
     const eventData = await db.query.event.findFirst({
       where: eq(event.id, validatedData.eventId),
       columns: {
@@ -356,20 +367,21 @@ export async function registerForEvent(eventId: string, notes?: string, teamMemb
       return { success: false, error: "Event not found", code: "EVENT_NOT_FOUND" }
     }
 
-    // Validate team members if it's a team event
-    if (eventData.isTeamEvent && !teamMembers) {
-      return { success: false, error: "Team members are required for this event", code: "TEAM_REQUIRED" }
+    // Validate team size including the team leader
+    if (eventData.isTeamEvent) {
+      if (!teamMembers) {
+        return { success: false, error: "Team members are required for this event", code: "TEAM_REQUIRED" }
+      }
+
+      const totalTeamSize = teamMembers.length + 1 // Add 1 for team leader
+      if (totalTeamSize < (eventData.minTeamSize || 2)) {
+        return { success: false, error: `Minimum team size is ${eventData.minTeamSize} (including team leader)`, code: "INVALID_TEAM_SIZE" }
+      }
+      if (totalTeamSize > (eventData.maxTeamSize || 5)) {
+        return { success: false, error: `Maximum team size is ${eventData.maxTeamSize} (including team leader)`, code: "INVALID_TEAM_SIZE" }
+      }
     }
 
-    if (eventData.isTeamEvent && teamMembers) {
-      if (teamMembers.length < (eventData.minTeamSize || 2)) {
-        return { success: false, error: `Minimum team size is ${eventData.minTeamSize}`, code: "INVALID_TEAM_SIZE" }
-      }
-      if (teamMembers.length > (eventData.maxTeamSize || 5)) {
-        return { success: false, error: `Maximum team size is ${eventData.maxTeamSize}`, code: "INVALID_TEAM_SIZE" }
-      }
-    }
-    
     // Generate registration ID using numericId
     const registrationId = await generateRegistrationId(eventId, userId)
     
@@ -389,8 +401,21 @@ export async function registerForEvent(eventId: string, notes?: string, teamMemb
         })
         .returning();
 
-      // If it's a team event, create team members
+      // If it's a team event, create team members including the team leader
       if (eventData.isTeamEvent && teamMembers) {
+        // First insert team leader
+        await tx.insert(teamMember).values({
+          id: randomUUID(),
+          registrationId: registrationId,
+          name: userData.name,
+          usn: userData.usn,
+          phone: userData.phone,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isTeamLeader: true // Add this column in the next migration
+        });
+
+        // Then insert other team members
         await tx.insert(teamMember)
           .values(
             teamMembers.map(member => ({
@@ -401,10 +426,15 @@ export async function registerForEvent(eventId: string, notes?: string, teamMemb
               phone: member.phone,
               createdAt: new Date(),
               updatedAt: new Date(),
+              isTeamLeader: false // Add this column in the next migration
             }))
           );
       }
     });
+
+    revalidatePath('/events')
+    revalidatePath('/profile')
+    revalidatePath(`/events/${eventId}`)
 
     return { success: true }
   } catch (error) {

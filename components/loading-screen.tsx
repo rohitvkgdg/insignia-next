@@ -12,12 +12,12 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
   
   useEffect(() => {
     // Set a minimum loading time to prevent flickering
-    const minLoadTime = 3000 // 2 seconds
+    const minLoadTime = 3000 // 3 seconds
     const loadTimer = setTimeout(() => {
       setIsLoading(false)
     }, minLoadTime)
 
-    // Prevent scrolling during loading
+    // Prevent scrolling and hide other content during loading
     if (isLoading) {
       document.body.style.overflow = 'hidden'
     }
@@ -45,7 +45,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
               left: 0,
               right: 0,
               bottom: 0,
-              zIndex: 99999999 // Increased z-index to be above navbar
+              zIndex: 99999999
             }}
           >
             <div className="relative w-[400px] h-[400px] flex items-center justify-center">
@@ -60,7 +60,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
       </AnimatePresence>
 
       <div 
-        className={isLoading ? 'invisible' : 'contents'}
+        className={isLoading ? 'hidden' : 'contents'}
         aria-hidden={isLoading}
       >
         {children}

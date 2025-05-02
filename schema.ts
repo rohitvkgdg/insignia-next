@@ -19,6 +19,8 @@ export const user = pgTable('user', {
   accommodation: boolean('accommodation').default(false).notNull(),
   usn: text('usn').unique(),
   profileCompleted: boolean('profileCompleted').default(false).notNull(),
+  createdAt: timestamp('createdAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
 });
 
 // Account table (for OAuth)
@@ -67,8 +69,8 @@ export const event = pgTable('event', {
   isTeamEvent: boolean('isTeamEvent').default(false).notNull(),
   minTeamSize: integer('minTeamSize'),
   maxTeamSize: integer('maxTeamSize'),
-  createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
+  createdAt: timestamp('createdAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
 });
 
 // Registration table
@@ -83,8 +85,8 @@ export const registration = pgTable('registration', {
     .references(() => event.id, { onDelete: 'cascade' }),
   paymentStatus: paymentStatusEnum('paymentStatus').default('UNPAID').notNull(),
   notes: text('notes'),
-  createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
+  createdAt: timestamp('createdAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
 }, (table) => ({
   userEventUnique: unique().on(table.userId, table.eventId),
 }));
@@ -98,8 +100,9 @@ export const teamMember = pgTable('teamMember', {
   name: text('name').notNull(),
   usn: text('usn').notNull(),
   phone: text('phone').notNull(),
-  createdAt: timestamp('createdAt', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updatedAt', { mode: 'date' }).defaultNow().notNull(),
+  isTeamLeader: boolean('isTeamLeader').default(false).notNull(),
+  createdAt: timestamp('createdAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
 });
 
 // Relations

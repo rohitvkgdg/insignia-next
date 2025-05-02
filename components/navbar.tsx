@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
@@ -22,6 +22,19 @@ export default function Navbar() {
   const { data: session, status } = useSession()
   const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const loadTimer = setTimeout(() => {
+      setIsLoading(false)
+    }, 3000)
+
+    return () => clearTimeout(loadTimer)
+  }, [])
+
+  if (isLoading) {
+    return null
+  }
 
   const handleSignIn = () => {
     const callbackUrl = encodeURIComponent(pathname)
