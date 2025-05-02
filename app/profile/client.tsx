@@ -58,7 +58,6 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
         name: formData.get('name') as string,
         phone: formData.get('phone') as string,
         college: formData.get('college') as string,
-        department: formData.get('department') as string,
         usn: formData.get('usn') as string,
         accommodation: formData.get('accommodation') === 'on'
       }
@@ -83,6 +82,7 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
       toast.error(error instanceof Error ? error.message : "Failed to update profile")
     } finally {
       setIsSubmitting(false)
+      router.push("/")
     }
   }
 

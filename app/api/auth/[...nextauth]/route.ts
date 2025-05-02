@@ -77,11 +77,32 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async session({ session, token }) {
       if (token.sub && session.user) {
-        session.user.id = token.sub
-        session.user.role = (token.role as Role) || Role.USER
-        session.user.profileCompleted = (token.profileCompleted as boolean) || false
+        // Get latest user data from database
+        const dbUser = await db.query.user.findFirst({
+          where: eq(userTable.id, token.sub),
+          columns: {
+            id: true,
+            numericId: true,
+            role: true,
+            profileCompleted: true,
+            name: true,
+            usn: true,
+            phone: true
+          }
+        });
+
+        if (dbUser) {
+          session.user.id = dbUser.id;
+          session.user.role = dbUser.role || Role.USER;
+          // Update profile completion based on required fields
+          session.user.profileCompleted = Boolean(dbUser.profileCompleted && dbUser.name && dbUser.usn && dbUser.phone);
+        } else {
+          session.user.id = token.sub;
+          session.user.role = (token.role as Role) || Role.USER;
+          session.user.profileCompleted = false;
+        }
       }
-      return session
+      return session;
     },
     async jwt({ token, user: authUser, account, profile }) {
       if (authUser) {
@@ -142,12 +163,27 @@ export const authOptions: NextAuthOptions = {
           const session = await getServerSession(authOptions);
           if (session?.user?.email) {
             const currentUser = await db.query.user.findFirst({
-              where: eq(userTable.email, session.user.email)
+              where: eq(userTable.email, session.user.email),
+              columns: {
+                name: true,
+                usn: true,
+                phone: true,
+                profileCompleted: true
+              }
             });
 
+            // Check both the flag and required fields
+            const isProfileComplete = Boolean(
+              currentUser?.profileCompleted && 
+              currentUser?.name && 
+              currentUser?.usn && 
+              currentUser?.phone
+            );
+
             // If profile is incomplete, redirect to profile page with original URL as callback
-            if (!session.user.profileCompleted) {
-                return `${baseUrl}/profile`;
+            if (!isProfileComplete) {
+              const callbackUrl = encodeURIComponent(url.replace(baseUrl, ''));
+              return `${baseUrl}/profile?callbackUrl=${callbackUrl}`;
             }
           }
         }

@@ -303,11 +303,10 @@ export async function registerForEvent(eventId: string, notes?: string, teamMemb
     
     const userId = session.user.id
     
-    // Get user profile data for team leader info
+    // Get user data for team leader info
     const userData = await db.query.user.findFirst({
       where: eq(user.id, userId),
       columns: {
-        profileCompleted: true,
         id: true,
         numericId: true,
         name: true,
@@ -318,22 +317,6 @@ export async function registerForEvent(eventId: string, notes?: string, teamMemb
     
     if (!userData) {
       return { success: false, error: "User not found", code: "USER_NOT_FOUND" }
-    }
-    
-    if (!userData.profileCompleted) {
-      return { 
-        success: false, 
-        error: "Please complete your profile before registering for events", 
-        code: "INCOMPLETE_PROFILE" 
-      }
-    }
-
-    if (!userData.name || !userData.usn || !userData.phone) {
-      return {
-        success: false,
-        error: "Your profile is missing required information (name, USN, or phone)",
-        code: "INCOMPLETE_PROFILE"
-      }
     }
 
     const validatedData = registrationSchema.parse({ eventId, notes, teamMembers });
@@ -407,12 +390,12 @@ export async function registerForEvent(eventId: string, notes?: string, teamMemb
         await tx.insert(teamMember).values({
           id: randomUUID(),
           registrationId: registrationId,
-          name: userData.name,
-          usn: userData.usn,
-          phone: userData.phone,
+          name: userData.name!,
+          usn: userData.usn!,
+          phone: userData.phone!,
           createdAt: new Date(),
           updatedAt: new Date(),
-          isTeamLeader: true // Add this column in the next migration
+          isTeamLeader: true
         });
 
         // Then insert other team members
@@ -426,7 +409,7 @@ export async function registerForEvent(eventId: string, notes?: string, teamMemb
               phone: member.phone,
               createdAt: new Date(),
               updatedAt: new Date(),
-              isTeamLeader: false // Add this column in the next migration
+              isTeamLeader: false
             }))
           );
       }

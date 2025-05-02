@@ -41,8 +41,8 @@ export default function RegisterButton({
         return
       }
 
-      // Check profile completion
-      if (!session.user.profileCompleted) {
+      // Only check the session state for profile completion
+      if (!session?.user?.profileCompleted) {
         const callbackUrl = encodeURIComponent(`/events/${eventId}`)
         toast.info("Please complete your profile first")
         router.push(`/profile?callbackUrl=${callbackUrl}`)

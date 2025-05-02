@@ -27,7 +27,7 @@ export default function Navbar() {
   useEffect(() => {
     const loadTimer = setTimeout(() => {
       setIsLoading(false)
-    }, 3000)
+    }, 500)
 
     return () => clearTimeout(loadTimer)
   }, [])

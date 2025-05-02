@@ -81,14 +81,25 @@ export const updatePaymentStatusSchema = z.object({
 
 // Profile update validation schema
 export const updateProfileSchema = z.object({
-  name: z.string().min(1, "Name is required").max(100),
-  phone: z.string().min(10).max(15).regex(/^[+\d\s()-]+$/, "Invalid phone").optional().nullable(),
-  address: z.string().max(200).optional().nullable(),
-  department: z.string().min(1).max(100),
-  semester: z.number().int().min(1).max(8).optional().nullable(),
-  college: z.string().min(1).max(100),
-  usn: z.string().min(1).max(20).regex(/^[a-zA-Z0-9-]+$/, "Invalid USN").optional().nullable(),
-  accommodation: z.boolean().optional().default(false),
+  name: z.string()
+    .min(1, "Name is required")
+    .max(100, "Name must be 100 characters or less")
+    .trim(),
+  phone: z.string()
+    .min(10, "Phone number must be at least 10 characters")
+    .max(15, "Phone number must be 15 characters or less")
+    .regex(/^[+\d\s()-]+$/, "Phone number can only contain numbers, spaces and symbols +()-")
+    .trim(),
+  college: z.string()
+    .min(1, "College name is required")
+    .max(100, "College name must be 100 characters or less")
+    .trim(),
+  usn: z.string()
+    .min(1, "USN is required")
+    .max(20, "USN must be 20 characters or less")
+    .regex(/^[a-zA-Z0-9-]+$/, "USN can only contain letters, numbers and hyphens")
+    .trim(),
+  accommodation: z.boolean().default(false)
 });
 
 // Helper function to validate and sanitize pagination parameters

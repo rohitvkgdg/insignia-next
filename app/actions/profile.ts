@@ -163,34 +163,41 @@ export async function updateProfile(data: UpdateProfileInput): Promise<{ success
         })
         return { 
           success: false, 
-          error: "This USN/College ID is already registered with a different account" 
+          error: "This USN is already registered with another account" 
         }
       }
     }
 
-    const { college, phone, usn, name } = parsed.data
+    // Get current user data to check required fields
+    const currentUser = await db.query.user.findFirst({
+      where: eq(user.email, session.user.email),
+      columns: {
+        name: true,
+        usn: true,
+        phone: true
+      }
+    });
 
+    // Update user data
     await db.update(user)
       .set({
-        name: parsed.data.name,
-        phone: parsed.data.phone,
-        college: parsed.data.college,
-        usn: parsed.data.usn,
-        accommodation: parsed.data.accommodation,
+        ...parsed.data,
+        // Set profileCompleted only if all required fields are present
         profileCompleted: Boolean(
-          name?.trim() && college?.trim() && phone?.trim() && usn?.trim()
+          (parsed.data.name || currentUser?.name) && 
+          (parsed.data.usn || currentUser?.usn) && 
+          (parsed.data.phone || currentUser?.phone)
         )
       })
       .where(eq(user.email, session.user.email))
-      .execute();
 
-    logger.info("Profile updated successfully", { email: session.user.email })
     revalidatePath('/profile')
     return { success: true }
   } catch (error) {
+    logger.error("Profile update failed", { error: error instanceof Error ? error.message : String(error) })
     return { 
       success: false, 
-      error: error instanceof Error ? error.message : "Failed to update profile" 
+      error: "Failed to update profile" 
     }
   }
 }
