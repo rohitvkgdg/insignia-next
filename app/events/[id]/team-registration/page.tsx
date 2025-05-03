@@ -13,9 +13,10 @@ export default async function TeamRegistrationPage({ params }: { params: { id: s
     redirect(`/auth/signin?callbackUrl=/events/${params.id}/team-registration`)
   }
 
-  // Only check the profile completion flag from the session
-  if (!session.user.profileCompleted) {
-    redirect(`/profile?callbackUrl=/events/${params.id}/team-registration`)
+  // For new users or incomplete profiles, redirect to profile page with registration info
+  if (!session.user.profileCompleted || !session.user.name || !session.user.usn || !session.user.phone) {
+    const callbackUrl = `/events/${params.id}/team-registration`
+    redirect(`/profile?registrationEventId=${params.id}&isTeam=true&callbackUrl=${encodeURIComponent(callbackUrl)}`)
   }
 
   const eventResult = await getEventById(params.id)

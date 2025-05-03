@@ -41,11 +41,6 @@ export default function Home() {
           <div className="flex flex-col my-4">
             {/* Hero Section */}
             <div className="relative min-h-screen rounded-2xl">
-              <div className="absolute flex top-1 w-[90%] items-center mx-4 lg:left-20 lg:right-10 justify-around z-30">
-                <Image src={"/images/sdm-logo.png"} alt="SDM Logo" className="p-2" width={50} height={20}/>
-                <p className="text-[10px] md:text-base lg:text-lg px-3 text-center font-bold text-white">SHRI DHARMASTHALA MANJUNATHESHWARA COLLEGE OF ENGINEERING & TECHNOLOGY</p>
-                <Image src={"/images/hegde.png"} alt="Image" width={40} className="p-1" height={25}/>
-              </div>
               
               {/* 3D Model Background */}
               <div className="absolute inset-0 w-full h-full z-10">

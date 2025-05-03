@@ -29,10 +29,10 @@ export default async function ProfilePage() {
     
     // Return an error state
     return (
-      <div className="container py-10">
+      <div className="container py-36">
         <h1 className="text-3xl font-bold mb-6">My Profile</h1>
         <Card className="p-6 text-center">
-          <h2 className="text-xl font-medium mb-2">Error Loading Profile</h2>
+          <h2 className="text-xl font-medium mb-2">Please login again, Error Loading Profile</h2>
           <p className="text-muted-foreground">
             There was a problem loading your profile. Please try again later.
           </p>

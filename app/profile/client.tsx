@@ -14,11 +14,14 @@ import { updateProfile } from "@/app/actions/profile"
 import { UserProfileData, UpdateProfileInput } from "@/app/actions/profile"
 import { Role, PaymentStatus } from "@/types/enums"
 import { Switch } from "@/components/ui/switch"
+import { registerForEvent } from "@/app/actions/events"
 
 export default function ProfileClient({ profile }: { profile: UserProfileData }) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl')
+  const registrationEventId = searchParams.get('registrationEventId')
+  const isTeamEvent = searchParams.get('isTeam') === 'true'
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
@@ -70,8 +73,31 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
 
       toast.success("Profile updated successfully")
       
-      // If there's a callback URL, redirect to it
-      if (callbackUrl) {
+      // If there's a registration pending, handle it
+      if (registrationEventId) {
+        if (isTeamEvent) {
+          // For team events, redirect to team registration page
+          router.push(`/events/${registrationEventId}/team-registration`)
+        } else {
+          // For individual events, register directly
+          try {
+            const registrationResult = await registerForEvent(registrationEventId)
+            if (registrationResult.success) {
+              toast.success("Successfully registered for the event")
+              router.push(`/events/${registrationEventId}`)
+            } else {
+              toast.error(registrationResult.error || "Failed to register for event")
+              // Still redirect to event page on failure
+              router.push(`/events/${registrationEventId}`)
+            }
+          } catch (error) {
+            toast.error("Failed to register for event")
+            router.push(`/events/${registrationEventId}`)
+          }
+        }
+      } 
+      // Otherwise handle normal callback or refresh
+      else if (callbackUrl) {
         router.push(decodeURIComponent(callbackUrl))
       } else {
         router.refresh()
@@ -82,7 +108,6 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
       toast.error(error instanceof Error ? error.message : "Failed to update profile")
     } finally {
       setIsSubmitting(false)
-      router.push("/")
     }
   }
 

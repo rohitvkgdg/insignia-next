@@ -4,7 +4,8 @@ import { getToken } from "next-auth/jwt"
 import { applyRateLimit, getIpAddress } from "./lib/rate-limit"
 import { logger } from "./lib/logger"
 
-const publicPaths = ["/", "/auth/signin", "/api/auth", "/events"]
+const publicPaths = ["/", "/auth/signin", "/api/auth", "/events", "/about", "/contact", "/faq"]
+const profileProtectedPaths = ["/profile", "/admin", "/events/[id]/team-registration"]
 const apiPaths = ["/api/"]
 const authPaths = ["/api/auth"]
 
@@ -38,60 +39,27 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    if (pathname.startsWith("/admin") && 
-        token.role !== "ADMIN") {
-      logger.warn("Unauthorized admin access attempt", { 
-        userId: token.sub,
-        path: pathname
-      })
-      return NextResponse.redirect(new URL("/", request.url))
+    // For paths that require a complete profile, check profile completion
+    if (profileProtectedPaths.some(path => pathname.includes(path)) && !token.profileCompleted) {
+      const url = new URL("/profile", request.url)
+      url.searchParams.set("callbackUrl", encodeURI(pathname))
+      return NextResponse.redirect(url)
     }
 
-    // Add security headers
     return addSecurityHeaders(NextResponse.next())
   } catch (error) {
-    logger.error("Middleware error", error instanceof Error ? error : new Error(String(error)))
+    logger.error("Middleware error:", { error: error instanceof Error ? error.message : String(error), path: pathname })
     return addSecurityHeaders(NextResponse.next())
   }
 }
 
 // Helper to add security headers to all responses
 function addSecurityHeaders(response: NextResponse): NextResponse {
-  // Essential security headers for all environments
-  response.headers.set("X-DNS-Prefetch-Control", "on")
-  response.headers.set("X-Frame-Options", "SAMEORIGIN")
-  response.headers.set("X-Content-Type-Options", "nosniff")
-  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
-  response.headers.set(
-    "Permissions-Policy",
-    "camera=(), microphone=(), geolocation=()"
-  )
-  
-  // Production-specific security headers
-  if (process.env.NODE_ENV === "production") {
-    response.headers.set(
-      "Strict-Transport-Security",
-      "max-age=63072000; includeSubDomains; preload"
-    )
-    response.headers.set("X-XSS-Protection", "1; mode=block")
-  }
-  
-  // Add Content-Security-Policy for both dev and production
-  response.headers.set(
-    "Content-Security-Policy",
-    `
-      default-src 'self' *;
-      script-src 'self' 'unsafe-eval' 'unsafe-inline' *;
-      style-src 'self' 'unsafe-inline' *;
-      img-src 'self' blob: data: * https://*.r2.cloudflarestorage.com https://*.sdmcetinsignia.com;
-      font-src 'self' *;
-      connect-src 'self' * https://*.r2.cloudflarestorage.com https://*.sdmcetinsignia.com;
-      media-src 'self' * https://*.r2.cloudflarestorage.com https://*.sdmcetinsignia.com;
-      frame-src 'self' *;
-      worker-src 'self' blob: *;
-    `.replace(/\s{2,}/g, ' ').trim()
-  )
-
+  // Add your security headers here
+  response.headers.set('X-Frame-Options', 'DENY')
+  response.headers.set('X-Content-Type-Options', 'nosniff')
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
   return response
 }
 

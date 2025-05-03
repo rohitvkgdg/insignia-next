@@ -303,7 +303,7 @@ export async function registerForEvent(eventId: string, notes?: string, teamMemb
     
     const userId = session.user.id
     
-    // Get user data for team leader info
+    // Get user data for team leader info and verify profile completion
     const userData = await db.query.user.findFirst({
       where: eq(user.id, userId),
       columns: {
@@ -311,12 +311,24 @@ export async function registerForEvent(eventId: string, notes?: string, teamMemb
         numericId: true,
         name: true,
         usn: true,
-        phone: true
+        phone: true,
+        profileCompleted: true
       }
     });
     
     if (!userData) {
       return { success: false, error: "User not found", code: "USER_NOT_FOUND" }
+    }
+
+    // Verify profile completion consistently
+    const hasRequiredFields = Boolean(
+      userData.name?.trim() && 
+      userData.usn?.trim() && 
+      userData.phone?.trim()
+    );
+
+    if (!userData.profileCompleted || !hasRequiredFields) {
+      return { success: false, error: "Please complete your profile first", code: "INCOMPLETE_PROFILE" }
     }
 
     const validatedData = registrationSchema.parse({ eventId, notes, teamMembers });

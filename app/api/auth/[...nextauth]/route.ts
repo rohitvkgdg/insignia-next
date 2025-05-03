@@ -94,8 +94,17 @@ export const authOptions: NextAuthOptions = {
         if (dbUser) {
           session.user.id = dbUser.id;
           session.user.role = dbUser.role || Role.USER;
-          // Update profile completion based on required fields
-          session.user.profileCompleted = Boolean(dbUser.profileCompleted && dbUser.name && dbUser.usn && dbUser.phone);
+          // Set profileCompleted based on presence of required fields
+          const hasRequiredFields = Boolean(
+            dbUser.name?.trim() && 
+            dbUser.usn?.trim() && 
+            dbUser.phone?.trim()
+          );
+          // Only consider profile complete if both flag and required fields are present
+          session.user.profileCompleted = Boolean(dbUser.profileCompleted && hasRequiredFields);
+          session.user.name = dbUser.name;
+          session.user.usn = dbUser.usn;
+          session.user.phone = dbUser.phone;
         } else {
           session.user.id = token.sub;
           session.user.role = (token.role as Role) || Role.USER;
@@ -113,10 +122,24 @@ export const authOptions: NextAuthOptions = {
       // If this is a sign-in event, check profile completion
       if (account && profile && token.sub) {
         const dbUser = await db.query.user.findFirst({
-          where: eq(userTable.id, token.sub)
+          where: eq(userTable.id, token.sub),
+          columns: {
+            profileCompleted: true,
+            name: true,
+            usn: true,
+            phone: true
+          }
         });
+        
         if (dbUser) {
-          token.profileCompleted = dbUser.profileCompleted
+          const hasRequiredFields = Boolean(
+            dbUser.name?.trim() && 
+            dbUser.usn?.trim() && 
+            dbUser.phone?.trim()
+          );
+          token.profileCompleted = Boolean(dbUser.profileCompleted && hasRequiredFields);
+        } else {
+          token.profileCompleted = false;
         }
       }
       
@@ -158,6 +181,11 @@ export const authOptions: NextAuthOptions = {
         // If it's a relative callback URL, make it absolute
         if (url.startsWith('/')) url = `${baseUrl}${url}`
         
+        // Skip profile check if we're coming from the profile page
+        if (url.includes('/profile')) {
+          return url;
+        }
+
         // For sign in/callback, check profile completion
         if (url.includes('signin') || url.includes('callback')) {
           const session = await getServerSession(authOptions);
@@ -173,14 +201,14 @@ export const authOptions: NextAuthOptions = {
             });
 
             // Check both the flag and required fields
-            const isProfileComplete = Boolean(
-              currentUser?.profileCompleted && 
-              currentUser?.name && 
-              currentUser?.usn && 
-              currentUser?.phone
+            const hasRequiredFields = Boolean(
+              currentUser?.name?.trim() && 
+              currentUser?.usn?.trim() && 
+              currentUser?.phone?.trim()
             );
+            const isProfileComplete = Boolean(currentUser?.profileCompleted && hasRequiredFields);
 
-            // If profile is incomplete, redirect to profile page with original URL as callback
+            // If profile is incomplete, redirect to profile page
             if (!isProfileComplete) {
               const callbackUrl = encodeURIComponent(url.replace(baseUrl, ''));
               return `${baseUrl}/profile?callbackUrl=${callbackUrl}`;

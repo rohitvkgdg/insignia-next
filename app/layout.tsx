@@ -10,6 +10,7 @@ import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
 import { Suspense } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
+import Image from "next/image"
 
 const inter = Inter({ subsets: ["latin"] })
 const fresca = localFont({
@@ -61,8 +62,13 @@ export default function RootLayout({
               <div className="relative flex min-h-screen flex-col bg-[#0a0714] overflow-hidden">
                 {/* Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-b from-blue-900 via-blue-950 to-transparent opacity-70 z-0" />
+                <div className="absolute flex top-1 w-[90%] items-center mx-4 lg:left-20 lg:right-10 justify-around z-30">
+                  <Image src={"/images/sdm-logo.png"} alt="SDM Logo" className="p-2" width={50} height={20} />
+                  <p className="text-[12px] md:text-lg lg:text-xl px-3 text-center font-bold text-white">SHRI DHARMASTHALA MANJUNATHESHWARA COLLEGE OF ENGINEERING & TECHNOLOGY</p>
+                  <Image src={"/images/hegde.png"} alt="Image" width={40} className="p-1" height={25} />
+                </div>
 
-                {/* Noise Texture Overlay */}
+                {/* Noise Texture Overlay
                 <div className="absolute inset-0 w-full h-full opacity-5 z-500">
                   <svg width="100%" height="100%">
                     <filter id="noiseFilter">
@@ -75,10 +81,10 @@ export default function RootLayout({
                     </filter>
                     <rect width="100%" height="100%" filter="url(#noiseFilter)" />
                   </svg>
-                </div>
+                </div> */}
 
                 <Navbar />
-                  <main className="flex-1 relative z-10">
+                <main className="flex-1 relative z-10">
                   {children}
                 </main>
                 <Footer />
