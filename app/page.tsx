@@ -159,6 +159,9 @@ export default function Home() {
                   <div className="space-y-2">
                     <Image src={"/Elements/shashwat-singh-image.png"} alt="Shashwat Singh" className="p-2" width={600} height={100}/>
                   </div>
+                    <p className="text-gray-200 max-w-xl md:text-xl">
+                    Shashwat Singh is an Indian playback singer and singer-songwriter known for his work in the Hindi film industry. Born on October 16, 1990, in Allahabad (now Prayagraj), Uttar Pradesh, India, he has made significant contributions to bollywood music since his debut.
+                    </p>
                 </div>
               </div>
               </section>

@@ -57,7 +57,8 @@ export enum DepartmentCode {
   CENTRALIZED = "CEN",
   CULTURAL = "CUL",
   LITERARY = "LIT",
-  FINEARTS = "FNA"
+  FINEARTS = "FNA",
+  MBA = "MBA"
 }
 
 export async function generateUserId(): Promise<string> {
@@ -145,6 +146,9 @@ export async function generateRegistrationId(eventId: string, userId: string): P
         break;
       case "MATH":
         deptCode = DepartmentCode.MATHEMATICS;
+        break;
+      case "MBA":
+        deptCode = DepartmentCode.MBA;
         break;
       default:
         deptCode = DepartmentCode.CENTRALIZED;

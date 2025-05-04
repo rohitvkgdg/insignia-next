@@ -22,13 +22,13 @@ interface Event {
   time: string;
   location: string;
   image: string | null;
-  department: "CSE" | "ISE" | "AIML" | "ECE" | "EEE" | "MECH" | "CIVIL" | "PHY" | "CHEM" | "CHTY" | "HUM" | "MATH" | null;
+  department: "CSE" | "ISE" | "AIML" | "ECE" | "EEE" | "MECH" | "CIVIL" | "PHY" | "CHEM" | "CHTY" | "HUM" | "MATH" | "MBA" | null;
 }
 
 async function getEvents(category?: string, department?: string) {
   if (category && category !== "all") {
     // Convert department to uppercase for consistency with the enum values in the database
-    const validDepartments = ["CSE", "ISE", "AIML", "ECE", "EEE", "MECH", "CIVIL", "PHY", "CHEM", "CHTY", "HUM", "MATH"] as const;
+    const validDepartments = ["CSE", "ISE", "AIML", "ECE", "EEE", "MECH", "CIVIL", "PHY", "CHEM", "CHTY", "HUM", "MATH", "MBA"] as const;
     const departmentValue = department?.toUpperCase() as typeof validDepartments[number] | undefined;
     const isValidDepartment = departmentValue && validDepartments.includes(departmentValue as any);
     
@@ -187,7 +187,7 @@ export default async function EventsPage({
 }: {
   searchParams: { category?: string; department?: string }
 }) {
-  const events = await getEvents(searchParams?.category, searchParams?.department)
+  const events = await getEvents(await searchParams?.category, await searchParams?.department)
 
   return (
     <div className="container py-40">
@@ -199,8 +199,8 @@ export default async function EventsPage({
       </div>
       <div className="mt-8 flex flex-col items-center gap-4">
         <EventCategoryNavigation 
-          currentCategory={searchParams?.category} 
-          department={searchParams?.department} 
+          currentCategory={await searchParams?.category} 
+          department={await searchParams?.department} 
         />
         <div className="w-full">
           <Suspense fallback={<EventSkeletonGrid />}>

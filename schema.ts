@@ -5,7 +5,7 @@ import { relations } from 'drizzle-orm';
 export const roleEnum = pgEnum('Role', ['USER', 'ADMIN']);
 export const eventCategoryEnum = pgEnum('EventCategory', ['CENTRALIZED', 'TECHNICAL', 'CULTURAL','FINEARTS', 'LITERARY']);
 export const paymentStatusEnum = pgEnum('PaymentStatus', ['PAID', 'UNPAID', 'REFUNDED']);
-export const departmentEnum = pgEnum('Department', ['CSE', 'ISE', 'AIML', 'ECE', 'EEE', 'MECH', 'CIVIL', 'PHY', 'CHEM', 'CHTY', 'HUM', 'MATH']);
+export const departmentEnum = pgEnum('Department', ['CSE', 'ISE', 'AIML', 'ECE', 'EEE', 'MECH', 'CIVIL', 'PHY', 'CHEM', 'CHTY', 'HUM', 'MATH', 'MBA']);
 
 // User table
 export const user = pgTable('user', {

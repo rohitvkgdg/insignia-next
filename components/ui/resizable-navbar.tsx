@@ -1,5 +1,6 @@
 "use client";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 import { IconMenu2, IconX } from "@tabler/icons-react";
 import {
   motion,
@@ -86,11 +87,11 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
   return (
     <motion.div
       animate={{
-        backdropFilter: visible ? "blur(20px)" : "none",
+        backdropFilter: visible ? "blur(10px)" : "none",
         boxShadow: visible
           ? "0 0 24px rgba(34, 42, 53, 0.06), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(34, 42, 53, 0.04), 0 0 4px rgba(34, 42, 53, 0.08), 0 16px 68px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.1) inset"
           : "none",
-        width: visible ? "40%" : "100%",
+        width: visible ? "50%" : "100%",
         y: visible ? 20 : 0,
         backgroundColor: visible ? "transparent": "transparent",
       }}
@@ -120,26 +121,26 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
     <motion.div
       onMouseLeave={() => setHovered(null)}
       className={cn(
-        "absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-2 text-md font-semibold text-white transition duration-200 hover:text-zinc-800 lg:flex lg:space-x-2",
+        "flex flex-col w-full lg:absolute lg:inset-0 lg:flex-row lg:items-center lg:justify-center lg:space-x-2 text-md font-semibold text-black dark:text-white transition duration-200 hover:text-zinc-800 lg:flex",
         className,
       )}
     >
       {items.map((item, idx) => (
-        <a
-          onMouseEnter={() => setHovered(idx)}
-          onClick={onItemClick}
-          className="relative px-4 py-2 text-neutral-100 dark:text-neutral-100"
+        <Link
           key={`link-${idx}`}
           href={item.link}
+          onClick={onItemClick}
+          onMouseEnter={() => setHovered(idx)}
+          className="relative px-4 py-3 lg:py-2 text-black dark:text-white lg:text-neutral-100 lg:dark:text-neutral-100 hover:bg-gray-100 dark:hover:bg-gray-800 dark:lg:hover:bg-transparent rounded-md lg:rounded-full w-full lg:w-auto"
         >
           {hovered === idx && (
             <motion.div
               layoutId="hovered"
-              className="absolute inset-0 h-full w-full rounded-full bg-gray-100 dark:bg-transparent/20"
+              className="absolute inset-0 h-full w-full rounded-md lg:rounded-full bg-gray-100 dark:bg-transparent/20 lg:bg-gray-100 lg:dark:bg-transparent/20 hidden lg:block"
             />
           )}
           <span className="relative z-20">{item.name}</span>
-        </a>
+        </Link>
       ))}
     </motion.div>
   );
@@ -149,7 +150,7 @@ export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
   return (
     <motion.div
       animate={{
-        backdropFilter: visible ? "blur(10px)" : "none",
+        backdropFilter: visible ? "blur(20px)" : "none",
         boxShadow: visible
           ? "0 0 24px rgba(34, 42, 53, 0.06), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(34, 42, 53, 0.04), 0 0 4px rgba(34, 42, 53, 0.08), 0 16px 68px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.1) inset"
           : "none",

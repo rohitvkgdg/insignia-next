@@ -3,7 +3,7 @@ module.exports = {
     name: "insignia-next",
     script: "node_modules/next/dist/bin/next",
     args: "start",
-    instances: 3,
+    instances: 4,
     autorestart: true,
     watch: false,
     max_memory_restart: '3G',

@@ -16,71 +16,58 @@ export function GallerySection() {
                     <div className="w-full max-w-full overflow-hidden">
                         <div className="flex flex-col md:flex-row md:gap-x-20 justify-center items-center">
                             <Stack
-                                cardDimensions={{ width: 250, height: 330 }}
-                                sensitivity={200}
+                                cardDimensions={{ width: 300, height: 375 }}
+                                sensitivity={300}
                                 randomRotation={true}
+                                sendToBackOnClick={true}
                                 cardsData={[
                                     {
                                         id: 1,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/DSC_1614.JPG"
+                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG1.JPG"
                                     },
                                     {
                                         id: 2,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/DSC_1819.JPG"
+                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG2.JPG"
                                     },
                                     {
                                         id: 3,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/DSC_2076.JPG"
+                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG3.JPG"
                                     },
                                     {
                                         id: 4,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/DSC_2431.JPG"
+                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG5.JPG"
                                     },
-                                ]}
-                            />
-                            <Stack
-                                cardDimensions={{ width: 250, height: 330 }}
-                                sensitivity={200}
-                                randomRotation={true}
-                                cardsData={[
                                     {
                                         id: 5,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/DSC_2415.JPG"
+                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG7.JPG"
                                     },
                                     {
                                         id: 6,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/DSC_2838.JPG"
+                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG8.JPG"
                                     },
                                     {
                                         id: 7,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/DSC_2487.JPG"
+                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG14.JPG"
                                     },
                                     {
                                         id: 8,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/DSC_2919.JPG"
+                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG9.JPG"
                                     },
-                                ]}
-                            />
-                            <Stack
-                                cardDimensions={{ width: 250, height: 330 }}
-                                sensitivity={200}
-                                randomRotation={true}
-                                cardsData={[
                                     {
                                         id: 9,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/DSC_3390.JPG"
+                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG10.JPG"
                                     },
                                     {
                                         id: 10,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/DSC_2982.JPG"
+                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG11.JPG"
                                     },
                                     {
                                         id: 11,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/DSC_3655-2.JPG"
+                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG12.JPG"
                                     },
                                     {
                                         id: 12,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/DSC_3406.JPG"
+                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG13.JPG"
                                     },
                                 ]}
                             />

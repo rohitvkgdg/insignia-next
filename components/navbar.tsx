@@ -44,7 +44,9 @@ export default function Navbar() {
   const navItems = [
     { name: "Home", link: "/" },
     { name: "Events", link: "/events" },
+    { name: "Brochure", link: "https://r2.sdmcetinsignia.com/Insignia'25%20Brochure.pdf" },
     ...(session ? [{ name: "Profile", link: "/profile" }] : []),
+    ...(session ? [{ name: "My Registrations", link: "/registrations" }] : []),
     ...(session?.user?.role === "ADMIN" ? [{ name: "Admin", link: "/admin" }] : [])
   ]
 
@@ -142,10 +144,6 @@ export default function Navbar() {
         </MobileNavHeader>
         <MobileNavMenu isOpen={isMobileMenuOpen} onCloseAction={() => setIsMobileMenuOpen(false)}>
           <NavItems items={navItems} onItemClick={() => setIsMobileMenuOpen(false)} />
-          <div>
-            <Link href="/" className="block px-4 py-2 pt-2 text-sm">Home</Link>
-            <Link href="/events" className="block px-4 py-2 text-sm">Events</Link>
-          </div>
         </MobileNavMenu>
       </MobileNav>
     </ResizableNavbar>

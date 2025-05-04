@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ChevronDown } from "lucide-react"
 
@@ -70,7 +70,7 @@ export function EventCategoryNavigation({ currentCategory, department }: {
               {[
                 ['CSE', 'cse'], ['ISE', 'ise'], ['AIML', 'aiml'], ['ECE', 'ece'],
                 ['EEE', 'eee'], ['MECH', 'mech'], ['CIVIL', 'civil'], ['PHY', 'phy'],
-                ['CHEM', 'chem'], ['CHTY', 'chty'], ['HUM', 'hum'], ['MATH', 'math']
+                ['CHEM', 'chem'], ['CHTY', 'chty'], ['HUM', 'hum'], ['MATH', 'math'], ['MBA', 'mba']
               ].map(([label, value]) => (
                 <DropdownMenuItem 
                   key={value} 
@@ -116,7 +116,7 @@ export function EventCategoryNavigation({ currentCategory, department }: {
               {[
                 ['CSE', 'cse'], ['ISE', 'ise'], ['AIML', 'aiml'], ['ECE', 'ece'],
                 ['EEE', 'eee'], ['MECH', 'mech'], ['CIVIL', 'civil'], ['PHY', 'phy'],
-                ['CHEM', 'chem'], ['CHTY', 'chty'], ['HUM', 'hum'], ['MATH', 'math']
+                ['CHEM', 'chem'], ['CHTY', 'chty'], ['HUM', 'hum'], ['MATH', 'math'], ['MBA', 'mba']
               ].map(([label, value]) => (
                 <TabsTrigger 
                   key={value}

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Instagram, Facebook, Twitter, X } from "lucide-react"
+import { Instagram, Facebook, Youtube } from "lucide-react"
 import Image from "next/image"
 import { useEffect, useState } from "react"
 
@@ -73,7 +73,7 @@ export default function Footer() {
             </ul>
           </div>
           <div className="flex flex-col space-x-auto space-y-2">
-              <p className="text-xl font-semibold">Contact Us</p>
+                <p className="text-xl font-semibold">Contact Us</p>
                 <p className="text-sm ">
                 Anush: <a href="tel:+916366164456" className="hover:text-primary">+91 81975 17399</a>
                 </p>
@@ -98,6 +98,17 @@ export default function Footer() {
                 </Link>
               </li>
             </ul>
+            <p className="text-xl font-semibold">Media Handles</p>
+            <div className="flex space-x-4">
+              <Link href="https://www.instagram.com/sdm_media_official" className=" hover:text-primary">
+                <Instagram className="h-5 w-5" />
+                <span className="sr-only">Instagram</span>
+              </Link>
+              <Link href="https://www.youtube.com/@sdmcetmediaofficial" className=" hover:text-primary">
+                <Youtube className="h-5 w-5" />
+                <span className="sr-only">Facebook</span>
+              </Link>
+            </div>
           </div>
           <div className="space-y-4">
             <h3 className="text-xl font-semibold">Legal</h3>
