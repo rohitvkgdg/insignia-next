@@ -9,8 +9,8 @@ import { Toaster } from "@/components/ui/sonner"
 import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
 import { Suspense } from "react"
-import { Skeleton } from "@/components/ui/skeleton"
 import Image from "next/image"
+import { Loader2 } from "lucide-react"
 
 const inter = Inter({ subsets: ["latin"] })
 const fresca = localFont({
@@ -26,10 +26,19 @@ export const metadata: Metadata = {
 
 function Loading() {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-[250px]" />
-        <Skeleton className="h-[200px] w-full" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a0714]">
+      <div className="flex flex-col items-center space-y-4">
+        <Image 
+          src="/Elements/ins-logo-yellow.svg"
+          alt="Insignia Logo"
+          width={200}
+          height={200}
+          priority
+        />
+        <div className="flex items-center space-x-2">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <p className="text-lg text-primary">Loading Insignia...</p>
+        </div>
       </div>
     </div>
   )

@@ -4,7 +4,7 @@ import Stack from "./Components/Stack/Stack"
 
 export function GallerySection() {
     return (
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-transparent">
+        <section className="w-full py-12 md:py-10 lg:py-16 bg-transparent">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
@@ -21,10 +21,6 @@ export function GallerySection() {
                                 randomRotation={true}
                                 sendToBackOnClick={true}
                                 cardsData={[
-                                    {
-                                        id: 1,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG1.JPG"
-                                    },
                                     {
                                         id: 2,
                                         img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG2.JPG"
@@ -48,26 +44,6 @@ export function GallerySection() {
                                     {
                                         id: 7,
                                         img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG14.JPG"
-                                    },
-                                    {
-                                        id: 8,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG9.JPG"
-                                    },
-                                    {
-                                        id: 9,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG10.JPG"
-                                    },
-                                    {
-                                        id: 10,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG11.JPG"
-                                    },
-                                    {
-                                        id: 11,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG12.JPG"
-                                    },
-                                    {
-                                        id: 12,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG13.JPG"
                                     },
                                 ]}
                             />

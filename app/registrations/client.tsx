@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { format } from "date-fns"
-import { CalendarDays, Clock, MapPin, DollarSign, FileText } from "lucide-react"
+import { CalendarDays, Clock, MapPin, FileText, IndianRupeeIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -71,8 +71,8 @@ export default function RegistrationsClient({ registrations }: RegistrationsClie
                     <span className="text-sm">{registration.location}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">₹{registration.fee}</span>
+                    <IndianRupeeIcon className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{registration.fee}</span>
                   </div>
                 </div>
               </CardContent>

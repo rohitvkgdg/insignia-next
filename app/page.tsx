@@ -1,3 +1,6 @@
+"use client"
+
+import { Suspense, lazy } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { CalendarDays, Users, Award, ArrowRight, Laptop, Music, Palette, BookOpen } from "lucide-react"
@@ -7,27 +10,10 @@ import Image from "next/image"
 import { LoadingScreen } from "@/components/loading-screen"
 import { CustomSVGCard } from "@/components/ui/custom-svg-card"
 import CountdownTimer from "@/components/Components/Counter/CountdownTimer"
-import ThreeDmodel from "@/components/3dmodel"
 import { GallerySection } from "@/components/gallery-section"
 
-export const metadata = {
-  title: "Insignia | A National Level Techno-cultural Fest",
-  description: "Register for SDMCET's premier events through Insignia. Your one-stop platform for academic, technical, and cultural events at SDM College of Engineering & Technology, Dharwad.",
-  openGraph: {
-    title: "Insignia | A National Level Techno-cultural Fest",
-    description: "Join Insignia | A National Level Techno-cultural Fest in SDMCET. Register for events, and stay connected with the college community.",
-    url: "https://sdmcetinsignia.com",
-    type: "website",
-    images: [
-      {
-        url: "/placeholder-logo.png",
-        width: 1200,
-        height: 630,
-        alt: "Insignia SDMCET",
-      },
-    ],
-  },
-}
+// Lazy load the 3D model component
+const ThreeDmodel = lazy(() => import("@/components/3dmodel"))
 
 export default function Home() {
   return (
@@ -44,10 +30,16 @@ export default function Home() {
               
               {/* 3D Model Background */}
               <div className="absolute inset-0 w-full h-full z-10">
-                <ThreeDmodel/>
+                <Suspense fallback={
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="animate-pulse bg-purple-900/20 w-full h-full" />
+                  </div>
+                }>
+                  <ThreeDmodel />
+                </Suspense>
               </div>
 
-              {/* Content Overlay */}
+              {/* Content Overlay - Add priority to logo for faster LCP */}
               <div className="relative z-20">
                 <section className="w-full py-48 md:py-32 lg:py-32 xl:py-60">
                   <div className="container px-4 md:px-6">
@@ -58,6 +50,7 @@ export default function Home() {
                           alt="Insignia"
                           height={600}
                           width={600}
+                          priority
                           style={{ objectFit: 'contain' }}
                         />
                       </div>
@@ -215,7 +208,7 @@ export default function Home() {
             </section>
 
             {/* CTA Section */}
-            <section className="w-full py-12 md:py-24 lg:py-32">
+            <section className="w-full py-12 md:py-10 lg:py-16">
               <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                   

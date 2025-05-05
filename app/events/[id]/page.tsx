@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 import { notFound } from "next/navigation"
-import { Calendar, Clock, MapPin, Users, AlertCircle } from "lucide-react"
+import { Calendar, Clock, MapPin, Users, IndianRupeeIcon } from "lucide-react"
 import { getEventById } from "@/app/actions/events"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
@@ -29,6 +29,7 @@ interface EventData {
   title: string;
   description: string | null;
   details: string | null;
+  fee: number | null;
   date: Date;
   time: string;
   location: string;
@@ -145,6 +146,12 @@ export default async function EventPage({ params }: { params: { id: string } }) 
                     <Users className="h-5 w-5 text-muted-foreground" />
                     <span>
                       {event.registrations.length} registered
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <IndianRupeeIcon className="h-5 w-5 text-muted-foreground" />
+                    <span>
+                      {event.fee}
                     </span>
                   </div>
                   {event.isTeamEvent && (

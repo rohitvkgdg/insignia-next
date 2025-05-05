@@ -12,7 +12,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
   
   useEffect(() => {
     // Set a minimum loading time to prevent flickering
-    const minLoadTime = 3000 // 3 seconds
+    const minLoadTime = 1000 //2 seconds
     const loadTimer = setTimeout(() => {
       setIsLoading(false)
     }, minLoadTime)
