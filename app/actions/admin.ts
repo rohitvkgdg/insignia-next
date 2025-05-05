@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth"
 import { z } from "zod"
 import { db } from "@/lib/db"
-import { eq } from "drizzle-orm"
+import { eq, ilike, or } from "drizzle-orm"
 import { registration, event, user } from "@/schema"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { logger } from "@/lib/logger"
@@ -136,27 +136,20 @@ export async function getRegistrations(
 
     let whereClause = undefined;
     if (searchQuery) {
-      whereClause = sql`registration."registrationId" ILIKE ${`%${searchQuery}%`} OR 
-                       user.name ILIKE ${`%${searchQuery}%`} OR
-                       event.title ILIKE ${`%${searchQuery}%`}`;
+      whereClause = or(
+        ilike(registration.registrationId, `%${searchQuery}%`),
+        sql`EXISTS (
+          SELECT 1 FROM "user" 
+          WHERE "user"."id" = ${registration.userId} 
+          AND ("user"."name" ILIKE ${`%${searchQuery}%`} OR "user"."usn" ILIKE ${`%${searchQuery}%`})
+        )`,
+        sql`EXISTS (
+          SELECT 1 FROM "event" 
+          WHERE "event"."id" = ${registration.eventId} 
+          AND "event"."title" ILIKE ${`%${searchQuery}%`}
+        )`
+      );
     }
-
-    // Determine ordering
-    const getOrderBy = (reg: any, { desc, asc }: any) => {
-      switch(sortBy) {
-        case 'userName':
-          return sortOrder === 'desc' ? [desc(sql`user.name`)] : [asc(sql`user.name`)];
-        case 'eventName':
-          return sortOrder === 'desc' ? [desc(sql`event.title`)] : [asc(sql`event.title`)];
-        case 'date':
-          return sortOrder === 'desc' ? [desc(sql`event.date`)] : [asc(sql`event.date`)];
-        case 'status':
-          return sortOrder === 'desc' ? [desc(registration.paymentStatus)] : [asc(registration.paymentStatus)];
-        case 'createdAt':
-        default:
-          return sortOrder === 'desc' ? [desc(reg.createdAt)] : [asc(reg.createdAt)];
-      }
-    };
 
     const registrations = await db.query.registration.findMany({
       where: whereClause,
@@ -182,26 +175,51 @@ export async function getRegistrations(
       },
       limit,
       offset: (page - 1) * limit,
-      orderBy: getOrderBy
+      orderBy: (fields) => {
+        switch(sortBy) {
+          case 'userName':
+            return sql`(
+              SELECT "user"."name" 
+              FROM "user" 
+              WHERE "user"."id" = ${fields.userId}
+            ) ${sortOrder === 'desc' ? sql`DESC NULLS LAST` : sql`ASC NULLS FIRST`}`;
+          case 'eventName':
+            return sql`(
+              SELECT "event"."title" 
+              FROM "event" 
+              WHERE "event"."id" = ${fields.eventId}
+            ) ${sortOrder === 'desc' ? sql`DESC` : sql`ASC`}`;
+          case 'date':
+            return sql`(
+              SELECT "event"."date" 
+              FROM "event" 
+              WHERE "event"."id" = ${fields.eventId}
+            ) ${sortOrder === 'desc' ? sql`DESC` : sql`ASC`}`;
+          case 'status':
+            return sql`${fields.paymentStatus} ${sortOrder === 'desc' ? sql`DESC` : sql`ASC`}`;
+          case 'createdAt':
+          default:
+            return sql`${fields.createdAt} ${sortOrder === 'desc' ? sql`DESC` : sql`ASC`}`;
+        }
+      }
     });
 
-    // Get total count
+    // Get total count with the same search conditions
     const totalResult = await db
       .select({ count: sql<number>`count(*)`.as('count') })
       .from(registration)
-      .leftJoin(event, eq(registration.eventId, event.id))
-      .leftJoin(user, eq(registration.userId, user.id))
       .where(whereClause || sql`TRUE`);
 
     const total = totalResult[0].count;
 
+    // Map the results with proper type handling
     const data = registrations.map(reg => ({
       id: reg.id,
       registrationId: reg.registrationId,
-      userName: reg.user.name,
-      userEmail: reg.user.email,
-      userPhone: reg.user.phone,
-      userUSN: reg.user.usn,
+      userName: reg.user?.name || null,
+      userEmail: reg.user?.email || null,
+      userPhone: reg.user?.phone || null,
+      userUSN: reg.user?.usn || null,
       eventName: reg.event.title,
       eventFee: reg.event.fee,
       date: reg.event.date.toISOString(),
@@ -338,43 +356,43 @@ export async function getEventAnalytics() {
       throw new Error("Unauthorized")
     }
 
-    // Get registrations by category
+    // Get registrations by category with correct counting
     const registrationsByCategory = await db
       .select({
         category: event.category,
-        total: sql`count(${registration.id})`.as('total'),
-        paid: sql`count(case when ${registration.paymentStatus} = 'PAID' then 1 end)`.as('paid'),
-        unpaid: sql`count(case when ${registration.paymentStatus} = 'UNPAID' then 1 end)`.as('unpaid'),
-        revenue: sql`sum(case when ${registration.paymentStatus} = 'PAID' then ${event.fee} else 0 end)`.as('revenue')
+        total: sql<number>`CAST(COUNT(DISTINCT ${registration.id}) AS INTEGER)`.as('total'),
+        paid: sql<number>`CAST(COUNT(DISTINCT CASE WHEN ${registration.paymentStatus} = 'PAID' THEN ${registration.id} END) AS INTEGER)`.as('paid'),
+        unpaid: sql<number>`CAST(COUNT(DISTINCT CASE WHEN ${registration.paymentStatus} = 'UNPAID' THEN ${registration.id} END) AS INTEGER)`.as('unpaid'),
+        revenue: sql<number>`CAST(COALESCE(SUM(CASE WHEN ${registration.paymentStatus} = 'PAID' THEN ${event.fee} ELSE 0 END), 0) AS INTEGER)`.as('revenue')
       })
       .from(event)
       .leftJoin(registration, eq(event.id, registration.eventId))
       .groupBy(event.category);
 
-    // Get recent registration trends
+    // Get recent registration trends with correct daily aggregation
     const registrationTrends = await db
       .select({
-        date: sql`date(${registration.createdAt})`.as('date'),
-        count: sql`count(*)`.as('count')
+        date: sql<string>`to_char(date(${registration.createdAt}), 'YYYY-MM-DD')`.as('date'),
+        count: sql<number>`CAST(COUNT(DISTINCT ${registration.id}) AS INTEGER)`.as('count')
       })
       .from(registration)
       .groupBy(sql`date(${registration.createdAt})`)
       .orderBy(desc(sql`date(${registration.createdAt})`))
       .limit(7);
 
-    // Get top events by registration
+    // Get top events by registration with correct counting
     const topEvents = await db
       .select({
         eventId: event.id,
         title: event.title,
         category: event.category,
-        registrations: sql`count(${registration.id})`.as('registrations'),
-        revenue: sql`sum(case when ${registration.paymentStatus} = 'PAID' then ${event.fee} else 0 end)`.as('revenue')
+        registrations: sql<number>`CAST(COUNT(DISTINCT ${registration.id}) AS INTEGER)`.as('registrations'),
+        revenue: sql<number>`CAST(COALESCE(SUM(CASE WHEN ${registration.paymentStatus} = 'PAID' THEN ${event.fee} ELSE 0 END), 0) AS INTEGER)`.as('revenue')
       })
       .from(event)
       .leftJoin(registration, eq(event.id, registration.eventId))
-      .groupBy(event.id)
-      .orderBy(desc(sql`count(${registration.id})`))
+      .groupBy(event.id, event.title, event.category)
+      .orderBy(desc(sql`COUNT(DISTINCT ${registration.id})`))
       .limit(5);
 
     return {

@@ -13,6 +13,7 @@ interface RegisterButtonProps {
   isTeamEvent?: boolean
   minTeamSize?: number
   maxTeamSize?: number
+  className?: string
 }
 
 export default function RegisterButton({ 
@@ -20,7 +21,8 @@ export default function RegisterButton({
   isRegistered = false,
   isTeamEvent = false,
   minTeamSize = 2,
-  maxTeamSize = 5
+  maxTeamSize = 5,
+  className
 }: RegisterButtonProps) {
   const { data: session, status } = useSession()
   const [isLoading, setIsLoading] = useState(false)
@@ -74,7 +76,7 @@ export default function RegisterButton({
 
   if (registered) {
     return (
-      <Button variant="outline" disabled>
+      <Button variant="outline" disabled className={className}>
         Registered
       </Button>
     )
@@ -84,6 +86,7 @@ export default function RegisterButton({
     <Button 
       onClick={handleRegister} 
       disabled={isLoading}
+      className={className}
     >
       {isLoading ? "Registering..." : "Register Now"}
     </Button>

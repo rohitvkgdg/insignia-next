@@ -1,7 +1,4 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChartContainer } from "@/components/ui/chart"
-import { BarChart, LineChart, PieChart, Bar, Line, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts"
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { formatCurrency } from "@/lib/utils"
 
 interface AnalyticsData {
@@ -37,9 +34,10 @@ function customTooltipFormatter(value: number, name: string) {
 }
 
 export function EventAnalytics({ data }: EventAnalyticsProps) {
-  const totalRevenue = data.byCategory.reduce((sum, cat) => sum + cat.revenue, 0)
-  const totalRegistrations = data.byCategory.reduce((sum, cat) => sum + cat.total, 0)
-  const totalPaid = data.byCategory.reduce((sum, cat) => sum + cat.paid, 0)
+  // Calculate totals correctly by summing actual numbers
+  const totalRevenue = Number(data.byCategory.reduce((sum, cat) => sum + (cat.revenue || 0), 0))
+  const totalRegistrations = Number(data.byCategory.reduce((sum, cat) => sum + (cat.total || 0), 0))
+  const totalPaid = Number(data.byCategory.reduce((sum, cat) => sum + (cat.paid || 0), 0))
 
   const pieChartData = data.byCategory.map(cat => ({
     name: cat.category,
@@ -76,120 +74,6 @@ export function EventAnalytics({ data }: EventAnalyticsProps) {
           </CardContent>
         </Card>
       </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Registration Trends</CardTitle>
-            <CardDescription>Daily registration activity</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer className="h-[300px]" config={{
-              count: {
-                label: "Registrations",
-                theme: {
-                  light: "var(--chart-1)",
-                  dark: "var(--chart-1)"
-                }
-              }
-            }}>
-              <LineChart data={data.trends}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="count" stroke="var(--chart-1)" strokeWidth={2} />
-              </LineChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Category Distribution</CardTitle>
-            <CardDescription>Registrations by event category</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer className="h-[300px]" config={{
-              value: {
-                label: "Registrations",
-                theme: {
-                  light: "var(--chart-2)",
-                  dark: "var(--chart-2)"
-                }
-              }
-            }}>
-              <PieChart>
-                <Pie
-                  data={pieChartData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  fill="var(--chart-2)"
-                  label
-                />
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Category Analysis</CardTitle>
-          <CardDescription>Detailed breakdown by category</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[300px]">
-            <ChartContainer className="min-h-[400px]" config={{
-              total: {
-                label: "Total",
-                theme: {
-                  light: "var(--chart-1)",
-                  dark: "var(--chart-1)"
-                }
-              },
-              paid: {
-                label: "Paid",
-                theme: {
-                  light: "var(--chart-3)",
-                  dark: "var(--chart-3)"
-                }
-              },
-              unpaid: {
-                label: "Unpaid",
-                theme: {
-                  light: "var(--chart-4)",
-                  dark: "var(--chart-4)"
-                }
-              },
-              revenue: {
-                label: "Revenue",
-                theme: {
-                  light: "var(--chart-5)",
-                  dark: "var(--chart-5)"
-                }
-              }
-            }}>
-              <BarChart data={data.byCategory} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis type="category" dataKey="category" width={100} />
-                <Tooltip formatter={customTooltipFormatter} />
-                <Legend />
-                <Bar dataKey="total" name="Total Registrations" fill="var(--chart-1)" />
-                <Bar dataKey="paid" name="Paid" fill="var(--chart-3)" />
-                <Bar dataKey="unpaid" name="Unpaid" fill="var(--chart-4)" />
-              </BarChart>
-            </ChartContainer>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>

@@ -71,7 +71,8 @@ export const config = {
      * 2. /fonts/* (inside public directory)
      * 3. /images/* (inside public directory)
      * 4. /*.* (files with extensions)
+     * 5. /_rsc/* (React Server Components)
      */
-    "/((?!_next|fonts|images|[\\w-]+\\.\\w+).*)",
+    "/((?!_next|_rsc|fonts|images|[\\w-]+\\.\\w+).*)",
   ],
 }
