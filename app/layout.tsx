@@ -1,5 +1,5 @@
 import "@/styles/globals.css"
-import { type Metadata } from "next"
+import { type Metadata, type Viewport } from "next"
 import { Inter } from "next/font/google"
 import localFont from 'next/font/local'
 
@@ -12,16 +12,124 @@ import { Suspense } from "react"
 import Image from "next/image"
 import { Loader2 } from "lucide-react"
 
-const inter = Inter({ subsets: ["latin"] })
 const fresca = localFont({
   src: '../public/fresca.ttf',
   variable: '--font-fresca',
   display: 'swap',
 })
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1
+}
+
 export const metadata: Metadata = {
-  title: "Insignia",
-  description: "Event Management Platform",
+  title: "Insignia '25 | A National Level Techno-cultural Fest at SDMCET",
+  description: "Register for SDMCET's premier events, Insignia. A festival for academic, technical, and cultural events at SDM College of Engineering & Technology, Dharwad.",
+  icons: {
+    icon: [
+      {
+        url: "/images/insignia-yellow.png",
+        sizes: "32x32",
+        type: "image/png"
+      },
+      {
+        url: "/images/insignia-yellow.png",
+        sizes: "16x16",
+        type: "image/png"
+      }
+    ],
+    apple: {
+      url: "/images/insignia-yellow.png",
+      sizes: "180x180",
+      type: "image/png"
+    }
+  },
+  openGraph: {
+    title: "Insignia | A National Level Techno-cultural Fest",
+    description: "Join Insignia | A National Level Techno-cultural Fest in SDMCET. Register for events, and stay connected with the college community.",
+    url: "https://app.sdmcetinsignia.com",
+    siteName: "Insignia SDMCET",
+    locale: "en_US",
+    type: "website",
+    images: [{
+      url: "http://localhost:5174/Elements/ins-logo-yellow.svg",
+      width: 1200,
+      height: 630,
+      alt: "Insignia SDMCET Logo",
+      type: "image/png",
+    }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Insignia | A National Level Techno-cultural Fest",
+    description: "Join Insignia | A National Level Techno-cultural Fest in SDMCET. Register for events, and stay connected with the college community.",
+    images: ["http://localhost:5174/Elements/ins-logo-yellow.svg"],
+  },
+  alternates: {
+    canonical: "https://app.sdmcetinsignia.com"
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true
+    }
+  },
+  keywords: [
+    "Insignia",
+    "SDMCET",
+    "techno-cultural fest",
+    "college events",
+    "technical events",
+    "cultural events",
+    "Dharwad",
+    "engineering college",
+    "student fest"
+  ],
+  other: {
+    "google-site-verification": "your-verification-code",
+    "msvalidate.01": "your-bing-code",
+    "application-name": "Insignia SDMCET",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black",
+    "apple-mobile-web-app-title": "Insignia SDMCET",
+    "format-detection": "telephone=no",
+    "HandheldFriendly": "True"
+  },
+  verification: {
+    other: {
+      "link-structure": JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Insignia SDMCET",
+        "url": "https://app.sdmcetinsignia.com",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://app.sdmcetinsignia.com/events?search={search_term_string}",
+          "query-input": "required name=search_term_string"
+        },
+        "hasPart": [
+          {
+            "@type": "SiteNavigationElement",
+            "name": "Home",
+            "url": "https://app.sdmcetinsignia.com"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "name": "Events",
+            "url": "https://app.sdmcetinsignia.com/events"
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "name": "Gallery",
+            "url": "https://app.sdmcetinsignia.com/#gallery"
+          },
+        ]
+      })
+    }
+  }
 }
 
 function Loading() {

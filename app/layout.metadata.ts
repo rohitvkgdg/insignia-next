@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/placeholder-logo.png",
+        url: "/images/insignia-yellow.png",
         width: 1200,
         height: 630,
         alt: "Insignia SDMCET",

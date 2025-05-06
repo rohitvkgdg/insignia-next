@@ -4,7 +4,7 @@ import Stack from "./Components/Stack/Stack"
 
 export function GallerySection() {
     return (
-        <section className="w-full py-12 md:py-10 lg:py-16 bg-transparent">
+        <section id="gallery" className="w-full py-12 md:py-10 lg:py-16 bg-transparent">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
