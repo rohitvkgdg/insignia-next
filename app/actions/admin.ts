@@ -275,7 +275,6 @@ export async function getAdminEvents(
         case 'category':
           return sortOrder === 'desc' ? [desc(evt.category)] : [asc(evt.category)];
         case 'registrations':
-          // This is a bit complex as we need to count relationships
           return sortOrder === 'desc' 
             ? [desc(sql`(SELECT COUNT(*) FROM "registration" WHERE "registration"."eventId" = "event"."id")`)]
             : [asc(sql`(SELECT COUNT(*) FROM "registration" WHERE "registration"."eventId" = "event"."id")`)];
@@ -290,9 +289,13 @@ export async function getAdminEvents(
       where: whereClause,
       with: {
         registrations: {
+          with: {
+            teamMembers: true
+          },
           columns: {
             id: true,
             paymentStatus: true,
+            registrationId: true
           }
         }
       },
@@ -316,7 +319,14 @@ export async function getAdminEvents(
         reg.paymentStatus === PaymentStatus.PAID
       ).length;
       
-      const revenue = paidRegistrations * Number(event.fee);
+      // Calculate revenue considering team sizes for team events
+      const revenue = event.registrations.reduce((total, reg) => {
+        if (reg.paymentStatus === PaymentStatus.PAID) {
+          const teamSize = event.isTeamEvent ? reg.teamMembers.length : 1;
+          return total + (Number(event.fee) * teamSize);
+        }
+        return total;
+      }, 0);
       
       return {
         id: event.id,
@@ -363,7 +373,15 @@ export async function getEventAnalytics() {
         total: sql<number>`CAST(COUNT(DISTINCT ${registration.id}) AS INTEGER)`.as('total'),
         paid: sql<number>`CAST(COUNT(DISTINCT CASE WHEN ${registration.paymentStatus} = 'PAID' THEN ${registration.id} END) AS INTEGER)`.as('paid'),
         unpaid: sql<number>`CAST(COUNT(DISTINCT CASE WHEN ${registration.paymentStatus} = 'UNPAID' THEN ${registration.id} END) AS INTEGER)`.as('unpaid'),
-        revenue: sql<number>`CAST(COALESCE(SUM(CASE WHEN ${registration.paymentStatus} = 'PAID' THEN ${event.fee} ELSE 0 END), 0) AS INTEGER)`.as('revenue')
+        revenue: sql<number>`CAST(COALESCE(SUM(
+          CASE WHEN ${registration.paymentStatus} = 'PAID' THEN 
+            CASE WHEN ${event.isTeamEvent} = true THEN 
+              ${event.fee} * (SELECT COUNT(*) FROM "teamMember" WHERE "teamMember"."registrationId" = ${registration.registrationId})
+            ELSE ${event.fee} 
+            END
+          ELSE 0 
+          END
+        ), 0) AS INTEGER)`.as('revenue')
       })
       .from(event)
       .leftJoin(registration, eq(event.id, registration.eventId))
@@ -380,14 +398,22 @@ export async function getEventAnalytics() {
       .orderBy(desc(sql`date(${registration.createdAt})`))
       .limit(7);
 
-    // Get top events by registration with correct counting
+    // Get top events with correct revenue calculation
     const topEvents = await db
       .select({
         eventId: event.id,
         title: event.title,
         category: event.category,
         registrations: sql<number>`CAST(COUNT(DISTINCT ${registration.id}) AS INTEGER)`.as('registrations'),
-        revenue: sql<number>`CAST(COALESCE(SUM(CASE WHEN ${registration.paymentStatus} = 'PAID' THEN ${event.fee} ELSE 0 END), 0) AS INTEGER)`.as('revenue')
+        revenue: sql<number>`CAST(COALESCE(SUM(
+          CASE WHEN ${registration.paymentStatus} = 'PAID' THEN 
+            CASE WHEN ${event.isTeamEvent} = true THEN 
+              ${event.fee} * (SELECT COUNT(*) FROM "teamMember" WHERE "teamMember"."registrationId" = ${registration.registrationId})
+            ELSE ${event.fee} 
+            END
+          ELSE 0 
+          END
+        ), 0) AS INTEGER)`.as('revenue')
       })
       .from(event)
       .leftJoin(registration, eq(event.id, registration.eventId))

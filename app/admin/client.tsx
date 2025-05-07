@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { Users, DollarSign, Calendar, Search, AlertCircle, ArrowUpDown, FileText, Phone, HelpCircle } from "lucide-react"
+import { Users, DollarSign, Calendar, Search, AlertCircle, ArrowUpDown, FileText, Phone, HelpCircle, Download } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { PaymentStatus } from "@/types/enums"
@@ -378,6 +378,37 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
     } else {
       setEventSortBy(column)
       setEventSortOrder('desc')
+    }
+  }
+
+  // Download registrations for an event
+  const handleDownloadRegistrations = async (eventId: string, eventTitle: string) => {
+    try {
+      const response = await fetch(`/api/admin/download-registrations?eventId=${eventId}`)
+      
+      if (!response.ok) {
+        throw new Error('Failed to download registrations')
+      }
+
+      // Get the blob from response
+      const blob = await response.blob()
+      
+      // Create object URL
+      const url = window.URL.createObjectURL(blob)
+      
+      // Create temporary link and trigger download
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${eventTitle}_registrations.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      
+      // Cleanup
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Download error:', error)
+      toast.error("Failed to download registrations")
     }
   }
 
@@ -861,6 +892,14 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
                         </div>
                       </CardContent>
                       <div className="p-4 pt-0 flex gap-2 justify-end">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDownloadRegistrations(event.id, event.title)}
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Download
+                        </Button>
                         <Button
                           variant="destructive"
                           size="sm"

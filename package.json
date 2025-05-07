@@ -86,6 +86,7 @@
     "vaul": "^0.9.9",
     "web-vitals": "^4.2.4",
     "ws": "^8.18.1",
+    "xlsx": "^0.18.5",
     "zod": "^3.24.3"
   },
   "devDependencies": {
