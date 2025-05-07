@@ -46,6 +46,12 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
     return true
   }
 
+  // Add trim handler
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.trim()
+    e.target.value = value
+  }
+
   // Handle form submission
   async function handleProfileUpdate(formData: FormData) {
     setIsSubmitting(true)
@@ -58,10 +64,10 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
 
     try {
       const data: UpdateProfileInput = {
-        name: formData.get('name') as string,
-        phone: formData.get('phone') as string,
-        college: formData.get('college') as string,
-        usn: formData.get('usn') as string,
+        name: (formData.get('name') as string)?.trim(),
+        phone: (formData.get('phone') as string)?.trim(),
+        college: (formData.get('college') as string)?.trim(),
+        usn: (formData.get('usn') as string)?.trim(),
         accommodation: formData.get('accommodation') === 'on'
       }
 
@@ -200,6 +206,8 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
                       defaultValue={profile.name || ""}
                       placeholder="Enter your full name"
                       required
+                      autoComplete="off"
+                      onInput={handleInputChange}
                     />
                   </div>
 
@@ -212,6 +220,7 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
                       type="email"
                       defaultValue={profile.email || ""}
                       disabled
+                      autoComplete="off"
                     />
                     <p className="text-xs text-muted-foreground">
                       Email cannot be changed as it is linked to your account.
@@ -228,11 +237,12 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
                         type="text"
                         value={usn}
                         onChange={(e) => {
-                          setUsn(e.target.value)
+                          setUsn(e.target.value.trim())
                           setUsnError("")
                         }}
                         placeholder="e.g. 1XX22XX000"
                         required
+                        autoComplete="off"
                       />
                     </div>
 
@@ -244,12 +254,13 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
                         type="text"
                         value={confirmUsn}
                         onChange={(e) => {
-                          setConfirmUsn(e.target.value)
+                          setConfirmUsn(e.target.value.trim())
                           setUsnError("")
                         }}
                         onBlur={validateUsn}
                         placeholder="Confirm your USN"
                         required
+                        autoComplete="off"
                       />
                       {usnError && (
                         <p className="text-sm text-red-500 mt-1">
@@ -269,6 +280,7 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
                       defaultValue={profile.college || ""}
                       placeholder="e.g. ABC College of Engineering"
                       required
+                      autoComplete="off"
                     />
                   </div>
 
@@ -282,6 +294,8 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
                       defaultValue={profile.phone || ""}
                       placeholder="e.g. +91 9876543210"
                       required
+                      autoComplete="off"
+                      onInput={handleInputChange}
                     />
                   </div>
                   {/* Accommodation Field */}
