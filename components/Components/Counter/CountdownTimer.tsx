@@ -14,6 +14,7 @@ interface TimeLeft {
 }
 
 export default function CountdownTimer() {
+  const [mounted, setMounted] = useState(false)
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
     days: 0,
     hours: 0,
@@ -22,12 +23,13 @@ export default function CountdownTimer() {
   })
 
   useEffect(() => {
+    setMounted(true)
     const calculateTimeLeft = () => {
       const now = new Date().getTime()
       const difference = EVENT_DATE.getTime() - now
 
       if (difference > 0) {
-        const days = Math.floor(difference / (1000 * 60 * 60 * 24)) % 100 // Limit to 2 digits
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24)) % 100
         const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
         const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
         const seconds = Math.floor((difference % (1000 * 60)) / 1000)
@@ -46,8 +48,13 @@ export default function CountdownTimer() {
     return () => clearInterval(timer)
   }, [])
 
+  // Prevent hydration mismatch by not rendering until client-side
+  if (!mounted) {
+    return null
+  }
+
   const counterProps = {
-    fontSize: 56, // Increased from 40
+    fontSize: 56,
     padding: 4,
     gap: 2,
     places: [10, 1],
@@ -61,7 +68,7 @@ export default function CountdownTimer() {
 
   const largeCounterProps = {
     ...counterProps,
-    fontSize: 96, // Increased from 72
+    fontSize: 96,
     padding: 8,
     gap: 4,
     horizontalPadding: 16,

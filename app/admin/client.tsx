@@ -412,8 +412,40 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
     }
   }
 
+  // Download all registrations
+  const handleDownloadAllRegistrations = async () => {
+    try {
+      const response = await fetch('/api/admin/download-all-registrations')
+      
+      if (!response.ok) {
+        throw new Error('Failed to download registrations')
+      }
+
+      // Get the blob from response
+      const blob = await response.blob()
+      
+      // Create object URL
+      const url = window.URL.createObjectURL(blob)
+      
+      // Create temporary link and trigger download
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `all_registrations.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      
+      // Cleanup
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Download error:', error)
+      toast.error("Failed to download registrations")
+    }
+  }
+
   return (
     <div className="container py-10">
+
       {/* Delete Event Confirmation Dialog */}
       <AlertDialog open={!!eventToDelete} onOpenChange={(open) => !open && setEventToDelete(null)}>
         <AlertDialogContent>
@@ -530,7 +562,10 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
           <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
           <p className="text-muted-foreground">Manage events, registrations, and track analytics</p>
         </div>
-
+          <Button variant="outline" className="w-fit justify-end" onClick={handleDownloadAllRegistrations}>
+            <Download className="h-4 w-4 mr-2" />
+            Download All Registrations
+          </Button>
         <Tabs defaultValue="overview">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>

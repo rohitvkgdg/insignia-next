@@ -94,7 +94,7 @@ export default function Navbar() {
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center space-x-2 z-50">
             <div className="flex items-center space-x-2">
-              <Image src={"/Elements/ins-logo-yellow.svg"} alt="Logo" width={30} height={30}/>
+              <Image src={"/Elements/ins-logo-yellow.webp"} alt="Logo" width={30} height={30}/>
               <span className="text-2xl font-bold gradient-text">Insignia</span>
             </div>            
           </Link>
@@ -124,7 +124,7 @@ export default function Navbar() {
             onClickAction={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
           />
           <Link href="/" className="flex items-center space-x-2">
-            <Image src={"/Elements/ins-logo-yellow.svg"} alt="Logo" width={30} height={30}/>
+            <Image src={"/Elements/ins-logo-yellow.webp"} alt="Logo" width={30} height={30}/>
             <span className="text-2xl font-bold gradient-text ml-2">Insignia</span>
           </Link>
           </div>

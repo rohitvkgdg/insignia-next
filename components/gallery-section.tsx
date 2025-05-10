@@ -1,56 +1,108 @@
-"use client"
+'use client';
 
-import Stack from "./Components/Stack/Stack"
+import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+
+// Dynamically import CircularGallery with no SSR
+const CircularGallery = dynamic(
+    () => import('./Components/CircularGallery/CircularGallery'),
+    { ssr: false }
+);
 
 export function GallerySection() {
+    const [mounted, setMounted] = useState(false);
+    
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const galleryItems = [
+        {
+            image: "https://r2.sdmcetinsignia.com/insignia-pics/IMG2.webp",
+            text: ""
+        },
+        {
+            image: "https://r2.sdmcetinsignia.com/insignia-pics/IMG3.webp",
+            text: ""
+        },
+        {
+            image: "https://r2.sdmcetinsignia.com/insignia-pics/IMG5.webp",
+            text: ""
+        },
+        {
+            image: "https://r2.sdmcetinsignia.com/insignia-pics/IMG7.webp",
+            text: ""
+        },
+        {
+            image: "https://r2.sdmcetinsignia.com/insignia-pics/IMG8.webp",
+            text: ""
+        },
+        {
+            image: "https://r2.sdmcetinsignia.com/insignia-pics/IMG14.webp",
+            text: ""
+        },
+        {
+            image: "https://r2.sdmcetinsignia.com/insignia-pics/IMG6.webp",
+            text: ""
+        },
+        {
+            image: "https://r2.sdmcetinsignia.com/insignia-pics/IMG9.webp",
+            text: ""
+        },
+        {
+            image: "https://r2.sdmcetinsignia.com/insignia-pics/IMG11.webp",
+            text: ""
+        },
+        {
+            image: "https://r2.sdmcetinsignia.com/insignia-pics/IMG10.webp",
+            text: ""
+        },
+        {
+            image: "https://r2.sdmcetinsignia.com/insignia-pics/IMG13.webp",
+            text: ""
+        }
+    ];
+
+    // Prevent hydration mismatch by not rendering until client-side
+    if (!mounted) {
+        return (
+            <section id="gallery" className="w-screen py-12 md:py-0 bg-transparent">
+                <div className="container px-4 md:px-6">
+                    <div className="flex flex-col items-center justify-center space-y-4 text-center">
+                        <div className="space-y-2">
+                            <h2 className="text-3xl font-bold tracking-tighter text-white sm:text-4xl">Gallery</h2>
+                            <p className="max-w-[900px] text-gray-300 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
+                                Explore our event memories
+                            </p>
+                        </div>
+                        <div className="w-full h-[600px] overflow-hidden bg-purple-900/20 animate-pulse rounded-lg" />
+                    </div>
+                </div>
+            </section>
+        );
+    }
+
     return (
-        <section id="gallery" className="w-full py-12 md:py-10 lg:py-16 bg-transparent">
+        <section id="gallery" className="w-screen py-12 md:py-0 bg-transparent">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
                         <h2 className="text-3xl font-bold tracking-tighter text-white sm:text-4xl">Gallery</h2>
                         <p className="max-w-[900px] text-gray-300 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
-                            Swipe through our event memories
+                            Explore our event memories
                         </p>
                     </div>
-                    <div className="w-full max-w-full overflow-hidden">
-                        <div className="flex flex-col md:flex-row md:gap-x-20 justify-center items-center">
-                            <Stack
-                                cardDimensions={{ width: 300, height: 375 }}
-                                sensitivity={300}
-                                randomRotation={true}
-                                sendToBackOnClick={true}
-                                cardsData={[
-                                    {
-                                        id: 2,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG2.JPG"
-                                    },
-                                    {
-                                        id: 3,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG3.JPG"
-                                    },
-                                    {
-                                        id: 4,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG5.JPG"
-                                    },
-                                    {
-                                        id: 5,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG7.JPG"
-                                    },
-                                    {
-                                        id: 6,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG8.JPG"
-                                    },
-                                    {
-                                        id: 7,
-                                        img: "https://r2.sdmcetinsignia.com/insignia-pics/IMG14.JPG"
-                                    },
-                                ]}
-                            />
-                        </div>
+                    <div className="w-full h-[600px] overflow-hidden">
+                        <CircularGallery 
+                            items={galleryItems}
+                            bend={1}
+                            textColor="#ffffff"
+                            borderRadius={0.05}
+                            font="bold 24px DM Sans"
+                        />
                     </div>
                 </div>
             </div>
         </section>
-    )
+    );
 }

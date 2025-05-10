@@ -1,3 +1,6 @@
+// Add caching configuration
+export const revalidate = 3600 // Revalidate every hour
+
 import { Suspense } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,6 +15,7 @@ import { eventCategoryEnum } from "@/schema"
 import { asc, eq, inArray, and } from "drizzle-orm"
 import { EventCategoryNavigation } from "@/app/events/event-navigation"
 import { CardContainer } from "@/components/ui/3d-card"
+import {PaymentInfoBanner} from "./payment-info-banner"
 
 // Add interfaces at the top of the file
 interface Event {
@@ -202,6 +206,7 @@ export default async function EventsPage({
           currentCategory={await searchParams?.category} 
           department={await searchParams?.department} 
         />
+        <PaymentInfoBanner />
         <div className="w-full">
           <Suspense fallback={<EventSkeletonGrid />}>
             <EventGrid events={events} />

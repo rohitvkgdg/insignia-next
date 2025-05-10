@@ -31,17 +31,14 @@ type ModelProps = {
 
 function Model({ modelUrl }: ModelProps) {
   const modelRef = useRef(null);
-  const { scene } = useGLTF(modelUrl, true); // Enable progressive loading
+  const { scene } = useGLTF(modelUrl, true);
 
-  // Optimize the scene
   useEffect(() => {
     if (scene) {
-      // Enable scene optimizations
       scene.traverse((child: any) => {
         if (child.isMesh) {
           child.castShadow = false;
           child.receiveShadow = false;
-          // Optimize geometries
           if (child.geometry) {
             child.geometry.dispose();
           }
@@ -56,22 +53,22 @@ function Model({ modelUrl }: ModelProps) {
       object={scene} 
       scale={2.0} 
       position={[0, -2, -2]}
-      dispose={null} // Prevent disposal to improve performance
+      dispose={null}
     />
   );
 }
 
 export default function ThreeDmodel() {
+  const [mounted, setMounted] = useState(false);
   const [modelUrl, setModelUrl] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    setMounted(true);
     const loadModel = async () => {
       try {
         const directModelUrl = 'https://r2.sdmcetinsignia.com/models/sdm.glb';
-        
-        // Preload the model
         await useGLTF.preload(directModelUrl);
         setModelUrl(directModelUrl);
         setIsReady(true);
@@ -83,7 +80,6 @@ export default function ThreeDmodel() {
 
     loadModel();
 
-    // Cleanup function
     return () => {
       if (modelUrl) {
         useGLTF.clear(modelUrl);
@@ -91,7 +87,11 @@ export default function ThreeDmodel() {
     };
   }, []);
 
-  // If there's an error, show a minimal error state
+  // Prevent hydration mismatch by not rendering until client-side
+  if (!mounted) {
+    return null;
+  }
+
   if (error) {
     return (
       <div className="w-full h-full flex items-center justify-center">
@@ -105,21 +105,21 @@ export default function ThreeDmodel() {
       <div className="absolute inset-0 z-0">
         <Canvas
           camera={{ position: [0, 2, 15], fov: 60 }}
-          dpr={[1, 2]} // Limit pixel ratio for performance
-          performance={{ min: 0.5 }} // Allow frame drops for better performance
+          dpr={[1, 2]}
+          performance={{ min: 0.5 }}
           gl={{ 
-            antialias: false, // Disable antialiasing for performance
+            antialias: false,
             powerPreference: 'high-performance',
             alpha: true,
           }}
         >
-          <ambientLight intensity={0.5} /> {/* Reduced light intensity */}
+          <ambientLight intensity={0.5} />
           <directionalLight position={[20, 20, 15]} intensity={0.6} />
           
           <Suspense fallback={<ModelLoader />}>
-            {modelUrl && <Model modelUrl={modelUrl} />}
+            {modelUrl && isReady && <Model modelUrl={modelUrl} />}
             <Environment preset="city" environmentIntensity={0.5} />
-            <Preload all /> {/* Preload all assets */}
+            <Preload all />
           </Suspense>
 
           <OrbitControls

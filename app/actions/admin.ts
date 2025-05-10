@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth"
 import { z } from "zod"
 import { db } from "@/lib/db"
 import { eq, ilike, or } from "drizzle-orm"
-import { registration, event, user } from "@/schema"
+import { registration, event, eventCategoryEnum } from "@/schema"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { logger } from "@/lib/logger"
 import { revalidatePath } from "next/cache"
@@ -261,10 +261,18 @@ export async function getAdminEvents(
 
     let whereClause = undefined;
     if (searchQuery) {
-      whereClause = sql`event.title ILIKE ${`%${searchQuery}%`} OR 
-                      event.description ILIKE ${`%${searchQuery}%`} OR
-                      event.category ILIKE ${`%${searchQuery}%`} OR
-                      event.location ILIKE ${`%${searchQuery}%`}`;
+      // Check if the search query matches any event category (case insensitive)
+      const normalizedSearch = searchQuery.toUpperCase();
+      const matchesCategory = eventCategoryEnum.enumValues.some((cat: string) => 
+        cat.includes(normalizedSearch)
+      );
+
+      whereClause = or(
+        ilike(event.title, `%${searchQuery}%`),
+        ilike(event.description, `%${searchQuery}%`),
+        ilike(event.location, `%${searchQuery}%`),
+        matchesCategory ? sql`${event.category}::text = ${searchQuery.toUpperCase()}` : sql`false`
+      );
     }
 
     // Determine ordering

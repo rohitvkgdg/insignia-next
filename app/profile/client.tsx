@@ -292,7 +292,7 @@ export default function ProfileClient({ profile }: { profile: UserProfileData })
                       name="phone"
                       type="tel"
                       defaultValue={profile.phone || ""}
-                      placeholder="e.g. +91 9876543210"
+                      placeholder="e.g. 9876543210"
                       required
                       autoComplete="off"
                       onInput={handleInputChange}

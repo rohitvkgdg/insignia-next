@@ -9,7 +9,8 @@ import { eventCategoryEnum } from '@/schema'
 import { eq, desc, and, ilike, or, sql, count } from 'drizzle-orm'
 import { event, registration, user, teamMember } from '@/schema'
 import { randomUUID } from "crypto"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag } from "next/cache"
+import { unstable_cache } from 'next/cache'
 
 type Category = typeof eventCategoryEnum.enumValues[number]
 
@@ -124,7 +125,8 @@ export async function createEvent(data: EventFormData, userId: string) {
       throw new ApiError(500, "Failed to create event - No event returned");
     }
 
-    // Revalidate the events pages
+    // Invalidate caches
+    revalidateTag('events')
     revalidatePath('/events');
     revalidatePath('/admin');
 
@@ -167,6 +169,13 @@ export async function updateEvent(id: string, data: Partial<EventFormData>, user
       throw new ApiError(500, "Failed to update event")
     }
 
+    // Invalidate caches
+    revalidateTag('events')
+    revalidateTag(`event-${id}`)
+    revalidatePath('/events');
+    revalidatePath('/admin');
+    revalidatePath(`/events/${id}`);
+
     return { success: true, data: updatedEvent }
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -193,6 +202,12 @@ export async function deleteEvent(id: string, userId: string) {
     await db.delete(event)
       .where(eq(event.id, id));
 
+    // Invalidate caches
+    revalidateTag('events')
+    revalidateTag(`event-${id}`)
+    revalidatePath('/events');
+    revalidatePath('/admin');
+
     return { success: true }
   } catch (error) {
     if (error instanceof ApiError) {
@@ -203,96 +218,110 @@ export async function deleteEvent(id: string, userId: string) {
   }
 }
 
-export async function getEvents(
-  page = 1, 
-  limit = 10,
-  category?: Category,
-  searchQuery?: string
-) {
-  try {
-    let whereConditions = [];
-    
-    if (category) {
-      whereConditions.push(eq(event.category, category));
-    }
-    
-    if (searchQuery) {
-      whereConditions.push(
-        or(
-          ilike(event.title, `%${searchQuery}%`),
-          ilike(event.description, `%${searchQuery}%`)
-        )
-      );
-    }
-    
-    const whereClause = whereConditions.length > 0 
-      ? and(...whereConditions) 
-      : undefined;
+export const getEvents = unstable_cache(
+  async (
+    page = 1, 
+    limit = 10,
+    category?: Category,
+    searchQuery?: string
+  ) => {
+    try {
+      let whereConditions = [];
+      
+      if (category) {
+        whereConditions.push(eq(event.category, category));
+      }
+      
+      if (searchQuery) {
+        whereConditions.push(
+          or(
+            ilike(event.title, `%${searchQuery}%`),
+            ilike(event.description, `%${searchQuery}%`)
+          )
+        );
+      }
+      
+      const whereClause = whereConditions.length > 0 
+        ? and(...whereConditions) 
+        : undefined;
 
-    // Get events with pagination
-    const events = await db.query.event.findMany({
-      where: whereClause,
-      limit: limit,
-      offset: (page - 1) * limit,
-      orderBy: [desc(event.date)],
-      with: {
-        registrations: true,
-      },
-    });
+      // Get events with pagination
+      const events = await db.query.event.findMany({
+        where: whereClause,
+        limit: limit,
+        offset: (page - 1) * limit,
+        orderBy: [desc(event.date)],
+        with: {
+          registrations: true,
+        },
+      });
 
-    // Count total events matching criteria
-    const totalResult = await db.select({ count: count() })
-      .from(event)
-      .where(whereClause || sql`TRUE`);
-    
-    const total = totalResult[0].count;
+      // Count total events matching criteria
+      const totalResult = await db.select({ count: count() })
+        .from(event)
+        .where(whereClause || sql`TRUE`);
+      
+      const total = totalResult[0].count;
 
-    return {
-      data: events,
-      metadata: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
+      return {
+        data: events,
+        metadata: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      }
+    } catch (error) {
+      console.error("Get events error:", error)
+      throw new ApiError(500, "Failed to fetch events")
     }
-  } catch (error) {
-    console.error("Get events error:", error)
-    throw new ApiError(500, "Failed to fetch events")
+  },
+  ['events-list'],
+  {
+    revalidate: 3600, // Cache for 1 hour
+    tags: ['events']
   }
-}
+)
 
-export async function getEventById(id: string) {
-  try {
-    const eventData = await db.query.event.findFirst({
-      where: eq(event.id, id),
-      with: {
-        registrations: {
-          with: {
-            user: {
-              columns: {
-                id: true,
-                name: true,
+export const getEventById = unstable_cache(
+  async (id: string) => {
+    try {
+      const eventData = await db.query.event.findFirst({
+        where: eq(event.id, id),
+        with: {
+          registrations: {
+            with: {
+              user: {
+                columns: {
+                  id: true,
+                  name: true,
+                }
               }
             }
           }
         }
+      });
+
+      if (!eventData) {
+        throw new ApiError(404, "Event not found")
       }
-    });
 
-    if (!eventData) {
-      throw new ApiError(404, "Event not found")
+      return { data: eventData }
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error
+      }
+      console.error("Get event error:", error)
+      throw new ApiError(500, "Failed to fetch event")
     }
-
-    return { data: eventData }
-  } catch (error) {
-    if (error instanceof ApiError) {
-      throw error
-    }
-    console.error("Get event error:", error)
-    throw new ApiError(500, "Failed to fetch event")
+  },
+  ['event-details'],
+  {
+    revalidate: 3600, // Cache for 1 hour
+    tags: ['events'] // Just use the events tag since we'll revalidate all events together
   }
-}
+)
 
 export async function registerForEvent(eventId: string, notes?: string, teamMembers?: { name: string; usn: string; phone: string; }[]) {
   try {

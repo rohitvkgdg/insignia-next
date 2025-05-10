@@ -24,6 +24,7 @@ export function CustomSVGCard({ href, svgPath, className }: CustomSVGCardProps) 
             src={svgPath} 
             alt="" 
             className="w-full h-full object-contain"
+            loading="eager"
             aria-hidden="true"
           />
         </div>

@@ -45,16 +45,14 @@ export async function GET(req: NextRequest) {
         user: {
           columns: {
             name: true,
-            usn: true,
+            college: true,
             phone: true
           }
         },
         teamMembers: {
           columns: {
             name: true,
-            usn: true,
-            phone: true,
-            isTeamLeader: true
+            phone: true
           }
         },
         event: {
@@ -70,22 +68,19 @@ export async function GET(req: NextRequest) {
     if (eventData.isTeamEvent) {
       // Format data for team events
       worksheetData = registrations.map((reg, index) => {
-        const teamLeader = reg.teamMembers.find(member => member.isTeamLeader)
-        const otherMembers = reg.teamMembers.filter(member => !member.isTeamLeader)
-        
-        // Create base row with team leader info
+        const teamLeader = reg.user;
+        const otherMembers = reg.teamMembers || [];
+
         const baseRow: Record<string, string | number | undefined> = {
-          'Team #': index + 1,
           'Registration ID': reg.registrationId,
-          'Team Leader Name': teamLeader?.name,
-          'Team Leader USN': teamLeader?.usn,
-          'Team Leader Phone': teamLeader?.phone,
+          'Team Leader Name': teamLeader.name ?? undefined,
+          'Team Leader College': teamLeader.college ?? undefined,
+          'Team Leader Phone': teamLeader.phone ?? undefined,
         }
 
         // Add member columns dynamically
         otherMembers.forEach((member, idx) => {
           baseRow[`Member ${idx + 1} Name`] = member.name
-          baseRow[`Member ${idx + 1} USN`] = member.usn
           baseRow[`Member ${idx + 1} Phone`] = member.phone
         })
 
@@ -95,9 +90,9 @@ export async function GET(req: NextRequest) {
       // Format data for individual events
       worksheetData = registrations.map(reg => ({
         'Registration ID': reg.registrationId,
-        'Name': reg.user.name,
-        'USN': reg.user.usn,
-        'Phone Number': reg.user.phone
+        'Name': reg.user.name ?? undefined,
+        'College': reg.user.college ?? undefined,
+        'Phone Number': reg.user.phone ?? undefined
       }))
     }
 
@@ -111,7 +106,7 @@ export async function GET(req: NextRequest) {
     const colWidths = [
       { wch: 15 }, // Registration ID
       { wch: 25 }, // Name
-      { wch: 15 }, // USN
+      { wch: 30 }, // College
       { wch: 15 }, // Phone
     ]
     worksheet['!cols'] = colWidths

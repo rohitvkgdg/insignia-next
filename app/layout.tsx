@@ -11,11 +11,13 @@ import Footer from "@/components/footer"
 import { Suspense } from "react"
 import Image from "next/image"
 import { Loader2 } from "lucide-react"
+import ErrorBoundary from "@/components/error-boundary"
 
 const fresca = localFont({
   src: '../public/fresca.ttf',
   variable: '--font-fresca',
   display: 'swap',
+  preload: true,
 })
 
 export const viewport: Viewport = {
@@ -29,18 +31,18 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "/images/insignia-yellow.png",
+        url: "/images/insignia-yellow.webp",
         sizes: "32x32",
         type: "image/png"
       },
       {
-        url: "/images/insignia-yellow.png",
+        url: "/images/insignia-yellow.webp",
         sizes: "16x16",
         type: "image/png"
       }
     ],
     apple: {
-      url: "/images/insignia-yellow.png",
+      url: "/images/insignia-yellow.webp",
       sizes: "180x180",
       type: "image/png"
     }
@@ -53,7 +55,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     type: "website",
     images: [{
-      url: "http://localhost:5174/Elements/ins-logo-yellow.svg",
+      url: "http://localhost:5174/Elements/ins-logo-yellow.webp",
       width: 1200,
       height: 630,
       alt: "Insignia SDMCET Logo",
@@ -64,7 +66,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Insignia | A National Level Techno-cultural Fest",
     description: "Join Insignia | A National Level Techno-cultural Fest in SDMCET. Register for events, and stay connected with the college community.",
-    images: ["http://localhost:5174/Elements/ins-logo-yellow.svg"],
+    images: ["http://localhost:5174/Elements/ins-logo-yellow.webp"],
   },
   alternates: {
     canonical: "https://app.sdmcetinsignia.com"
@@ -160,6 +162,12 @@ function LoadingScreen({ children }: { children: React.ReactNode }) {
   )
 }
 
+async function resetAction() {
+  'use server'
+  // You can add any server-side cleanup logic here
+  return
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -167,49 +175,66 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Preload critical assets */}
+        <link 
+          rel="preload" 
+          href="/Elements/ins-logo-yellow.webp" 
+          as="image" 
+          type="image/svg+xml"
+        />
+        <link 
+          rel="preload" 
+          href="/images/sdm-logo.webp" 
+          as="image"
+          type="image/png"
+        />
+      </head>
       <body className={fresca.className}>
-        <LoadingScreen>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <AuthProvider>
-              <div className="relative flex min-h-screen flex-col bg-[#0a0714] overflow-hidden">
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-b from-blue-900 via-blue-950 to-transparent opacity-70 z-0" />
-                <div className="absolute flex top-1 w-[90%] items-center mx-4 lg:left-20 lg:right-10 justify-around z-30">
-                  <Image src={"/images/sdm-logo.png"} alt="SDM Logo" className="p-2" width={50} height={20} />
-                  <p className="text-[12px] md:text-lg lg:text-xl px-3 text-center font-bold text-white">SHRI DHARMASTHALA MANJUNATHESHWARA COLLEGE OF ENGINEERING & TECHNOLOGY</p>
-                  <Image src={"/images/hegde.png"} alt="Image" width={40} className="p-1" height={25} />
+        <ErrorBoundary error={null} resetAction={resetAction}>
+          <LoadingScreen>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <AuthProvider>
+                <div className="relative flex min-h-screen flex-col bg-[#0a0714] overflow-hidden">
+                  {/* Gradient Overlay with reduced opacity */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-blue-900 via-blue-950 to-transparent opacity-50 z-0" />
+                  <div className="absolute flex top-1 w-[90%] items-center mx-4 lg:left-20 lg:right-10 justify-around z-30">
+                    <Image 
+                      src="/images/sdm-logo.webp" 
+                      alt="SDM Logo" 
+                      width={50} 
+                      height={20} 
+                      priority
+                      loading="eager"
+                    />
+                    <p className="text-[12px] md:text-lg lg:text-xl px-3 text-center font-bold text-white">
+                      SHRI DHARMASTHALA MANJUNATHESHWARA COLLEGE OF ENGINEERING & TECHNOLOGY
+                    </p>
+                    <Image 
+                      src="/images/hegde.webp" 
+                      alt="Image" 
+                      width={40} 
+                      height={25} 
+                      priority
+                      loading="eager"
+                    />
+                  </div>
+                  <Navbar />
+                  <main className="flex-1 relative z-10">
+                    {children}
+                  </main>
+                  <Footer />
                 </div>
-
-                {/* Noise Texture Overlay
-                <div className="absolute inset-0 w-full h-full opacity-5 z-500">
-                  <svg width="100%" height="100%">
-                    <filter id="noiseFilter">
-                      <feTurbulence
-                        type="fractalNoise"
-                        baseFrequency="0.7"
-                        numOctaves="2"
-                        stitchTiles="stitch"
-                      />
-                    </filter>
-                    <rect width="100%" height="100%" filter="url(#noiseFilter)" />
-                  </svg>
-                </div> */}
-
-                <Navbar />
-                <main className="flex-1 relative z-10">
-                  {children}
-                </main>
-                <Footer />
-              </div>
-            </AuthProvider>
-          </ThemeProvider>
-          <Toaster />
-        </LoadingScreen>
+              </AuthProvider>
+            </ThemeProvider>
+            <Toaster />
+          </LoadingScreen>
+        </ErrorBoundary>
       </body>
     </html>
   )

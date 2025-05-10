@@ -221,7 +221,7 @@ export default async function EventPage({ params }: { params: { id: string } }) 
                     <IndianRupeeIcon className="h-4 w-4 text-primary" />
                     <div className="truncate">
                       <p className="text-xs text-muted-foreground">Fee</p>
-                      <p className="font-medium truncate">{event.fee}</p>
+                      <p className="font-medium truncate">{event.fee}/person</p>
                     </div>
                   </div>
                 </div>
