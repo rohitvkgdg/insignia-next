@@ -63,46 +63,33 @@ export function GallerySection() {
         }
     ];
 
-    // Prevent hydration mismatch by not rendering until client-side
     if (!mounted) {
         return (
             <section id="gallery" className="w-screen py-12 md:py-0 bg-transparent">
-                <div className="container px-4 md:px-6">
+                <div className="flex w-screen px-4 md:px-6">
                     <div className="flex flex-col items-center justify-center space-y-4 text-center">
-                        <div className="space-y-2">
+<div className="space-y-2">
                             <h2 className="text-3xl font-bold tracking-tighter text-white sm:text-4xl">Gallery</h2>
                             <p className="max-w-[900px] text-gray-300 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
                                 Explore our event memories
                             </p>
                         </div>
-                        <div className="w-full h-[600px] overflow-hidden bg-purple-900/20 animate-pulse rounded-lg" />
-                    </div>
-                </div>
-            </section>
+                <div className="w-full h-[600px] overflow-hidden bg-purple-900/20 animate-pulse rounded-lg" />
+</div>
+            </div>
+</section>
         );
     }
 
     return (
-        <section id="gallery" className="w-screen py-12 md:py-0 bg-transparent">
-            <div className="container px-4 md:px-6">
-                <div className="flex flex-col items-center justify-center space-y-4 text-center">
-                    <div className="space-y-2">
-                        <h2 className="text-3xl font-bold tracking-tighter text-white sm:text-4xl">Gallery</h2>
-                        <p className="max-w-[900px] text-gray-300 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
-                            Explore our event memories
-                        </p>
-                    </div>
-                    <div className="w-full h-[600px] overflow-hidden">
-                        <CircularGallery 
-                            items={galleryItems}
-                            bend={1}
-                            textColor="#ffffff"
-                            borderRadius={0.05}
-                            font="bold 24px DM Sans"
-                        />
-                    </div>
-                </div>
-            </div>
-        </section>
+        <div className="w-screen h-[600px] overflow-hidden flex items-center justify-center">
+            <CircularGallery 
+                items={galleryItems}
+                bend={1}
+                textColor="#ffffff"
+                borderRadius={0.05}
+                font="bold 24px DM Sans"
+            />
+        </div>
     );
 }

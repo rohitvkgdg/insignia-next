@@ -443,6 +443,37 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
     }
   }
 
+  // Download unpaid registrations
+  const handleDownloadUnpaidRegistrations = async () => {
+    try {
+      const response = await fetch('/api/admin/download-unpaid-registrations')
+      
+      if (!response.ok) {
+        throw new Error('Failed to download unpaid registrations')
+      }
+
+      // Get the blob from response
+      const blob = await response.blob()
+      
+      // Create object URL
+      const url = window.URL.createObjectURL(blob)
+      
+      // Create temporary link and trigger download
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `unpaid_registrations.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      
+      // Cleanup
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Download error:', error)
+      toast.error("Failed to download unpaid registrations")
+    }
+  }
+
   return (
     <div className="container py-10">
 
@@ -562,10 +593,16 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
           <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
           <p className="text-muted-foreground">Manage events, registrations, and track analytics</p>
         </div>
+        <div className="flex gap-4">
           <Button variant="outline" className="w-fit justify-end" onClick={handleDownloadAllRegistrations}>
             <Download className="h-4 w-4 mr-2" />
-            Download All Registrations
+            Download Paid Registrations
           </Button>
+          <Button variant="outline" className="w-fit justify-end" onClick={handleDownloadUnpaidRegistrations}>
+            <Download className="h-4 w-4 mr-2" />
+            Download Unpaid Registrations
+          </Button>
+        </div>
         <Tabs defaultValue="overview">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -694,13 +731,14 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
                           )}
                         </div>
                       </TableHead>
+                      <TableHead>Phone</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {isLoadingRegistrations ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="h-24 text-center">
+                        <TableCell colSpan={7} className="h-24 text-center">
                           <div className="flex justify-center items-center">
                             <Calendar className="h-4 w-4 animate-spin mr-2" />
                             <span>Loading registrations...</span>
@@ -724,6 +762,12 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
                             <Badge variant={registration.paymentStatus === PaymentStatus.PAID ? "default" : "destructive"}>
                               {registration.status}
                             </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4 text-muted-foreground" />
+                              {registration.userPhone || "Not provided"}
+                            </div>
                           </TableCell>
                           <TableCell className="text-right">
                             <DropdownMenu>
@@ -761,7 +805,7 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={6} className="h-24 text-center">
+                        <TableCell colSpan={7} className="h-24 text-center">
                           <div className="flex flex-col items-center justify-center space-y-1">
                             <div className="flex items-center text-muted-foreground">
                               {registrationSearch ? (

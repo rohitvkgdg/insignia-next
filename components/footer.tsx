@@ -26,7 +26,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-5">
           <div className="space-y-4">
             <div className="flex items-center">
-              <Image src={"/Elements/ins-logo-yellow.svg"} alt="Logo" width={100} height={100}/>
+              <Image src={"/Elements/ins-logo-yellow.webp"} alt="Logo" width={100} height={100}/>
               <h3 className="text-2xl font-bold gradient-text ml-5">Insignia '25</h3>
             </div>
             <p className="text-sm ">A National Level Techno-cultural Fest by SDM College of Engineering & Technology</p>
@@ -126,8 +126,18 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-        <div className="mt-8 border-t pt-8 text-center text-sm ">
-          <p>&copy; {new Date().getFullYear()} Insignia. All rights reserved.</p>
+        <div className="mt-8 border-t pt-8 text-center">
+          <p className="text-sm">&copy; {new Date().getFullYear()} Insignia. All rights reserved.</p>
+          <p className="mt-2 text-md">
+            Developed by{" "}
+            <Link href="https://instagram.com/ig_rohitvk" className="hover:text-primary">
+              Rohit Kulkarni
+            </Link>
+            {" & "}
+            <Link href="https://instagram.com/photos_by_sati" className="hover:text-primary">
+              Nikhil Kumar A H
+            </Link>
+          </p>
         </div>
       </div>
     </footer>

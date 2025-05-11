@@ -139,7 +139,7 @@ function Loading() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a0714]">
       <div className="flex flex-col items-center space-y-4">
         <Image 
-          src="/Elements/ins-logo-yellow.svg"
+          src="/Elements/ins-logo-yellow.webp"
           alt="Insignia Logo"
           width={200}
           height={200}

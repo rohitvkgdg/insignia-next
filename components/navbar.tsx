@@ -44,6 +44,7 @@ export default function Navbar() {
   const navItems = [
     { name: "Home", link: "/" },
     { name: "Events", link: "/events" },
+    { name: "Gallery", link: "/gallery" },
     { name: "Brochure", link: "https://r2.sdmcetinsignia.com/Insignia'25%20Brochure.pdf" },
     ...(session ? [{ name: "Profile", link: "/profile" }] : []),
     ...(session ? [{ name: "My Registrations", link: "/registrations" }] : []),

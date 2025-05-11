@@ -4,10 +4,38 @@ import { getToken } from "next-auth/jwt"
 import { applyRateLimit, getIpAddress } from "./lib/rate-limit"
 import { logger } from "./lib/logger"
 
-const publicPaths = ["/", "/auth/signin", "/api/auth", "/events", "/about", "/contact", "/faq"]
-const profileProtectedPaths = ["/profile", "/admin", "/events/[id]/team-registration"]
-const apiPaths = ["/api/"]
-const authPaths = ["/api/auth"]
+// Paths that don't require authentication
+const publicPaths = [
+  "/auth",
+  "/",
+  "/about",
+  "/contact",
+  "/faq",
+  "/gallery",
+  "/privacy",
+  "/terms",
+  "/privacy-policy",
+  "/api/video", // Add video API to public paths
+]
+
+// API paths that should have rate limiting
+const apiPaths = [
+  "/api/admin",
+  "/api/log-error",
+]
+
+// Auth endpoints that need stricter rate limiting
+const authPaths = [
+  "/api/auth",
+  "/auth/signin",
+  "/auth/signout",
+]
+
+// Paths that require a complete profile
+const profileProtectedPaths: string[] = [
+  "/events",
+  "/registrations",
+]
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -40,7 +68,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // For paths that require a complete profile, check profile completion
-    if (profileProtectedPaths.some(path => pathname.includes(path)) && !token.profileCompleted) {
+    if (profileProtectedPaths.some((path: string) => pathname.includes(path)) && !token.profileCompleted) {
       const url = new URL("/profile", request.url)
       url.searchParams.set("callbackUrl", encodeURI(pathname))
       return NextResponse.redirect(url)

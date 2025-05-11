@@ -199,12 +199,6 @@ export function LandingPageContent() {
                             </section>
                         </Suspense>
 
-
-                        {/* Rest of the sections */}
-                        <Suspense fallback={<SectionLoading />}>
-                            <GallerySection />
-                        </Suspense>
-
                         {/* Features Section */}
                         <Suspense fallback={<SectionLoading />}>
                             <section className="w-full py-12 md:py-24 lg:py-32">

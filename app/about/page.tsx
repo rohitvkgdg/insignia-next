@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <main className="container mx-auto py-12 px-4 min-h-screen">
+    <main className="container mx-auto py-36 px-4 min-h-screen">
       <h1 className="text-4xl font-bold mb-8">About SDMCET Insignia</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -22,7 +22,7 @@ export default function AboutPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-2">History</h2>
             <p className="text-gray-700 dark:text-gray-300">
-              Established in [founding year], SDMCET Insignia has grown to become one of the premier technical symposiums in Karnataka, attracting participants from various engineering colleges across the country.
+              Established in 2012, SDMCET Insignia has grown to become one of the premier technical symposiums in Karnataka, attracting participants from various engineering colleges across the country.
             </p>
           </section>
           
