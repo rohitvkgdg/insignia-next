@@ -100,6 +100,18 @@ export async function deleteRegistration(registrationId: string) {
 
     const validated = deleteRegistrationSchema.parse({ registrationId })
 
+    // Get event ID before deleting
+    const registrationData = await db.query.registration.findFirst({
+      where: eq(registration.id, validated.registrationId),
+      columns: {
+        eventId: true
+      }
+    });
+
+    if (!registrationData) {
+      throw new Error("Registration not found")
+    }
+
     const [deleted] = await db.delete(registration)
       .where(eq(registration.id, validated.registrationId))
       .returning()
@@ -114,6 +126,7 @@ export async function deleteRegistration(registrationId: string) {
     })
 
     revalidatePath("/admin")
+    revalidatePath(`/events/${registrationData.eventId}`) // Revalidate the event page
     return { success: true }
   } catch (error) {
     logger.error("Failed to delete registration", { error })

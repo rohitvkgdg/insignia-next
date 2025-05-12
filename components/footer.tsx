@@ -83,6 +83,9 @@ export default function Footer() {
                 <p className="text-sm ">
                 Vikas: <a href="tel:+917676636905" className="hover:text-primary">+91 76766 36905</a>
                 </p>
+                <p className="text-sm ">
+                Shantkumar: <a href="tel:+916362337279" className="hover:text-primary">+91 76766 36905</a>
+                </p>
             </div>
           <div className="space-y-4">
             <h3 className="text-xl font-semibold">Resources</h3>

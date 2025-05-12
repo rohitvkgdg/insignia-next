@@ -21,6 +21,9 @@ export interface RegistrationSummary {
   fee: number
   paymentStatus: string
   createdAt: string
+  isTeamEvent: boolean
+  teamSize?: number
+  teamMembers?: { name: string; phone: string }[]
 }
 
 export interface UserProfileData {
@@ -52,6 +55,7 @@ export async function getUserProfile() {
         registrations: {
           with: {
             event: true,
+            teamMembers: true
           },
           orderBy: (registration, { desc }) => [desc(registration.createdAt)]
         }
@@ -74,6 +78,12 @@ export async function getUserProfile() {
       fee: Number(reg.event.fee),
       paymentStatus: reg.paymentStatus,
       createdAt: new Date(reg.createdAt).toISOString(),
+      isTeamEvent: reg.event.isTeamEvent,
+      teamSize: reg.event.isTeamEvent ? (reg.teamMembers?.length || 0) + 1 : undefined, // +1 for team leader, only if it's a team event
+      teamMembers: reg.teamMembers?.map(member => ({
+        name: member.name,
+        phone: member.phone
+      }))
     }))
 
     return JSON.parse(JSON.stringify({

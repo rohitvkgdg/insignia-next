@@ -1,0 +1,354 @@
+{
+  "eventTitle": "INSIGNIA'25",
+  "college": "S. D. M. College of Engineering and Technology, Dharwad",
+  "days": [
+    {
+      "dayNumber": 1,
+      "date": "2025-05-16",
+      "events": [
+        {
+          "name": "Byte Hunt",
+          "department": "IS",
+          "venue": "ISE Dept",
+          "startTime": "8:00 AM",
+          "endTime": "11:00 AM",
+          "coordinators": []
+        },
+        {
+          "name": "Paper Presentation",
+          "department": "Chemical",
+          "venue": "Department Seminar Hall",
+          "startTime": "9:00 AM",
+          "endTime": "4:00 PM",
+          "coordinators": []
+        },
+        {
+          "name": "Automata",
+          "department": "CS",
+          "venue": "DBMS Lab",
+          "startTime": "9:00 AM",
+          "endTime": "",
+          "coordinators": []
+        },
+        {
+          "name": "Physics of the Future",
+          "department": "Physics",
+          "venue": "Room No: D1",
+          "startTime": "9:00 AM",
+          "endTime": "11:00 AM",
+          "coordinators": []
+        },
+        {
+          "name": "Poster Presentation",
+          "department": "MATHS",
+          "venue": "Room No: 05",
+          "startTime": "9:00 AM",
+          "endTime": "11:00 AM",
+          "coordinators": []
+        },
+        {
+          "name": "Math Relay",
+          "department": "MATHS",
+          "venue": "Room No: 06",
+          "startTime": "9:00 AM",
+          "endTime": "11:30 AM",
+          "coordinators": []
+        },
+        {
+          "name": "Beat the Buzzer",
+          "department": "Physics",
+          "venue": "Physics Laboratory",
+          "startTime": "9:00 AM",
+          "endTime": "11:00 AM",
+          "coordinators": []
+        },
+        {
+          "name": "Minute Marathon",
+          "department": "Chemistry",
+          "venue": "Near MBA Parking",
+          "startTime": "9:00 AM",
+          "endTime": "11:00 AM",
+          "coordinators": []
+        },
+        {
+          "name": "Treasure Hunt",
+          "department": "Civil",
+          "venue": "Civil Department",
+          "startTime": "10:00 AM",
+          "endTime": "",
+          "coordinators": []
+        },
+        {
+          "name": "KBC",
+          "department": "Civil",
+          "venue": "Civil Seminar Hall",
+          "startTime": "10:00 AM",
+          "endTime": "",
+          "coordinators": []
+        },
+        {
+          "name": "Qriosity",
+          "department": "EC",
+          "venue": "Room No: 25, Digital Electronics Lab and PG Room- Dept of ECE",
+          "startTime": "10:00 AM",
+          "endTime": "1:00 PM",
+          "coordinators": []
+        },
+        {
+          "name": "Treasure Tale",
+          "department": "HUMANITIES",
+          "venue": "Room No: 1 and 2",
+          "startTime": "10:00 AM",
+          "endTime": "1:00 PM",
+          "coordinators": []
+        },
+        {
+          "name": "Fun Tech Treasure",
+          "department": "EE",
+          "venue": "Electrical Dept",
+          "startTime": "10:00 AM",
+          "endTime": "",
+          "coordinators": []
+        },
+        {
+          "name": "Chem Quest",
+          "department": "Chemical",
+          "venue": "CRE Lab",
+          "startTime": "10:00 AM",
+          "endTime": "12:00 PM",
+          "coordinators": []
+        },
+        {
+          "name": "Ping and Play",
+          "department": "AIML",
+          "venue": "AIML Department",
+          "startTime": "10:00 AM",
+          "endTime": "1:30 PM",
+          "coordinators": []
+        },
+        {
+          "name": "Yantra Tantra",
+          "department": "Mechanical",
+          "venue": "Design Lab",
+          "startTime": "10:30 AM",
+          "endTime": "4:30 PM",
+          "coordinators": []
+        },
+        {
+          "name": "Clash Of Clues",
+          "department": "IS",
+          "venue": "ISE Department",
+          "startTime": "11:00 AM",
+          "endTime": "1:30 PM",
+          "coordinators": []
+        },
+        {
+          "name": "Trouble Shoot",
+          "department": "EC",
+          "venue": "Room No: 28, Analog Electronics Lab and PG Room- EC Dept",
+          "startTime": "1:00 PM",
+          "endTime": "4:00 PM",
+          "coordinators": []
+        },
+        {
+          "name": "Hack & Hunt",
+          "department": "CS",
+          "venue": "CSE Seminar Hall",
+          "startTime": "2:00 PM",
+          "endTime": "",
+          "coordinators": []
+        },
+        {
+          "name": "Math Hunt",
+          "department": "MATHS",
+          "venue": "Room No: 05 & 06",
+          "startTime": "2:00 PM",
+          "endTime": "5:00 PM",
+          "coordinators": []
+        },
+        {
+          "name": "Ctrl + Fun",
+          "department": "AIML",
+          "venue": "AIML Department",
+          "startTime": "2:00 PM",
+          "endTime": "4:30 PM",
+          "coordinators": []
+        },
+        {
+          "name": "Reel Mela",
+          "department": "IS",
+          "venue": "ISE Department",
+          "startTime": "2:30 PM",
+          "endTime": "4:30 PM",
+          "coordinators": []
+        },
+        {
+          "name": "Chem Trivia",
+          "department": "Chemistry",
+          "venue": "Room 7",
+          "startTime": "2:30 PM",
+          "endTime": "4:30 PM",
+          "coordinators": []
+        },
+        {
+          "name": "CAD Modeling",
+          "department": "Mechanical",
+          "venue": "P-CAD Lab",
+          "startTime": "2:30 PM",
+          "endTime": "4:30 PM",
+          "coordinators": []
+        },
+        {
+          "name": "Night-out-coding",
+          "department": "CS",
+          "venue": "CSE Department",
+          "startTime": "8:30 PM",
+          "endTime": "",
+          "coordinators": []
+        },
+        {
+          "name": "OutTonight – Web/App Development",
+          "department": "AIML",
+          "venue": "AIML Department",
+          "startTime": "9:30 PM",
+          "endTime": "6:30 AM",
+          "coordinators": []
+        }
+      ]
+    },
+    {
+      "dayNumber": 2,
+      "date": "2025-05-17",
+      "events": [
+        {
+          "name": "GIGGLE AND GRIT",
+          "department": "IS",
+          "venue": "ISE Dept",
+          "startTime": "8:00 AM",
+          "endTime": "11:00 AM",
+          "coordinators": []
+        },
+        {
+          "name": "Guess the Rhythm",
+          "department": "Chemistry",
+          "venue": "Room No 7",
+          "startTime": "9:00 AM",
+          "endTime": "11:00 AM",
+          "coordinators": []
+        },
+        {
+          "name": "Balloon Tower",
+          "department": "Civil",
+          "venue": "Room No 15",
+          "startTime": "9:00 AM",
+          "endTime": "",
+          "coordinators": []
+        },
+        {
+          "name": "Escape Room",
+          "department": "Civil",
+          "venue": "Room T3",
+          "startTime": "9:00 AM",
+          "endTime": "",
+          "coordinators": []
+        },
+        {
+          "name": "IOT",
+          "department": "Mechanical",
+          "venue": "Mechanical PG Seminar Hall",
+          "startTime": "9:00 AM",
+          "endTime": "5:00 PM",
+          "coordinators": []
+        },
+        {
+          "name": "Brushless Paint",
+          "department": "Physics",
+          "venue": "Physics Laboratory",
+          "startTime": "9:00 AM",
+          "endTime": "11:00 AM",
+          "coordinators": []
+        },
+        {
+          "name": "Idea Expo-Poster Presentation",
+          "department": "AIML",
+          "venue": "AIML Department",
+          "startTime": "9:00 AM",
+          "endTime": "12:30 PM",
+          "coordinators": []
+        },
+        {
+          "name": "Paper Presentation",
+          "department": "EC",
+          "venue": "Room No: 25, PG Room",
+          "startTime": "10:00 AM",
+          "endTime": "4:00 PM",
+          "coordinators": []
+        },
+        {
+          "name": "Word Heist",
+          "department": "Humanities",
+          "venue": "Room No: 03",
+          "startTime": "10:00 AM",
+          "endTime": "1:00 PM",
+          "coordinators": []
+        },
+        {
+          "name": "Clash of Electronics",
+          "department": "EE",
+          "venue": "Electrical Department",
+          "startTime": "10:00 AM",
+          "endTime": "",
+          "coordinators": []
+        },
+        {
+          "name": "Human S&L",
+          "department": "Chemical",
+          "venue": "Room No: 17",
+          "startTime": "10:00 AM",
+          "endTime": "4:00 PM",
+          "coordinators": []
+        },
+        {
+          "name": "Game of Wizards",
+          "department": "AIML",
+          "venue": "AIML Department",
+          "startTime": "10:00 AM",
+          "endTime": "1:30 PM",
+          "coordinators": []
+        },
+        {
+          "name": "Mechahunt",
+          "department": "Mechanical",
+          "venue": "Mechanical Workshop",
+          "startTime": "10:00 AM",
+          "endTime": "1:30 PM",
+          "coordinators": []
+        },
+        {
+          "name": "Mechofix",
+          "department": "Mechanical",
+          "venue": "Design Lab",
+          "startTime": "10:30 AM",
+          "endTime": "4:30 PM",
+          "coordinators": []
+        },
+        {
+          "name": "Paper Presentation",
+          "department": "IS",
+          "venue": "ISE Department",
+          "startTime": "1:30 PM",
+          "endTime": "4:30 PM",
+          "coordinators": []
+        },
+        {
+          "name": "The Lost Treasure",
+          "department": "AIML",
+          "venue": "AIML Department",
+          "startTime": "2:00 PM",
+          "endTime": "4:30 PM",
+          "coordinators": []
+        }
+      ]
+    }
+  ]
+}

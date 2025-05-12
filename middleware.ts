@@ -15,7 +15,8 @@ const publicPaths = [
   "/privacy",
   "/terms",
   "/privacy-policy",
-  "/api/video", // Add video API to public paths
+  "/api/video",
+  "/schedule", // Add schedules to public paths
 ]
 
 // API paths that should have rate limiting

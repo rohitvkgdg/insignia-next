@@ -189,9 +189,13 @@ function EventSkeletonGrid() {
 export default async function EventsPage({
   searchParams,
 }: {
-  searchParams: { category?: string; department?: string }
+  searchParams?: { category?: string; department?: string }
 }) {
-  const events = await getEvents(await searchParams?.category, await searchParams?.department)
+  const resolvedSearchParams = await searchParams;
+  const category = resolvedSearchParams?.category
+  const department = resolvedSearchParams?.department
+  
+  const events = await getEvents(category, department)
 
   return (
     <div className="container py-40">
@@ -203,8 +207,8 @@ export default async function EventsPage({
       </div>
       <div className="mt-8 flex flex-col items-center gap-4">
         <EventCategoryNavigation 
-          currentCategory={await searchParams?.category} 
-          department={await searchParams?.department} 
+          currentCategory={category} 
+          department={department} 
         />
         <PaymentInfoBanner />
         <div className="w-full">

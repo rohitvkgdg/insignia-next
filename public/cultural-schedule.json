@@ -1,0 +1,490 @@
+{
+  "eventTitle": "INSIGNIA'25",
+  "college": "S. D. M. College of Engineering and Technology, Dharwad",
+  "days": [
+    {
+      "dayNumber": 1,
+      "date": "2025-05-16",
+      "events": [
+        {
+          "name": "Mad-Ads",
+          "category": "Dramatics",
+          "venue": "Auditorium",
+          "startTime": "11:00 AM",
+          "endTime": "12:00 PM",
+          "coordinators": [
+            {
+              "name": "Shantkumar P",
+              "contact": "6362337279"
+            },
+            {
+              "name": "Praveen N",
+              "contact": "7019686610"
+            }
+          ]
+        },
+        {
+          "name": "Western Group Vocals",
+          "category": "Musical",
+          "venue": "DVH",
+          "startTime": "1:30 PM",
+          "endTime": "3:30 PM",
+          "coordinators": [
+            {
+              "name": "Srushti H",
+              "contact": "9513793355"
+            },
+            {
+              "name": "Shamitha J",
+              "contact": "9902799179"
+            }
+          ]
+        },
+        {
+          "name": "Eastern Solo Dance (Prelims)",
+          "category": "Dance",
+          "venue": "Auditorium",
+          "startTime": "12:30 PM",
+          "endTime": "3:30 PM",
+          "coordinators": [
+            {
+              "name": "Parimala",
+              "contact": "9019335259"
+            },
+            {
+              "name": "Bhuvan H",
+              "contact": "6362431123"
+            },
+            {
+              "name": "Megha B",
+              "contact": "7019209100"
+            }
+          ]
+        },
+        {
+          "name": "Western Solo Dance (Prelims)",
+          "category": "Dance",
+          "venue": "Auditorium",
+          "startTime": "12:30 PM",
+          "endTime": "3:30 PM",
+          "coordinators": [
+            {
+              "name": "Parimala",
+              "contact": "9019335259"
+            },
+            {
+              "name": "Bhuvan H",
+              "contact": "6362431123"
+            },
+            {
+              "name": "Megha B",
+              "contact": "7019209100"
+            }
+          ]
+        },
+        {
+          "name": "Eastern Group Vocals",
+          "category": "Musical",
+          "venue": "Auditorium",
+          "startTime": "3:30 PM",
+          "endTime": "4:30 PM",
+          "coordinators": [
+            {
+              "name": "Parimala",
+              "contact": "9019335259"
+            },
+            {
+              "name": "Suchith H",
+              "contact": "8660480492"
+            },
+            {
+              "name": "Sushmita",
+              "contact": "8792036589"
+            }
+          ]
+        },
+        {
+          "name": "Western Group Dance (Prelims)",
+          "category": "Dance",
+          "venue": "Auditorium",
+          "startTime": "4:30 PM",
+          "endTime": "6:00 PM",
+          "coordinators": [
+            {
+              "name": "Parimala",
+              "contact": "9019335259"
+            },
+            {
+              "name": "Bhuvan H",
+              "contact": "6362431123"
+            },
+            {
+              "name": "Megha B",
+              "contact": "7019209100"
+            }
+          ]
+        },
+        {
+          "name": "Street Play",
+          "category": "Dramatics",
+          "venue": "Administrative Block",
+          "startTime": "3:00 PM",
+          "endTime": "5:00 PM",
+          "coordinators": [
+            {
+              "name": "Shantkumar P",
+              "contact": "6362337279"
+            },
+            {
+              "name": "Virupax M",
+              "contact": "8088771247"
+            },
+            {
+              "name": "Megha B",
+              "contact": "7019209100"
+            }
+          ]
+        },
+        {
+          "name": "Cultural Clash",
+          "category": "Competition",
+          "venue": "Outdoor Stage",
+          "startTime": "6:30 PM",
+          "endTime": "7:30 PM",
+          "coordinators": [
+            {
+              "name": "Srushti H",
+              "contact": "9513793355"
+            }
+          ]
+        },
+        {
+          "name": "Eastern Solo Dance (Finals)",
+          "category": "Dance",
+          "venue": "Outdoor Stage",
+          "startTime": "7:30 PM",
+          "endTime": "8:30 PM",
+          "coordinators": [
+            {
+              "name": "Core Committee",
+              "contact": ""
+            }
+          ]
+        },
+        {
+          "name": "Western Solo Dance (Finals)",
+          "category": "Dance",
+          "venue": "Outdoor Stage",
+          "startTime": "7:30 PM",
+          "endTime": "8:30 PM",
+          "coordinators": [
+            {
+              "name": "Core Committee",
+              "contact": ""
+            }
+          ]
+        },
+        {
+          "name": "Eastern Group Dance",
+          "category": "Dance",
+          "venue": "Outdoor Stage",
+          "startTime": "8:30 PM",
+          "endTime": "9:00 PM",
+          "coordinators": [
+            {
+              "name": "Core Committee",
+              "contact": ""
+            }
+          ]
+        },
+        {
+          "name": "Western Group Dance (Finals)",
+          "category": "Dance",
+          "venue": "Outdoor Stage",
+          "startTime": "9:00 PM",
+          "endTime": "10:00 PM",
+          "coordinators": [
+            {
+              "name": "Core Committee",
+              "contact": ""
+            }
+          ]
+        },
+        {
+          "name": "Painting",
+          "category": "Fine Arts",
+          "venue": "D1 Hall",
+          "startTime": "11:00 AM",
+          "endTime": "1:00 PM",
+          "coordinators": [
+            {
+              "name": "Parimala",
+              "contact": "9019335259"
+            },
+            {
+              "name": "Nivedita H",
+              "contact": "8296218129"
+            }
+          ]
+        },
+        {
+          "name": "Pencil Sketching",
+          "category": "Fine Arts",
+          "venue": "D1 Hall",
+          "startTime": "2:30 PM",
+          "endTime": "5:00 PM",
+          "coordinators": [
+            {
+              "name": "Parimala",
+              "contact": "9019335259"
+            },
+            {
+              "name": "Nivedita H",
+              "contact": "8296218129"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dayNumber": 2,
+      "date": "2025-05-17",
+      "events": [
+        {
+          "name": "Duet",
+          "category": "Musical",
+          "venue": "Auditorium",
+          "startTime": "11:00 AM",
+          "endTime": "1:30 PM",
+          "coordinators": [
+            {
+              "name": "Parimala",
+              "contact": "9019335259"
+            },
+            {
+              "name": "Kavya",
+              "contact": "8073509600"
+            },
+            {
+              "name": "Siddu G",
+              "contact": "9535165575"
+            }
+          ]
+        },
+        {
+          "name": "Skit",
+          "category": "Dramatics",
+          "venue": "Auditorium",
+          "startTime": "2:00 PM",
+          "endTime": "4:30 PM",
+          "coordinators": [
+            {
+              "name": "Shantkumar P",
+              "contact": "6362337279"
+            },
+            {
+              "name": "Virupax M",
+              "contact": "8088771247"
+            },
+            {
+              "name": "Sushmita",
+              "contact": "8792036589"
+            }
+          ]
+        },
+        {
+          "name": "Instrumental Solo",
+          "category": "Musical",
+          "venue": "DVH",
+          "startTime": "10:00 AM",
+          "endTime": "2:00 PM",
+          "coordinators": [
+            {
+              "name": "Krupa",
+              "contact": "9110429332"
+            },
+            {
+              "name": "Rachana K",
+              "contact": "9448149529"
+            },
+            {
+              "name": "Nivedita H",
+              "contact": "8296218129"
+            },
+            {
+              "name": "Siddu G",
+              "contact": "9535165575"
+            },
+            {
+              "name": "Bhuvan H",
+              "contact": "6362431123"
+            }
+          ]
+        },
+        {
+          "name": "Eastern Vocal Solo",
+          "category": "Musical",
+          "venue": "DVH",
+          "startTime": "10:00 AM",
+          "endTime": "2:00 PM",
+          "coordinators": [
+            {
+              "name": "Krupa",
+              "contact": "9110429332"
+            },
+            {
+              "name": "Rachana K",
+              "contact": "9448149529"
+            },
+            {
+              "name": "Nivedita H",
+              "contact": "8296218129"
+            },
+            {
+              "name": "Siddu G",
+              "contact": "9535165575"
+            },
+            {
+              "name": "Bhuvan H",
+              "contact": "6362431123"
+            }
+          ]
+        },
+        {
+          "name": "Western Vocal Solo",
+          "category": "Musical",
+          "venue": "DVH",
+          "startTime": "10:00 AM",
+          "endTime": "2:00 PM",
+          "coordinators": [
+            {
+              "name": "Krupa",
+              "contact": "9110429332"
+            },
+            {
+              "name": "Rachana K",
+              "contact": "9448149529"
+            },
+            {
+              "name": "Nivedita H",
+              "contact": "8296218129"
+            },
+            {
+              "name": "Siddu G",
+              "contact": "9535165575"
+            },
+            {
+              "name": "Bhuvan H",
+              "contact": "6362431123"
+            }
+          ]
+        },
+        {
+          "name": "Classical Vocal Solo",
+          "category": "Musical",
+          "venue": "DVH",
+          "startTime": "10:00 AM",
+          "endTime": "2:00 PM",
+          "coordinators": [
+            {
+              "name": "Krupa",
+              "contact": "9110429332"
+            },
+            {
+              "name": "Rachana K",
+              "contact": "9448149529"
+            },
+            {
+              "name": "Nivedita H",
+              "contact": "8296218129"
+            },
+            {
+              "name": "Siddu G",
+              "contact": "9535165575"
+            },
+            {
+              "name": "Bhuvan H",
+              "contact": "6362431123"
+            }
+          ]
+        },
+        {
+          "name": "Face-Off",
+          "category": "Competition",
+          "venue": "Admin Block",
+          "startTime": "4:00 PM",
+          "endTime": "5:30 PM",
+          "coordinators": [
+            {
+              "name": "Parimala",
+              "contact": "9019335259"
+            },
+            {
+              "name": "Kavya",
+              "contact": "8073509600"
+            },
+            {
+              "name": "Vinay T",
+              "contact": "9148726025"
+            }
+          ]
+        },
+        {
+          "name": "Collage",
+          "category": "Fine Arts",
+          "venue": "D1 Hall",
+          "startTime": "9:00 AM",
+          "endTime": "11:00 AM",
+          "coordinators": [
+            {
+              "name": "Srusthi H",
+              "contact": "9513793355"
+            },
+            {
+              "name": "Siddu G",
+              "contact": "9535165575"
+            },
+            {
+              "name": "Vishwanath K",
+              "contact": "8867288428"
+            }
+          ]
+        },
+        {
+          "name": "Face Painting",
+          "category": "Fine Arts",
+          "venue": "D1 Hall",
+          "startTime": "1:00 PM",
+          "endTime": "3:00 PM",
+          "coordinators": [
+            {
+              "name": "Srusthi H",
+              "contact": "9513793355"
+            },
+            {
+              "name": "Siddu G",
+              "contact": "9535165575"
+            },
+            {
+              "name": "Vishwanath K",
+              "contact": "8867288428"
+            }
+          ]
+        },
+        {
+          "name": "Live In Concert",
+          "category": "Performance",
+          "venue": "Outdoor Stage",
+          "startTime": "7:30 PM",
+          "endTime": "10:30 PM",
+          "coordinators": [
+            {
+              "name": "Core Committee",
+              "contact": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

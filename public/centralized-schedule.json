@@ -1,0 +1,231 @@
+{
+  "eventTitle": "INSIGNIA'25",
+  "college": "S. D. M. College of Engineering and Technology, Dharwad",
+  "days": [
+    {
+      "dayNumber": 1,
+      "date": "2025-05-16",
+      "events": [
+        {
+          "name": "Amazing Race",
+          "category": "Outdoor Activity",
+          "venue": "College Ground",
+          "startTime": "7:00 AM",
+          "endTime": "10:30 AM",
+          "coordinators": [
+            {
+              "name": "Zenkar",
+              "contact": "9353186635"
+            },
+            {
+              "name": "Prajwal H",
+              "contact": "7483886061"
+            }
+          ]
+        },
+        {
+          "name": "Mocktail",
+          "category": "Culinary",
+          "venue": "Cafe",
+          "startTime": "10:00 AM",
+          "endTime": "1:30 PM",
+          "coordinators": [
+            {
+              "name": "Naziya",
+              "contact": "7204569449"
+            },
+            {
+              "name": "Sumukh",
+              "contact": "6363084476"
+            }
+          ]
+        },
+        {
+          "name": "Show Your Guts",
+          "category": "Challenge",
+          "venue": "Sports Complex",
+          "startTime": "10:00 AM",
+          "endTime": "1:30 PM",
+          "coordinators": [
+            {
+              "name": "Akhil I",
+              "contact": "8431825106"
+            },
+            {
+              "name": "Aditya K",
+              "contact": "8073700178"
+            }
+          ]
+        },
+        {
+          "name": "Photography",
+          "category": "Creative",
+          "venue": "DVH Hall",
+          "startTime": "10:30 AM",
+          "endTime": "12:00 PM",
+          "coordinators": [
+            {
+              "name": "Siddu",
+              "contact": "9535165575"
+            }
+          ]
+        },
+        {
+          "name": "Squid Game",
+          "category": "Challenge",
+          "venue": "MBA Parking",
+          "startTime": "11:00 AM",
+          "endTime": "2:00 PM",
+          "coordinators": [
+            {
+              "name": "Priya Mannur",
+              "contact": "9353240123"
+            },
+            {
+              "name": "Ganesh K",
+              "contact": "8310497615"
+            }
+          ]
+        },
+        {
+          "name": "Debate",
+          "category": "Literary",
+          "venue": "Seminar Hall",
+          "startTime": "10:00 AM",
+          "endTime": "12:30 PM",
+          "coordinators": [
+            {
+              "name": "Sairenu",
+              "contact": "8123275289"
+            },
+            {
+              "name": "Soniya",
+              "contact": "8867163102"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dayNumber": 2,
+      "date": "2025-05-17",
+      "events": [
+        {
+          "name": "Big Bite Battle",
+          "category": "Culinary",
+          "venue": "Opposite to Canteen",
+          "startTime": "11:00 AM",
+          "endTime": "2:30 PM",
+          "coordinators": [
+            {
+              "name": "Akash H",
+              "contact": "7406581041"
+            },
+            {
+              "name": "Pooviah",
+              "contact": "7019624350"
+            }
+          ]
+        },
+        {
+          "name": "Amazing Race",
+          "category": "Outdoor Activity",
+          "venue": "College Ground",
+          "startTime": "7:00 AM",
+          "endTime": "10:30 AM",
+          "coordinators": [
+            {
+              "name": "Zenkar",
+              "contact": "9353186635"
+            },
+            {
+              "name": "Prajwal H",
+              "contact": "7483886061"
+            }
+          ]
+        },
+        {
+          "name": "Mocktail",
+          "category": "Culinary",
+          "venue": "Cafe",
+          "startTime": "10:00 AM",
+          "endTime": "1:30 PM",
+          "coordinators": [
+            {
+              "name": "Naziya",
+              "contact": "7204569449"
+            },
+            {
+              "name": "Sumukh",
+              "contact": "6363084476"
+            }
+          ]
+        },
+        {
+          "name": "Mock Press",
+          "category": "Literary",
+          "venue": "Seminar Hall",
+          "startTime": "2:00 PM",
+          "endTime": "3:30 PM",
+          "coordinators": [
+            {
+              "name": "Shamitha Jain",
+              "contact": "9902799179"
+            },
+            {
+              "name": "Sushmita",
+              "contact": "8792036589"
+            }
+          ]
+        },
+        {
+          "name": "Photography",
+          "category": "Creative",
+          "venue": "Room No. 22",
+          "startTime": "2:00 PM",
+          "endTime": "4:00 PM",
+          "coordinators": [
+            {
+              "name": "Siddu",
+              "contact": "9535165575"
+            }
+          ]
+        },
+        {
+          "name": "Geek Olympics",
+          "category": "Technical",
+          "venue": "P-CAD Lab",
+          "startTime": "11:00 AM",
+          "endTime": "1:30 PM",
+          "coordinators": [
+            {
+              "name": "Sanjana",
+              "contact": "8088546645"
+            },
+            {
+              "name": "Laxmi",
+              "contact": "7619515348"
+            }
+          ]
+        },
+        {
+          "name": "Squid Game",
+          "category": "Challenge",
+          "venue": "MBA Parking",
+          "startTime": "11:00 AM",
+          "endTime": "2:00 PM",
+          "coordinators": [
+            {
+              "name": "Priya Mannur",
+              "contact": "9353240123"
+            },
+            {
+              "name": "Ganesh K",
+              "contact": "8310497615"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

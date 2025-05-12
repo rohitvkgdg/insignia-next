@@ -45,6 +45,7 @@ export default function Navbar() {
     { name: "Home", link: "/" },
     { name: "Events", link: "/events" },
     { name: "Gallery", link: "/gallery" },
+    { name: "Schedule", link: "/schedule" },
     { name: "Brochure", link: "https://r2.sdmcetinsignia.com/Insignia'25%20Brochure.pdf" },
     ...(session ? [{ name: "Profile", link: "/profile" }] : []),
     ...(session ? [{ name: "My Registrations", link: "/registrations" }] : []),
@@ -126,7 +127,7 @@ export default function Navbar() {
           />
           <Link href="/" className="flex items-center space-x-2">
             <Image src={"/Elements/ins-logo-yellow.webp"} alt="Logo" width={30} height={30}/>
-            <span className="text-2xl font-bold gradient-text ml-2">Insignia</span>
+            <span className="text-2xl font-bold ml-2">Insignia</span>
           </Link>
           </div>
           <div className="flex items-center">

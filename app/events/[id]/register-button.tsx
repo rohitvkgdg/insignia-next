@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { signIn, useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
@@ -20,14 +20,17 @@ export default function RegisterButton({
   eventId, 
   isRegistered = false,
   isTeamEvent = false,
-  minTeamSize = 2,
-  maxTeamSize = 5,
   className
 }: RegisterButtonProps) {
   const { data: session, status } = useSession()
   const [isLoading, setIsLoading] = useState(false)
   const [registered, setRegistered] = useState(isRegistered)
   const router = useRouter()
+
+  // Update local state when prop changes
+  useEffect(() => {
+    setRegistered(isRegistered)
+  }, [isRegistered])
 
   const handleRegister = async () => {
     try {
@@ -46,7 +49,6 @@ export default function RegisterButton({
       // If profile is not complete, redirect to profile page with event registration info
       if (!session?.user?.profileCompleted) {
         const callbackUrl = `/events/${eventId}`
-        // Include event registration information in the URL
         router.push(`/profile?registrationEventId=${eventId}&isTeam=${isTeamEvent}&callbackUrl=${encodeURIComponent(callbackUrl)}`)
         return
       }

@@ -72,7 +72,14 @@ export default function RegistrationsClient({ registrations }: RegistrationsClie
                   </div>
                   <div className="flex items-center gap-2">
                     <IndianRupeeIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{registration.fee}</span>
+                    <span className="text-sm">
+                      {registration.fee}/person
+                      {registration.isTeamEvent && (
+                        <span className="ml-1 text-muted-foreground">
+                          (Total: ₹{registration.fee * (registration.teamMembers?.length || 1)})
+                        </span>
+                      )}
+                    </span>
                   </div>
                 </div>
               </CardContent>
