@@ -412,10 +412,10 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
     }
   }
 
-  // Download all registrations
-  const handleDownloadAllRegistrations = async () => {
+  // Download paid registrations
+  const handleDownloadPaidRegistrations = async () => {
     try {
-      const response = await fetch('/api/admin/download-all-registrations')
+      const response = await fetch('/api/admin/download-paid-registrations')
       
       if (!response.ok) {
         throw new Error('Failed to download registrations')
@@ -430,7 +430,7 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
       // Create temporary link and trigger download
       const a = document.createElement('a')
       a.href = url
-      a.download = `all_registrations.xlsx`
+      a.download = `paid_registrations.xlsx`
       document.body.appendChild(a)
       a.click()
       
@@ -621,7 +621,7 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
           <p className="text-muted-foreground">Manage events, registrations, and track analytics</p>
         </div>
         <div className="flex gap-4">
-          <Button variant="outline" className="w-fit justify-end" onClick={handleDownloadAllRegistrations}>
+          <Button variant="outline" className="w-fit justify-end" onClick={handleDownloadPaidRegistrations}>
             <Download className="h-4 w-4 mr-2" />
             Download Paid Registrations
           </Button>

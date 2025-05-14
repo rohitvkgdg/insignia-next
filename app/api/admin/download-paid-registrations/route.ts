@@ -5,6 +5,7 @@ import { db } from "@/lib/db"
 import { registration, event } from "@/schema"
 import { PaymentStatus } from "@/types/enums"
 import * as XLSX from 'xlsx'
+import { eq, and } from 'drizzle-orm'
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,25 +14,29 @@ export async function GET(req: NextRequest) {
       return new NextResponse("Unauthorized", { status: 401 })
     }
 
-    // Get all registrations with user details, team members, and event info
+    // Get paid registrations with user details, team members, and event info
     const registrations = await db.query.registration.findMany({
+      where: eq(registration.paymentStatus, PaymentStatus.PAID),
       with: {
         user: {
           columns: {
             name: true,
             college: true,
-            phone: true
+            phone: true,
+            usn: true
           }
         },
         teamMembers: {
           columns: {
             name: true,
-            phone: true
+            phone: true,
+            usn: true
           }
         },
         event: {
           columns: {
             title: true,
+            fee: true,
             isTeamEvent: true
           }
         }
@@ -61,20 +66,24 @@ export async function GET(req: NextRequest) {
       if (event.isTeamEvent) {
         // Format data for team events
         worksheetData = eventRegistrations.map((reg) => {
-          const teamLeader = reg.user;
-          const otherMembers = reg.teamMembers || [];
+          const teamLeader = reg.user
+          const otherMembers = reg.teamMembers || []
 
           const baseRow: Record<string, string | number | undefined> = {
             'Registration ID': reg.registrationId,
             'Team Leader Name': teamLeader.name ?? undefined,
             'Team Leader College': teamLeader.college ?? undefined,
             'Team Leader Phone': teamLeader.phone ?? undefined,
+            'Team Leader USN': teamLeader.usn ?? undefined,
+            'Fee': event.fee,
+            'Total Fee': event.fee * (otherMembers.length + 1) // Including team leader
           }
 
           // Add member columns dynamically
           otherMembers.forEach((member, idx) => {
             baseRow[`Member ${idx + 1} Name`] = member.name
             baseRow[`Member ${idx + 1} Phone`] = member.phone
+            baseRow[`Member ${idx + 1} USN`] = member.usn
           })
 
           return baseRow
@@ -85,7 +94,9 @@ export async function GET(req: NextRequest) {
           'Registration ID': reg.registrationId,
           'Name': reg.user.name ?? undefined,
           'College': reg.user.college ?? undefined,
-          'Phone Number': reg.user.phone ?? undefined
+          'Phone Number': reg.user.phone ?? undefined,
+          'USN': reg.user.usn ?? undefined,
+          'Fee': event.fee
         }))
       }
 
@@ -95,9 +106,12 @@ export async function GET(req: NextRequest) {
       // Set column widths
       const colWidths = [
         { wch: 15 }, // Registration ID
-        { wch: 25 }, // Name
+        { wch: 25 }, // Name/Team Leader Name
         { wch: 30 }, // College
         { wch: 15 }, // Phone
+        { wch: 15 }, // USN
+        { wch: 10 }, // Fee
+        { wch: 10 }  // Total Fee (for team events)
       ]
       worksheet['!cols'] = colWidths
 
@@ -113,11 +127,11 @@ export async function GET(req: NextRequest) {
     return new NextResponse(excelBuffer, {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'Content-Disposition': `attachment; filename="all_registrations.xlsx"`,
+        'Content-Disposition': `attachment; filename="paid_registrations.xlsx"`,
       },
     })
   } catch (error) {
-    console.error('Download all registrations error:', error)
+    console.error('Download registrations error:', error)
     return new NextResponse("Internal Server Error", { status: 500 })
   }
 }
