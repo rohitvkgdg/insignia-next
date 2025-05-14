@@ -19,7 +19,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog"
 import {
   AlertDialog,
@@ -502,12 +502,13 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
 
       {/* Registration Details Dialog */}
       <Dialog open={!!selectedRegistration} onOpenChange={(open) => !open && setSelectedRegistration(null)}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Registration Details</DialogTitle>
             <DialogDescription>
               Detailed information about this registration
             </DialogDescription>
+            <DialogClose />
           </DialogHeader>
           
           {selectedRegistration && (
@@ -562,7 +563,7 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
               {selectedRegistration.teamSize > 0 && (
                 <div className="border-t pt-4">
                   <h3 className="text-sm font-medium mb-2">Team Members</h3>
-                  <div className="rounded-md border">
+                  <div className="rounded-md border max-h-[200px] md:max-h-none overflow-y-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
