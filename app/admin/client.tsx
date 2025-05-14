@@ -474,6 +474,32 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
     }
   }
 
+  // Download all registrations
+  const handleDownloadAllRegistrations = async () => {
+    try {
+      const response = await fetch('/api/admin/download-all-registrations')
+      
+      if (!response.ok) {
+        throw new Error('Failed to download registrations')
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `all_registrations.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Download error:', error)
+      toast.error("Failed to download registrations")
+    }
+  }
+
   return (
     <div className="container py-10">
 
@@ -615,21 +641,43 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
         </DialogContent>
       </Dialog>
 
-      <div className="flex flex-col mt-36 space-y-6">
+      <div className="flex flex-col mt-36 gap-4 mb-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
           <p className="text-muted-foreground">Manage events, registrations, and track analytics</p>
         </div>
-        <div className="flex gap-4">
-          <Button variant="outline" className="w-fit justify-end" onClick={handleDownloadPaidRegistrations}>
+        <div className="flex flex-wrap gap-3">
+          <Button 
+            variant="outline" 
+            className="flex-1 sm:flex-none justify-center sm:justify-start" 
+            onClick={handleDownloadAllRegistrations}
+          >
             <Download className="h-4 w-4 mr-2" />
-            Download Paid Registrations
+            <span className="hidden sm:inline">Download All Registrations</span>
+            <span className="sm:hidden">All</span>
           </Button>
-          <Button variant="outline" className="w-fit justify-end" onClick={handleDownloadUnpaidRegistrations}>
+          <Button 
+            variant="outline" 
+            className="flex-1 sm:flex-none justify-center sm:justify-start" 
+            onClick={handleDownloadPaidRegistrations}
+          >
             <Download className="h-4 w-4 mr-2" />
-            Download Unpaid Registrations
+            <span className="hidden sm:inline">Download Paid Registrations</span>
+            <span className="sm:hidden">Paid</span>
+          </Button>
+          <Button 
+            variant="outline" 
+            className="flex-1 sm:flex-none justify-center sm:justify-start" 
+            onClick={handleDownloadUnpaidRegistrations}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Download Unpaid Registrations</span>
+            <span className="sm:hidden">Unpaid</span>
           </Button>
         </div>
+      </div>
+
+      <div className="flex flex-col space-y-6">
         <Tabs defaultValue="overview">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>

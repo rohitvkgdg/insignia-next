@@ -84,7 +84,7 @@ export default function Footer() {
                 Vikas: <a href="tel:+917676636905" className="hover:text-primary">+91 76766 36905</a>
                 </p>
                 <p className="text-sm ">
-                Shantkumar: <a href="tel:+916362337279" className="hover:text-primary">+91 76766 36905</a>
+                Shantkumar: <a href="tel:+916362337279" className="hover:text-primary">+91 63623 37279</a>
                 </p>
             </div>
           <div className="space-y-4">
@@ -129,16 +129,18 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-        <div className="mt-8 border-t pt-8 text-center">
+        <div className="mt-8 border-t pt-8 text-center items-center">
           <p className="text-sm">&copy; {new Date().getFullYear()} Insignia. All rights reserved.</p>
-          <p className="mt-2 text-md">
+          <p className="mt-2 text-md self-center">
             Developed by{" "}
-            <Link href="https://instagram.com/ig_rohitvk" className="hover:text-primary">
+            <Link href="https://instagram.com/ig_rohitvk" className="hover:text-primary mr-1">
+              <Instagram className="h-5 w-5 mx-1 pb-1 inline" />
               Rohit Kulkarni
             </Link>
             {" & "}
             <Link href="https://instagram.com/photos_by_sati" className="hover:text-primary">
-              Nikhil Kumar A H
+            <Instagram className="h-5 w-5 mx-1 pb-1 inline" />
+            Nikhil Kumar A H
             </Link>
           </p>
         </div>

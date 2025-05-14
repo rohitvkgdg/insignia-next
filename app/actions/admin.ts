@@ -437,7 +437,7 @@ export async function getEventAnalytics() {
       .orderBy(desc(sql`date(${registration.createdAt})`))
       .limit(7);
 
-    // Get top events with correct revenue calculation
+    // Get top events (sorted by revenue)
     const topEvents = await db
       .select({
         eventId: event.id,
@@ -457,7 +457,15 @@ export async function getEventAnalytics() {
       .from(event)
       .leftJoin(registration, eq(event.id, registration.eventId))
       .groupBy(event.id, event.title, event.category)
-      .orderBy(desc(sql`COUNT(DISTINCT ${registration.id})`))
+      .orderBy(desc(sql`COALESCE(SUM(
+        CASE WHEN ${registration.paymentStatus} = 'PAID' THEN 
+          CASE WHEN ${event.isTeamEvent} = true THEN 
+            ${event.fee} * (SELECT COUNT(*) FROM "teamMember" WHERE "teamMember"."registrationId" = ${registration.registrationId})
+          ELSE ${event.fee} 
+          END
+        ELSE 0 
+        END
+      ), 0)`))
       .limit(5);
 
     return {
