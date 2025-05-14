@@ -25,6 +25,11 @@ export type RegistrationData = {
   status: string
   paymentStatus: PaymentStatus
   teamSize: number
+  teamMembers?: {
+    name: string
+    usn: string
+    phone: string
+  }[]
 }
 
 export type AdminEventData = {
@@ -181,10 +186,18 @@ export async function getRegistrations(
             date: true,
             fee: true,
             location: true,
-            time: true
+            time: true,
+            isTeamEvent: true
           }
         },
-        teamMembers: true
+        teamMembers: {
+          columns: {
+            name: true,
+            usn: true,
+            phone: true,
+            isTeamLeader: true
+          }
+        }
       },
       limit,
       offset: (page - 1) * limit,
@@ -241,7 +254,12 @@ export async function getRegistrations(
       createdAt: reg.createdAt.toISOString(),
       status: reg.paymentStatus === PaymentStatus.PAID ? "CONFIRMED" : "PENDING",
       paymentStatus: reg.paymentStatus as PaymentStatus,
-      teamSize: reg.teamMembers?.length || 0
+      teamSize: reg.teamMembers?.length || 0,
+      teamMembers: reg.teamMembers?.map(member => ({
+        name: member.name,
+        usn: member.usn,
+        phone: member.phone
+      }))
     }));
 
     return {

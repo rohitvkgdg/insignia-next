@@ -546,7 +546,7 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
                 <div className="space-y-2">
                   <div className="flex items-center">
                     <Users className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <span className="font-medium">{selectedRegistration.userName}</span>
+                    <span className="font-medium">{selectedRegistration.userName} (Team Leader)</span>
                   </div>
                   <div className="flex items-center">
                     <FileText className="h-4 w-4 mr-2 text-muted-foreground" />
@@ -558,7 +558,33 @@ export default function AdminDashboard({ initialRegistrations, initialEvents }: 
                   </div>
                 </div>
               </div>
-              
+
+              {selectedRegistration.teamSize > 0 && (
+                <div className="border-t pt-4">
+                  <h3 className="text-sm font-medium mb-2">Team Members</h3>
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>USN</TableHead>
+                          <TableHead>Phone</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {selectedRegistration.teamMembers?.map((member, index) => (
+                          <TableRow key={index}>
+                            <TableCell>{member.name}</TableCell>
+                            <TableCell>{member.usn}</TableCell>
+                            <TableCell>{member.phone}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-end space-x-2 pt-2">
                 {selectedRegistration.paymentStatus !== PaymentStatus.PAID && (
                   <Button
