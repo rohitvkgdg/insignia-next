@@ -94,7 +94,7 @@ export function LandingPageContent() {
                                                     </Suspense>
                                                 </div>
                                                 <Suspense fallback={<div className="h-[50px] w-full bg-purple-900/20 animate-pulse rounded" />}>
-                                                    <CountdownTimer />
+                                                    {/* <CountdownTimer /> */}
                                                 </Suspense>
                                             </div>
                                         </div>
